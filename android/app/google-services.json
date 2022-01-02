@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "234546462541",
+    "project_id": "lets-hang-22d8f",
+    "storage_bucket": "lets-hang-22d8f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:234546462541:android:d5ffc15c3ea9c2536f8104",
+        "android_client_info": {
+          "package_name": "com.company.letshang"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "234546462541-sj7m6ucasi6voraeb1js73pve803adek.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.company.letshang",
+            "certificate_hash": "01ca694590e27e70e2148d7e1744f6c85c8f2674"
+          }
+        },
+        {
+          "client_id": "234546462541-v1lii1re9j69dm8ipve7ndf5b8jnr9fg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOIufTlZXSsJOxU_RSKqPVrtWrc2i7c18"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "234546462541-v1lii1re9j69dm8ipve7ndf5b8jnr9fg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
