@@ -39,16 +39,9 @@ class _SignInScreenState extends State<SignInScreen> {
                     // ),
                     SizedBox(height: 20),
                     Text(
-                      'FlutterFire',
+                      'Let\'s Hang',
                       style: TextStyle(
                         color: Colors.yellow,
-                        fontSize: 40,
-                      ),
-                    ),
-                    Text(
-                      'Authentication',
-                      style: TextStyle(
-                        color: Colors.orange,
                         fontSize: 40,
                       ),
                     ),

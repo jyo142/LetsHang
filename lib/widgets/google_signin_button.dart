@@ -49,11 +49,6 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
               if (user != null) {
                 context.read<AppBloc>().add(AppUserLoggedIn(user));
                 Navigator.of(context).pushReplacement(
-                  // MaterialPageRoute(
-                  //   builder: (context) => DashboardScreen(
-                  //     user: user,
-                  //   ),
-                  // ),
                   MaterialPageRoute(
                     builder: (context) => AppScreen(),
                   ),

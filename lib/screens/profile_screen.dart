@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
+import 'package:letshang/blocs/app/app_event.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/screens/sign_in_screen.dart';
 import 'package:letshang/utils/authentication.dart';
@@ -14,7 +15,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _isSigningOut = false;
+  bool _isLoggingOut = false;
 
   Route _routeToSignInScreen() {
     return PageRouteBuilder(
@@ -39,81 +40,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return BlocBuilder<AppBloc, AppState>(
       builder: (context, state) {
-        return Scaffold(
-          backgroundColor: Colors.blue,
-          appBar: AppBar(
-            elevation: 0,
-            backgroundColor: Colors.blue,
-          ),
-          body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: 16.0,
-                right: 16.0,
-                bottom: 20.0,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Row(),
-                  state.firebaseUser?.photoURL != null
-                      ? ClipOval(
-                          child: Material(
-                            color: Colors.grey,
-                            child: Image.network(
-                              state.firebaseUser?.photoURL! as String,
-                              fit: BoxFit.fitHeight,
-                            ),
-                          ),
-                        )
-                      : const ClipOval(
-                          child: Material(
-                            color: Colors.grey,
-                            child: Padding(
-                              padding: EdgeInsets.all(16.0),
-                              child: Icon(
-                                Icons.person,
-                                size: 60,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ),
-                        ),
-                  const SizedBox(height: 16.0),
-                  const Text(
-                    'Hello',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 26,
-                    ),
-                  ),
-                  const SizedBox(height: 8.0),
-                  Text(
-                    state.firebaseUser?.displayName! as String,
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(
+                left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _profilePicture(state.firebaseUser),
+                const SizedBox(height: 8.0),
+                Text(
+                  'Name',
+                  style: const TextStyle(
+                      color: Colors.grey, fontSize: 15, letterSpacing: .5),
+                ),
+                Text('${state.firebaseUser?.displayName!}',
+                    style: const TextStyle(fontSize: 15, letterSpacing: .5)),
+                const SizedBox(height: 10.0),
+                Text('Email',
                     style: const TextStyle(
-                      color: Colors.yellow,
-                      fontSize: 26,
-                    ),
+                        color: Colors.grey, fontSize: 15, letterSpacing: .5)),
+                Text(
+                  state.firebaseUser?.email! as String,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    letterSpacing: 0.5,
                   ),
-                  const SizedBox(height: 8.0),
-                  Text(
-                    '( ${state.firebaseUser?.email!} )',
-                    style: const TextStyle(
-                      color: Colors.orange,
-                      fontSize: 20,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 24.0),
-                  const Text(
-                    'You are now signed in using your Google account. To sign out of your account, click the "Sign Out" button below.',
-                    style: TextStyle(
-                        color: Colors.grey, fontSize: 14, letterSpacing: 0.2),
-                  ),
-                  const SizedBox(height: 16.0),
-                  _signOutButton()
-                ],
-              ),
+                ),
+                const SizedBox(height: 24.0),
+                const SizedBox(height: 16.0),
+                _logOutButton()
+              ],
             ),
           ),
         );
@@ -121,8 +78,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _signOutButton() {
-    return _isSigningOut
+  Widget _profilePicture(User? profileUser) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Column(
+          children: [
+            profileUser?.photoURL != null
+                ? ClipOval(
+                    child: Material(
+                      color: Colors.grey,
+                      child: Image.network(
+                        profileUser?.photoURL! as String,
+                        fit: BoxFit.fitHeight,
+                      ),
+                    ),
+                  )
+                : const ClipOval(
+                    child: Material(
+                      color: Colors.grey,
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Icon(
+                          Icons.person,
+                          size: 60,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ),
+          ],
+        )
+      ],
+    );
+  }
+
+  Widget _logOutButton() {
+    return _isLoggingOut
         ? const CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
           )
@@ -139,18 +131,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             onPressed: () async {
               setState(() {
-                _isSigningOut = true;
+                _isLoggingOut = true;
               });
               await Authentication.signOut(context: context);
               setState(() {
-                _isSigningOut = false;
+                _isLoggingOut = false;
               });
+              context.read<AppBloc>().add(AppLogoutRequested());
               Navigator.of(context).pushReplacement(_routeToSignInScreen());
             },
             child: const Padding(
               padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
               child: Text(
-                'Sign Out',
+                'Log Out',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
