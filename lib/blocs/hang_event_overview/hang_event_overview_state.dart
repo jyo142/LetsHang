@@ -13,7 +13,7 @@ class HangEventsLoading extends HangEventOverviewState {}
 class HangEventsRetrieved extends HangEventOverviewState {
   final List<HangEvent> hangEvents;
 
-  HangEventsRetrieved({this.hangEvents = const <HangEvent>[]});
+  const HangEventsRetrieved({this.hangEvents = const <HangEvent>[]});
 
   @override
   List<Object> get props => [hangEvents];

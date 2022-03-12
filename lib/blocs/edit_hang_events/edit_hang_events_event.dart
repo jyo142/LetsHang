@@ -1,15 +1,14 @@
 import 'package:equatable/equatable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:letshang/models/hang_event_model.dart';
 
-abstract class EventsEvent extends Equatable {
-  const EventsEvent();
+abstract class EditHangEventsEvent extends Equatable {
+  const EditHangEventsEvent();
 
   @override
   List<Object> get props => [];
 }
 
-class EventNameChanged extends EventsEvent {
+class EventNameChanged extends EditHangEventsEvent {
   const EventNameChanged(this.eventName);
 
   final String eventName;
@@ -18,7 +17,7 @@ class EventNameChanged extends EventsEvent {
   List<Object> get props => [eventName];
 }
 
-class EventDescriptionChanged extends EventsEvent {
+class EventDescriptionChanged extends EditHangEventsEvent {
   const EventDescriptionChanged(this.eventDescription);
 
   final String eventDescription;
@@ -27,7 +26,7 @@ class EventDescriptionChanged extends EventsEvent {
   List<Object> get props => [eventDescription];
 }
 
-class EventDateChanged extends EventsEvent {
+class EventDateChanged extends EditHangEventsEvent {
   const EventDateChanged(this.eventDate);
 
   final DateTime eventDate;
@@ -36,7 +35,11 @@ class EventDateChanged extends EventsEvent {
   List<Object> get props => [eventDate];
 }
 
-class EventSaved extends EventsEvent {
+class EventSaved extends EditHangEventsEvent {
+  final HangEvent event;
+
+  const EventSaved({required this.event});
+
   @override
-  List<Object> get props => [];
+  List<Object> get props => [event];
 }

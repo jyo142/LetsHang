@@ -29,14 +29,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Flexible(
-                    //   flex: 1,
-                    //   child: Image.asset(
-                    //     'assets/firebase_logo.png',
-                    //     height: 160,
-                    //   ),
-                    // ),
+                  children: const [
                     SizedBox(height: 20),
                     Text(
                       'Let\'s Hang',
@@ -52,11 +45,11 @@ class _SignInScreenState extends State<SignInScreen> {
                 future: Authentication.initializeFirebase(context: context),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    return Text('Error initializing Firebase');
+                    return const Text('Error initializing Firebase');
                   } else if (snapshot.connectionState == ConnectionState.done) {
                     return GoogleSignInButton();
                   }
-                  return CircularProgressIndicator(
+                  return const CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(
                       Colors.orange,
                     ),

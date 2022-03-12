@@ -14,7 +14,7 @@ class _AppScreenState extends State {
   int _currentIndex = 0;
   final List _children = [
     const HomeScreen(),
-    PlaceholderWidget(Colors.deepOrange),
+    const PlaceholderWidget(Colors.deepOrange),
     const ProfileScreen()
   ];
   @override
@@ -24,12 +24,12 @@ class _AppScreenState extends State {
       bottomNavigationBar: BottomNavigationBar(
         onTap: onTabTapped,
         currentIndex: _currentIndex,
-        items: [
+        items: const [
           BottomNavigationBarItem(
-            icon: new Icon(Icons.home),
+            icon: Icon(Icons.home),
             label: 'Home',
           ),
-          BottomNavigationBarItem(icon: new Icon(Icons.group), label: 'Groups'),
+          BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Groups'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile')
         ],
       ),

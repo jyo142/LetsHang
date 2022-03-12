@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:letshang/blocs/events/events_bloc.dart';
-import 'package:letshang/blocs/events/events_event.dart';
-import 'package:letshang/blocs/events/events_state.dart';
+import 'package:letshang/blocs/edit_hang_events/edit_hang_events_bloc.dart';
+import 'package:letshang/blocs/edit_hang_events/edit_hang_events_event.dart';
+import 'package:letshang/blocs/edit_hang_events/edit_hang_events_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/models/hang_event_model.dart';
+import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
+import 'package:letshang/screens/home_screen.dart';
 
 class EditEventScreen extends StatefulWidget {
-  const EditEventScreen({Key? key}) : super(key: key);
+  final HangEvent? curEvent;
+  const EditEventScreen({Key? key, this.curEvent}) : super(key: key);
 
   @override
   _EditEventScreenState createState() => _EditEventScreenState();
@@ -15,8 +19,8 @@ class EditEventScreen extends StatefulWidget {
 class _EditEventScreenState extends State<EditEventScreen> {
   final _formKey = GlobalKey<FormState>();
   DateTime selectedDate = DateTime.now();
-  TimeOfDay selectedStartTime = TimeOfDay(hour: 0, minute: 0);
-  TimeOfDay selectedEndTime = TimeOfDay(hour: 0, minute: 0);
+  TimeOfDay selectedStartTime = const TimeOfDay(hour: 0, minute: 0);
+  TimeOfDay selectedEndTime = const TimeOfDay(hour: 0, minute: 0);
   bool isAllDayEvent = false;
 
   Future<void> _selectDate(BuildContext context) async {
@@ -26,14 +30,14 @@ class _EditEventScreenState extends State<EditEventScreen> {
         initialDate: todaysDate,
         firstDate: todaysDate,
         lastDate: DateTime(2101));
-    if (picked != null && picked != selectedDate)
+    if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
       });
+    }
   }
 
   Future<void> _selectStartTime(BuildContext context) async {
-    TimeOfDay beginningOfDay = TimeOfDay(hour: 0, minute: 0);
     final TimeOfDay? timeOfDay = await showTimePicker(
       context: context,
       initialTime: selectedStartTime,
@@ -47,7 +51,6 @@ class _EditEventScreenState extends State<EditEventScreen> {
   }
 
   Future<void> _selectEndTime(BuildContext context) async {
-    TimeOfDay beginningOfDay = TimeOfDay(hour: 0, minute: 0);
     final TimeOfDay? timeOfDay = await showTimePicker(
       context: context,
       initialTime: selectedStartTime,
@@ -61,7 +64,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
   }
 
   String _changeTimeToString(TimeOfDay tod) {
-    final now = new DateTime.now();
+    final now = DateTime.now();
     final dt = DateTime(now.year, now.month, now.day, tod.hour, tod.minute);
     final format = DateFormat.jm(); //"6:00 AM"
     return format.format(dt);
@@ -71,14 +74,15 @@ class _EditEventScreenState extends State<EditEventScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: BlocProvider(
-      create: (context) => EventsBloc(),
+      create: (context) =>
+          EditHangEventsBloc(hangEventRepository: HangEventRepository()),
       child: SafeArea(
           child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('When'),
+            const Text('When'),
             Row(children: [
               Checkbox(
                 value: isAllDayEvent,
@@ -88,27 +92,27 @@ class _EditEventScreenState extends State<EditEventScreen> {
                   });
                 },
               ),
-              Text('All day event')
+              const Text('All day event')
             ]), //Checkbox],),
             Row(
               children: [
                 Text(DateFormat('MM/dd/yyyy').format(selectedDate)),
                 IconButton(
-                  icon: new Icon(Icons.calendar_today_rounded),
+                  icon: const Icon(Icons.calendar_today_rounded),
                   highlightColor: Colors.pink,
                   onPressed: () => _selectDate(context),
                 ),
                 if (!isAllDayEvent) ...[
                   Text(_changeTimeToString(selectedStartTime)),
                   IconButton(
-                    icon: new Icon(Icons.timer),
+                    icon: const Icon(Icons.timer),
                     highlightColor: Colors.pink,
                     onPressed: () => _selectStartTime(context),
                   ),
-                  Text('to'),
+                  const Text('to'),
                   Text(_changeTimeToString(selectedEndTime)),
                   IconButton(
-                    icon: new Icon(Icons.timer),
+                    icon: const Icon(Icons.timer),
                     highlightColor: Colors.pink,
                     onPressed: () => _selectEndTime(context),
                   ),
@@ -117,7 +121,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
             ),
             ..._nameFields(),
             ..._detailsFields(),
-            Text('Location'),
+            const Text('Location'),
             ..._submitButton(),
           ],
         ),
@@ -127,30 +131,11 @@ class _EditEventScreenState extends State<EditEventScreen> {
 
   List<Widget> _nameFields() {
     return [
-      Text('Name *'),
-      BlocBuilder<EventsBloc, EventsState>(
+      const Text('Name *'),
+      BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
         builder: (context, state) {
           return TextFormField(
-              // The validator receives the text that the user has entered.
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter some text';
-                }
-                return null;
-              },
-              onChanged: (value) =>
-                  context.read<EventsBloc>().add(EventNameChanged(value)));
-        },
-      )
-    ];
-  }
-
-  List<Widget> _detailsFields() {
-    return [
-      Text('Details'),
-      BlocBuilder<EventsBloc, EventsState>(
-        builder: (context, state) {
-          return TextFormField(
+              initialValue: widget.curEvent?.eventName ?? "",
               // The validator receives the text that the user has entered.
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -159,7 +144,29 @@ class _EditEventScreenState extends State<EditEventScreen> {
                 return null;
               },
               onChanged: (value) => context
-                  .read<EventsBloc>()
+                  .read<EditHangEventsBloc>()
+                  .add(EventNameChanged(value)));
+        },
+      )
+    ];
+  }
+
+  List<Widget> _detailsFields() {
+    return [
+      const Text('Details'),
+      BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
+        builder: (context, state) {
+          return TextFormField(
+              initialValue: widget.curEvent?.eventDescription ?? "",
+              // The validator receives the text that the user has entered.
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter some text';
+                }
+                return null;
+              },
+              onChanged: (value) => context
+                  .read<EditHangEventsBloc>()
                   .add(EventDescriptionChanged(value)));
         },
       )
@@ -168,7 +175,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
 
   List<Widget> _submitButton() {
     return [
-      BlocBuilder<EventsBloc, EventsState>(
+      BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
         builder: (context, state) {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -181,8 +188,21 @@ class _EditEventScreenState extends State<EditEventScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Processing Data')),
                   );
+                  context.read<EditHangEventsBloc>().add(EventSaved(
+                      event: HangEvent(
+                          id: widget.curEvent?.id ?? "test",
+                          eventName: state.eventName,
+                          eventDescription: state.eventDescription,
+                          eventDate: state.eventDate)));
+
+                  // after the event is saved go back to home screen
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => const HomeScreen(),
+                    ),
+                  );
                 } else {
-                  context.read<EventsBloc>().add(EventSaved());
+                  // not validated
                 }
               },
               child: const Text('Submit'),

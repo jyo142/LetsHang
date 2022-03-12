@@ -41,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           onPressed: () async {
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
-                                builder: (context) => EditEventScreen(),
+                                builder: (context) => const EditEventScreen(),
                               ),
                             );
                           },
@@ -59,9 +59,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(height: 20.0),
-                        Text(
+                        const Text(
                           'My Past Events',
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: Colors.black,
                               fontSize: 20,
                               letterSpacing: .5),
@@ -69,11 +69,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 10.0),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
+                          children: const [
                             Text(
                               'No past events',
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: Colors.black,
                                   fontSize: 15,
                                   letterSpacing: .5),
@@ -86,10 +86,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Widget> _upcomingEvents() {
     return [
-      Text(
+      const Text(
         'My Upcoming Events',
-        style: const TextStyle(
-            color: Colors.black, fontSize: 20, letterSpacing: .5),
+        style: TextStyle(color: Colors.black, fontSize: 20, letterSpacing: .5),
       ),
       BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
         builder: (context, state) {
@@ -102,12 +101,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemCount: state.hangEvents.length,
                   itemBuilder: (BuildContext context, int index) {
                     return ListTile(
-                        leading: Icon(Icons.list),
+                        leading: IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (context) => EditEventScreen(
+                                  curEvent: state.hangEvents[index],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                         title: Text(state.hangEvents[index].eventName));
                   }),
             );
           } else {
-            return Text('Error');
+            return const Text('Error');
           }
         },
       )

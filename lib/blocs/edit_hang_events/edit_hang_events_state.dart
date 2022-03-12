@@ -1,21 +1,24 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:equatable/equatable.dart';
-
-class EventsState {
+class EditHangEventsState {
+  final String hangEventId;
   final String eventName;
   final String eventDescription;
   final DateTime eventDate;
 
-  EventsState(
-      {this.eventName = '', this.eventDescription = '', DateTime? eventDate})
+  EditHangEventsState(
+      {this.hangEventId = '',
+      this.eventName = '',
+      this.eventDescription = '',
+      DateTime? eventDate})
       : this.eventDate = eventDate ?? DateTime.now();
 
-  EventsState copyWith({
+  EditHangEventsState copyWith({
+    String? hangEventId,
     String? eventName,
     String? eventDescription,
     DateTime? eventDate,
   }) {
-    return EventsState(
+    return EditHangEventsState(
+      hangEventId: hangEventId ?? this.hangEventId,
       eventName: eventName ?? this.eventName,
       eventDescription: eventDescription ?? this.eventDescription,
       eventDate: eventDate ?? this.eventDate,

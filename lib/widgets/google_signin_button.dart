@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
-import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/app/app_event.dart';
 import 'package:letshang/screens/app_screen.dart';
 import 'package:letshang/utils/authentication.dart';
@@ -23,7 +22,7 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
 
   Widget _signInButton() {
     return _isSigningIn
-        ? CircularProgressIndicator(
+        ? const CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
           )
         : OutlinedButton(
@@ -64,13 +63,13 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
+        children: const <Widget>[
           Image(
             image: AssetImage("assets/google_logo.png"),
             height: 35.0,
           ),
           Padding(
-            padding: const EdgeInsets.only(left: 10),
+            padding: EdgeInsets.only(left: 10),
             child: Text(
               'Sign in with Google',
               style: TextStyle(

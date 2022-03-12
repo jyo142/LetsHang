@@ -19,7 +19,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Route _routeToSignInScreen() {
     return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => SignInScreen(),
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          const SignInScreen(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         var begin = const Offset(-1.0, 0.0);
         var end = Offset.zero;
@@ -49,16 +50,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 _profilePicture(state.firebaseUser),
                 const SizedBox(height: 8.0),
-                Text(
+                const Text(
                   'Name',
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: Colors.grey, fontSize: 15, letterSpacing: .5),
                 ),
                 Text('${state.firebaseUser?.displayName!}',
                     style: const TextStyle(fontSize: 15, letterSpacing: .5)),
                 const SizedBox(height: 10.0),
-                Text('Email',
-                    style: const TextStyle(
+                const Text('Email',
+                    style: TextStyle(
                         color: Colors.grey, fontSize: 15, letterSpacing: .5)),
                 Text(
                   state.firebaseUser?.email! as String,

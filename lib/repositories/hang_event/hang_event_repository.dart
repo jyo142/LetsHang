@@ -17,4 +17,19 @@ class HangEventRepository extends BaseHangEventRepository {
       return snapshot.docs.map((doc) => HangEvent.fromSnapshot(doc)).toList();
     });
   }
+
+  @override
+  Future<void> addHangEvent(HangEvent hangEvent) {
+    return _firebaseFirestore
+        .collection('hangEvents')
+        .add(hangEvent.toDocument());
+  }
+
+  @override
+  Future<void> editHangEvent(HangEvent hangEvent) {
+    return _firebaseFirestore
+        .collection('hangEvents')
+        .doc(hangEvent.id)
+        .set(hangEvent.toDocument());
+  }
 }
