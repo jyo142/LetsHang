@@ -4,6 +4,8 @@ import 'package:letshang/screens/profile_screen.dart';
 import 'placeholder_widget.dart';
 
 class AppScreen extends StatefulWidget {
+  const AppScreen({Key? key}) : super(key: key);
+
   @override
   State createState() {
     return _AppScreenState();

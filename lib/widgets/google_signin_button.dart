@@ -49,7 +49,7 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
                 context.read<AppBloc>().add(AppUserLoggedIn(user));
                 Navigator.of(context).pushReplacement(
                   MaterialPageRoute(
-                    builder: (context) => AppScreen(),
+                    builder: (context) => const AppScreen(),
                   ),
                 );
               }

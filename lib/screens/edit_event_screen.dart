@@ -7,6 +7,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
 import 'package:letshang/screens/home_screen.dart';
+import 'package:letshang/assets/Constants.dart' as constants;
+import 'package:letshang/services/message_service.dart';
 
 class EditEventScreen extends StatefulWidget {
   final HangEvent? curEvent;
@@ -18,21 +20,70 @@ class EditEventScreen extends StatefulWidget {
 
 class _EditEventScreenState extends State<EditEventScreen> {
   final _formKey = GlobalKey<FormState>();
-  DateTime selectedDate = DateTime.now();
-  TimeOfDay selectedStartTime = const TimeOfDay(hour: 0, minute: 0);
-  TimeOfDay selectedEndTime = const TimeOfDay(hour: 0, minute: 0);
+  late DateTime selectedStartDate;
+  late DateTime selectedEndDate;
+  late TimeOfDay selectedStartTime;
+  late TimeOfDay selectedEndTime;
   bool isAllDayEvent = false;
 
-  Future<void> _selectDate(BuildContext context) async {
+  void initState() {
+    if (widget.curEvent != null) {
+      selectedStartDate = widget.curEvent!.eventStartDate;
+      selectedStartTime =
+          TimeOfDay.fromDateTime(widget.curEvent!.eventStartDate);
+
+      selectedEndDate = widget.curEvent!.eventEndDate;
+      selectedEndTime = TimeOfDay.fromDateTime(widget.curEvent!.eventEndDate);
+    } else {
+      // if we are creating a new event, then make sure the dates round up to the next hour
+      selectedStartDate = _roundDateToNextHour(DateTime.now());
+      selectedStartTime = TimeOfDay.fromDateTime(selectedStartDate);
+
+      selectedEndDate = _roundDateToNextHour(DateTime.now());
+      selectedEndTime = TimeOfDay.fromDateTime(selectedEndDate);
+    }
+    super.initState();
+  }
+
+  Future<void> _selectStartDate(BuildContext context) async {
     DateTime todaysDate = DateTime.now();
     final DateTime? picked = await showDatePicker(
         context: context,
-        initialDate: todaysDate,
+        initialDate: selectedStartDate,
         firstDate: todaysDate,
         lastDate: DateTime(2101));
-    if (picked != null && picked != selectedDate) {
+    if (picked != null && picked != selectedStartDate) {
+      // once a different date is picked, reset the start time.
       setState(() {
-        selectedDate = picked;
+        selectedStartDate = picked;
+        selectedStartTime = constants.startOfDay;
+        context.read<EditHangEventsBloc>().add(
+            EventStartDateTimeChanged(selectedStartDate, selectedStartTime));
+        if (selectedStartDate.isAfter(selectedEndDate)) {
+          // if the start date is after the end date, then we need to adjust the end date to be the start date
+          selectedEndDate = selectedStartDate;
+          selectedEndTime = constants.startOfDay;
+          context.read<EditHangEventsBloc>().add(
+              EventEndDateTimeChanged(selectedStartDate, selectedStartTime));
+        }
+      });
+    }
+  }
+
+  Future<void> _selectEndDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: selectedEndDate,
+        firstDate: selectedStartDate,
+        lastDate: DateTime(2101));
+    if (picked != null && picked != selectedEndDate) {
+      // once a different date is picked, reset the start time.
+      setState(() {
+        selectedEndDate = picked;
+        selectedEndTime = constants.startOfDay;
+        context
+            .read<EditHangEventsBloc>()
+            .add(EventEndDateTimeChanged(selectedEndDate, selectedEndTime));
       });
     }
   }
@@ -46,6 +97,8 @@ class _EditEventScreenState extends State<EditEventScreen> {
     if (timeOfDay != null && timeOfDay != selectedStartTime) {
       setState(() {
         selectedStartTime = timeOfDay;
+        context.read<EditHangEventsBloc>().add(
+            EventStartDateTimeChanged(selectedStartDate, selectedStartTime));
       });
     }
   }
@@ -53,14 +106,23 @@ class _EditEventScreenState extends State<EditEventScreen> {
   Future<void> _selectEndTime(BuildContext context) async {
     final TimeOfDay? timeOfDay = await showTimePicker(
       context: context,
-      initialTime: selectedStartTime,
+      initialTime: selectedEndTime,
       initialEntryMode: TimePickerEntryMode.dial,
     );
-    if (timeOfDay != null && timeOfDay != selectedStartTime) {
+    if (timeOfDay != null && timeOfDay != selectedEndTime) {
       setState(() {
         selectedEndTime = timeOfDay;
+        context
+            .read<EditHangEventsBloc>()
+            .add(EventEndDateTimeChanged(selectedEndDate, selectedEndTime));
       });
     }
+  }
+
+  DateTime _roundDateToNextHour(DateTime curDate) {
+    DateTime newDate = curDate.add(const Duration(hours: 1));
+    newDate = DateTime(newDate.year, newDate.month, newDate.day, newDate.hour);
+    return newDate;
   }
 
   String _changeTimeToString(TimeOfDay tod) {
@@ -82,42 +144,30 @@ class _EditEventScreenState extends State<EditEventScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('When'),
-            Row(children: [
-              Checkbox(
-                value: isAllDayEvent,
-                onChanged: (newValue) {
-                  setState(() {
-                    isAllDayEvent = newValue as bool;
-                  });
-                },
-              ),
-              const Text('All day event')
-            ]), //Checkbox],),
+            const Text('Date and Time *'),
             Row(
-              children: [
-                Text(DateFormat('MM/dd/yyyy').format(selectedDate)),
-                IconButton(
-                  icon: const Icon(Icons.calendar_today_rounded),
-                  highlightColor: Colors.pink,
-                  onPressed: () => _selectDate(context),
-                ),
-                if (!isAllDayEvent) ...[
-                  Text(_changeTimeToString(selectedStartTime)),
-                  IconButton(
-                    icon: const Icon(Icons.timer),
-                    highlightColor: Colors.pink,
-                    onPressed: () => _selectStartTime(context),
-                  ),
-                  const Text('to'),
-                  Text(_changeTimeToString(selectedEndTime)),
-                  IconButton(
-                    icon: const Icon(Icons.timer),
-                    highlightColor: Colors.pink,
-                    onPressed: () => _selectEndTime(context),
-                  ),
-                ],
-              ],
+              children: _startDateTimeFields(),
+              // if (!isAllDayEvent) ...[
+              //   Text(_changeTimeToString(selectedStartTime)),
+              //   IconButton(
+              //     icon: const Icon(Icons.timer),
+              //     highlightColor: Colors.pink,
+              //     onPressed: () => _selectStartTime(context),
+              //   ),
+              //   const Text('to'),
+              //   Text(_changeTimeToString(selectedEndTime)),
+              //   IconButton(
+              //     icon: const Icon(Icons.timer),
+              //     highlightColor: Colors.pink,
+              //     onPressed: () => _selectEndTime(context),
+              //   ),
+              // ],
+            ),
+            Row(
+              children: const [Text("to")],
+            ),
+            Row(
+              children: _endDateTimeFields(),
             ),
             ..._nameFields(),
             ..._detailsFields(),
@@ -127,6 +177,56 @@ class _EditEventScreenState extends State<EditEventScreen> {
         ),
       )),
     ));
+  }
+
+  List<Widget> _startDateTimeFields() {
+    return [
+      Text(DateFormat('MM/dd/yyyy').format(selectedStartDate)),
+      BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
+        builder: (context, state) {
+          return IconButton(
+            icon: const Icon(Icons.calendar_today_rounded),
+            highlightColor: Colors.pink,
+            onPressed: () => _selectStartDate(context),
+          );
+        },
+      ),
+      Text(_changeTimeToString(selectedStartTime)),
+      BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
+        builder: (context, state) {
+          return IconButton(
+            icon: const Icon(Icons.access_time),
+            highlightColor: Colors.pink,
+            onPressed: () => _selectStartTime(context),
+          );
+        },
+      ),
+    ];
+  }
+
+  List<Widget> _endDateTimeFields() {
+    return [
+      Text(DateFormat('MM/dd/yyyy').format(selectedEndDate)),
+      BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
+        builder: (context, state) {
+          return IconButton(
+            icon: const Icon(Icons.calendar_today_rounded),
+            highlightColor: Colors.pink,
+            onPressed: () => _selectEndDate(context),
+          );
+        },
+      ),
+      Text(_changeTimeToString(selectedEndTime)),
+      BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
+        builder: (context, state) {
+          return IconButton(
+            icon: const Icon(Icons.access_time),
+            highlightColor: Colors.pink,
+            onPressed: () => _selectEndTime(context),
+          );
+        },
+      ),
+    ];
   }
 
   List<Widget> _nameFields() {
@@ -190,10 +290,14 @@ class _EditEventScreenState extends State<EditEventScreen> {
                   );
                   context.read<EditHangEventsBloc>().add(EventSaved(
                       event: HangEvent(
-                          id: widget.curEvent?.id ?? "test",
+                          id: widget.curEvent?.id ?? "",
                           eventName: state.eventName,
                           eventDescription: state.eventDescription,
-                          eventDate: state.eventDate)));
+                          eventStartDate: state.eventStartDate,
+                          eventEndDate: state.eventEndDate)));
+
+                  MessageService.showSuccessMessage(
+                      content: "Event saved successfully", context: context);
 
                   // after the event is saved go back to home screen
                   Navigator.of(context).pushReplacement(

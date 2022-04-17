@@ -21,8 +21,26 @@ class EditHangEventsBloc
       yield state.copyWith(eventName: event.eventName);
     } else if (event is EventDescriptionChanged) {
       yield state.copyWith(eventDescription: event.eventDescription);
-    } else if (event is EventDateChanged) {
-      yield state.copyWith(eventDate: event.eventDate);
+    } else if (event is EventStartDateTimeChanged) {
+      // need to combine both the DateTime and TimeOfDay
+      DateTime newStartDateTime = DateTime(
+          event.eventStartDate.year,
+          event.eventStartDate.month,
+          event.eventStartDate.day,
+          event.eventStartTime.hour,
+          event.eventStartTime.minute);
+
+      yield state.copyWith(eventStartDate: newStartDateTime);
+    } else if (event is EventEndDateTimeChanged) {
+      // need to combine both the DateTime and TimeOfDay
+      DateTime newEventEndDateTime = DateTime(
+          event.eventEndDate.year,
+          event.eventEndDate.month,
+          event.eventEndDate.day,
+          event.eventEndTime.hour,
+          event.eventEndTime.minute);
+
+      yield state.copyWith(eventEndDate: newEventEndDateTime);
     } else if (event is EventSaved) {
       yield* _mapEventSavedState(event, state);
     } else {
@@ -35,7 +53,7 @@ class EditHangEventsBloc
     _hangEventSubscription?.cancel();
     try {
       HangEvent savingEvent = eventSavedEvent.event;
-      if (savingEvent.id.isEmpty) {
+      if (savingEvent.id.isNotEmpty) {
         // this event is being edited if an id is present
         await _hangEventRepository.editHangEvent(eventSavedEvent.event);
       } else {

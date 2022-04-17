@@ -11,4 +11,15 @@ class MessageService {
       ),
     ));
   }
+
+  static void showSuccessMessage(
+      {required String content, required BuildContext context}) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      backgroundColor: Colors.green,
+      content: Text(
+        content,
+        style: const TextStyle(color: Colors.white, letterSpacing: 0.5),
+      ),
+    ));
+  }
 }

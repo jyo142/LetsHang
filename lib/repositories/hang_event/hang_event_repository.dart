@@ -12,6 +12,7 @@ class HangEventRepository extends BaseHangEventRepository {
   Stream<List<HangEvent>> getAllEvents() {
     return _firebaseFirestore
         .collection('hangEvents')
+        .orderBy('startDateTime')
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) => HangEvent.fromSnapshot(doc)).toList();

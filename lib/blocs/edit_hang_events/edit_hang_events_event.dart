@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:letshang/models/hang_event_model.dart';
 
 abstract class EditHangEventsEvent extends Equatable {
@@ -26,13 +27,23 @@ class EventDescriptionChanged extends EditHangEventsEvent {
   List<Object> get props => [eventDescription];
 }
 
-class EventDateChanged extends EditHangEventsEvent {
-  const EventDateChanged(this.eventDate);
+class EventStartDateTimeChanged extends EditHangEventsEvent {
+  const EventStartDateTimeChanged(this.eventStartDate, this.eventStartTime);
 
-  final DateTime eventDate;
+  final DateTime eventStartDate;
+  final TimeOfDay eventStartTime;
 
   @override
-  List<Object> get props => [eventDate];
+  List<Object> get props => [eventStartDate];
+}
+
+class EventEndDateTimeChanged extends EditHangEventsEvent {
+  const EventEndDateTimeChanged(this.eventEndDate, this.eventEndTime);
+
+  final DateTime eventEndDate;
+  final TimeOfDay eventEndTime;
+  @override
+  List<Object> get props => [eventEndDate];
 }
 
 class EventSaved extends EditHangEventsEvent {
