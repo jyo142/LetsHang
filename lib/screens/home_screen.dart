@@ -16,8 +16,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: BlocProvider(
+    return Scaffold(
+        body: BlocProvider(
             create: (context) => HangEventOverviewBloc(
                 hangEventRepository: HangEventRepository())
               ..add(LoadHangEvents()),
@@ -41,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           onPressed: () async {
-                            Navigator.of(context).pushReplacement(
+                            Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (context) => const EditEventScreen(),
                               ),
@@ -136,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: IconButton(
                 icon: const Icon(Icons.edit),
                 onPressed: () {
-                  Navigator.of(context).pushReplacement(
+                  Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => EditEventScreen(
                         curEvent: events[index],

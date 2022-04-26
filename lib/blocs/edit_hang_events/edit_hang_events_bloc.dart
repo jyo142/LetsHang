@@ -10,9 +10,16 @@ class EditHangEventsBloc
   final HangEventRepository _hangEventRepository;
   StreamSubscription? _hangEventSubscription;
   // constructor
-  EditHangEventsBloc({required HangEventRepository hangEventRepository})
+  EditHangEventsBloc(
+      {required HangEventRepository hangEventRepository,
+      HangEvent? curHangEvent})
       : _hangEventRepository = hangEventRepository,
-        super(EditHangEventsState());
+        super(EditHangEventsState(
+            eventName: curHangEvent != null ? curHangEvent.eventName : '',
+            eventDescription:
+                curHangEvent != null ? curHangEvent.eventDescription : '',
+            eventStartDate: curHangEvent?.eventStartDate,
+            eventEndDate: curHangEvent?.eventEndDate));
 
   @override
   Stream<EditHangEventsState> mapEventToState(

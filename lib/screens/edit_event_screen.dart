@@ -6,9 +6,9 @@ import 'package:letshang/blocs/edit_hang_events/edit_hang_events_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
-import 'package:letshang/screens/home_screen.dart';
 import 'package:letshang/assets/Constants.dart' as constants;
 import 'package:letshang/services/message_service.dart';
+import 'package:letshang/utils/date_time_utils.dart';
 
 class EditEventScreen extends StatefulWidget {
   final HangEvent? curEvent;
@@ -63,8 +63,9 @@ class _EditEventScreenState extends State<EditEventScreen> {
           // if the start date is after the end date, then we need to adjust the end date to be the start date
           selectedEndDate = selectedStartDate;
           selectedEndTime = constants.startOfDay;
-          context.read<EditHangEventsBloc>().add(
-              EventEndDateTimeChanged(selectedStartDate, selectedStartTime));
+          context
+              .read<EditHangEventsBloc>()
+              .add(EventEndDateTimeChanged(selectedEndDate, selectedEndTime));
         }
       });
     }
@@ -99,6 +100,19 @@ class _EditEventScreenState extends State<EditEventScreen> {
         selectedStartTime = timeOfDay;
         context.read<EditHangEventsBloc>().add(
             EventStartDateTimeChanged(selectedStartDate, selectedStartTime));
+
+        DateTime curStartDateTime = DateTimeUtils.getCurrentDateTime(
+            date: selectedStartDate, timeOfDay: selectedStartTime);
+        DateTime curEndDateTime = DateTimeUtils.getCurrentDateTime(
+            date: selectedEndDate, timeOfDay: selectedEndTime);
+        if (curStartDateTime.compareTo(curEndDateTime) >= 0) {
+          // if the start date is after the end date, then we need to adjust the end date to be the start date
+          selectedEndDate = selectedStartDate;
+          selectedEndTime = selectedStartTime;
+          context
+              .read<EditHangEventsBloc>()
+              .add(EventEndDateTimeChanged(selectedEndDate, selectedEndTime));
+        }
       });
     }
   }
@@ -115,6 +129,20 @@ class _EditEventScreenState extends State<EditEventScreen> {
         context
             .read<EditHangEventsBloc>()
             .add(EventEndDateTimeChanged(selectedEndDate, selectedEndTime));
+
+        DateTime curStartDateTime = DateTimeUtils.getCurrentDateTime(
+            date: selectedStartDate, timeOfDay: selectedStartTime);
+        DateTime curEndDateTime = DateTimeUtils.getCurrentDateTime(
+            date: selectedEndDate, timeOfDay: selectedEndTime);
+        if (curStartDateTime.isAfter(curEndDateTime)) {
+          selectedEndDate = selectedStartDate;
+          selectedEndTime = selectedStartTime;
+          context.read<EditHangEventsBloc>().add(
+              EventStartDateTimeChanged(selectedStartDate, selectedStartTime));
+          MessageService.showErrorMessage(
+              content: 'End date cannot be before the start date',
+              context: context);
+        }
       });
     }
   }
@@ -136,46 +164,46 @@ class _EditEventScreenState extends State<EditEventScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: BlocProvider(
-      create: (context) =>
-          EditHangEventsBloc(hangEventRepository: HangEventRepository()),
+      create: (context) => EditHangEventsBloc(
+          hangEventRepository: HangEventRepository(),
+          curHangEvent: widget.curEvent),
       child: SafeArea(
-          child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Date and Time *'),
-            Row(
-              children: _startDateTimeFields(),
-              // if (!isAllDayEvent) ...[
-              //   Text(_changeTimeToString(selectedStartTime)),
-              //   IconButton(
-              //     icon: const Icon(Icons.timer),
-              //     highlightColor: Colors.pink,
-              //     onPressed: () => _selectStartTime(context),
-              //   ),
-              //   const Text('to'),
-              //   Text(_changeTimeToString(selectedEndTime)),
-              //   IconButton(
-              //     icon: const Icon(Icons.timer),
-              //     highlightColor: Colors.pink,
-              //     onPressed: () => _selectEndTime(context),
-              //   ),
-              // ],
-            ),
-            Row(
-              children: const [Text("to")],
-            ),
-            Row(
-              children: _endDateTimeFields(),
-            ),
-            ..._nameFields(),
-            ..._detailsFields(),
-            const Text('Location'),
-            ..._submitButton(),
-          ],
-        ),
-      )),
+          child: Padding(
+              padding: const EdgeInsets.only(
+                  left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Date and Time *'),
+                    Row(
+                      children: _startDateTimeFields(),
+                    ),
+                    Row(
+                      children: const [Text("to")],
+                    ),
+                    Row(
+                      children: _endDateTimeFields(),
+                    ),
+                    ..._nameFields(),
+                    ..._detailsFields(),
+                    const Text('Location'),
+                    Row(
+                      children: [
+                        _submitButton(),
+                        ElevatedButton(
+                          onPressed: () {
+                            // after the event is saved go back to home screen
+                            Navigator.of(context, rootNavigator: true).pop();
+                          },
+                          child: const Text('Cancel'),
+                        )
+                      ],
+                    )
+                  ],
+                ),
+              ))),
     ));
   }
 
@@ -273,47 +301,41 @@ class _EditEventScreenState extends State<EditEventScreen> {
     ];
   }
 
-  List<Widget> _submitButton() {
-    return [
-      BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
-        builder: (context, state) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: ElevatedButton(
-              onPressed: () {
-                // Validate returns true if the form is valid, or false otherwise.
-                if (_formKey.currentState!.validate()) {
-                  // If the form is valid, display a snackbar. In the real world,
-                  // you'd often call a server or save the information in a database.
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Processing Data')),
-                  );
-                  context.read<EditHangEventsBloc>().add(EventSaved(
-                      event: HangEvent(
-                          id: widget.curEvent?.id ?? "",
-                          eventName: state.eventName,
-                          eventDescription: state.eventDescription,
-                          eventStartDate: state.eventStartDate,
-                          eventEndDate: state.eventEndDate)));
+  Widget _submitButton() {
+    return BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
+      builder: (context, state) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          child: ElevatedButton(
+            onPressed: () {
+              // Validate returns true if the form is valid, or false otherwise.
+              if (_formKey.currentState!.validate()) {
+                // If the form is valid, display a snackbar. In the real world,
+                // you'd often call a server or save the information in a database.
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Processing Data')),
+                );
+                context.read<EditHangEventsBloc>().add(EventSaved(
+                    event: HangEvent(
+                        id: widget.curEvent?.id ?? "",
+                        eventName: state.eventName,
+                        eventDescription: state.eventDescription,
+                        eventStartDate: state.eventStartDate,
+                        eventEndDate: state.eventEndDate)));
 
-                  MessageService.showSuccessMessage(
-                      content: "Event saved successfully", context: context);
+                MessageService.showSuccessMessage(
+                    content: "Event saved successfully", context: context);
 
-                  // after the event is saved go back to home screen
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => const HomeScreen(),
-                    ),
-                  );
-                } else {
-                  // not validated
-                }
-              },
-              child: const Text('Submit'),
-            ),
-          );
-        },
-      )
-    ];
+                // after the event is saved go back to home screen
+                Navigator.pop(context);
+              } else {
+                // not validated
+              }
+            },
+            child: const Text('Submit'),
+          ),
+        );
+      },
+    );
   }
 }
