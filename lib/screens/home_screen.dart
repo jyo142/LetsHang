@@ -68,9 +68,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Widget> _upcomingEvents() {
     return [
-      const Text(
+      Text(
         'My Upcoming Events',
-        style: TextStyle(color: Colors.black, fontSize: 20, letterSpacing: .5),
+        style: Theme.of(context).textTheme.headline5,
       ),
       BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
         builder: (context, state) {
@@ -81,11 +81,10 @@ class _HomeScreenState extends State<HomeScreen> {
             if (state.currentUpcomingHangEvents.isNotEmpty) {
               return _eventListView(state.currentUpcomingHangEvents);
             } else {
-              return const Text(
+              return Text(
                 'No upcoming events',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: Colors.black, fontSize: 15, letterSpacing: .5),
+                style: Theme.of(context).textTheme.bodyText1,
               );
             }
           } else {
@@ -98,9 +97,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Widget> _pastEvents() {
     return [
-      const Text(
+      Text(
         'My Past Events',
-        style: TextStyle(color: Colors.black, fontSize: 20, letterSpacing: .5),
+        style: Theme.of(context).textTheme.headline5,
       ),
       BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
         builder: (context, state) {
@@ -111,11 +110,10 @@ class _HomeScreenState extends State<HomeScreen> {
             if (state.pastHangEvents.isNotEmpty) {
               return _eventListView(state.pastHangEvents);
             } else {
-              return const Text(
+              return Text(
                 'No past events',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: Colors.black, fontSize: 15, letterSpacing: .5),
+                style: Theme.of(context).textTheme.bodyText1,
               );
             }
           } else {

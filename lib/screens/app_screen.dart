@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:letshang/screens/groups_screen.dart';
 import 'package:letshang/screens/home_screen.dart';
 import 'package:letshang/screens/profile_screen.dart';
-import 'placeholder_widget.dart';
 
 class AppScreen extends StatefulWidget {
   const AppScreen({Key? key}) : super(key: key);
@@ -16,7 +16,7 @@ class _AppScreenState extends State {
   int _currentIndex = 0;
   final List _children = [
     const HomeScreen(),
-    const PlaceholderWidget(Colors.deepOrange),
+    const GroupsScreen(),
     const ProfileScreen()
   ];
   @override
