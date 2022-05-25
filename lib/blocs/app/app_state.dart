@@ -1,17 +1,41 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:equatable/equatable.dart';
-
-enum AppStatus {
-  authenticated,
-  unauthenticated,
-}
+import 'package:letshang/models/hang_user_model.dart';
 
 class AppState extends Equatable {
-  const AppState({this.status = AppStatus.unauthenticated, this.firebaseUser});
+  const AppState();
 
-  final AppStatus status;
+  @override
+  List<Object?> get props => [];
+}
+
+class AppLoginLoading extends AppState {}
+
+class AppLoginError extends AppState {
+  const AppLoginError({this.errorMessage});
+
+  final String? errorMessage;
+
+  @override
+  List<Object?> get props => [errorMessage];
+}
+
+class AppUnauthenticated extends AppState {}
+
+class AppNewUser extends AppState {
+  const AppNewUser({this.firebaseUser});
+
   final User? firebaseUser;
 
   @override
-  List<Object?> get props => [status, firebaseUser];
+  List<Object?> get props => [firebaseUser];
+}
+
+class AppAuthenticated extends AppState {
+  const AppAuthenticated({required this.user});
+
+  final HangUser user;
+
+  @override
+  List<Object> get props => [user];
 }

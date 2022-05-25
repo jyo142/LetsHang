@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:letshang/utils/authentication.dart';
+import 'package:letshang/blocs/app/app_bloc.dart';
+import 'package:letshang/blocs/app/app_state.dart';
+import 'package:letshang/blocs/app/app_event.dart';
+import 'package:letshang/services/authentication_service.dart';
 import 'package:letshang/widgets/google_signin_button.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({Key? key}) : super(key: key);
@@ -41,25 +45,60 @@ class _SignInScreenState extends State<SignInScreen> {
                   ],
                 ),
               ),
-              FutureBuilder(
-                future: Authentication.initializeFirebase(context: context),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return const Text('Error initializing Firebase');
-                  } else if (snapshot.connectionState == ConnectionState.done) {
-                    return GoogleSignInButton();
-                  }
-                  return const CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.orange,
-                    ),
-                  );
-                },
-              ),
+              _googleSignIn(),
+              _createAccountButton()
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _googleSignIn() {
+    return FutureBuilder(
+      future: AuthenticationService.initializeFirebase(context: context),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Text('Error initializing Firebase');
+        } else if (snapshot.connectionState == ConnectionState.done) {
+          return GoogleSignInButton();
+        }
+        return const CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(
+            Colors.orange,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _createAccountButton() {
+    return BlocBuilder<AppBloc, AppState>(
+      builder: (context, state) {
+        return OutlinedButton(
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(Colors.white),
+              shape: MaterialStateProperty.all(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(40),
+                ),
+              ),
+            ),
+            onPressed: () async {
+              context.read<AppBloc>().add(AppSignupRequested());
+            },
+            child: const Padding(
+              padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+              child: Text(
+                'Create Account',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2,
+                ),
+              ),
+            ));
+      },
     );
   }
 }

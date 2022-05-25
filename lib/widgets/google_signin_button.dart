@@ -1,10 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_event.dart';
+import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/screens/app_screen.dart';
-import 'package:letshang/utils/authentication.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/screens/sign_up_screen.dart';
+import 'package:letshang/services/message_service.dart';
 
 class GoogleSignInButton extends StatefulWidget {
   @override
@@ -12,8 +13,6 @@ class GoogleSignInButton extends StatefulWidget {
 }
 
 class _GoogleSignInButtonState extends State<GoogleSignInButton> {
-  bool _isSigningIn = false;
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -21,11 +20,18 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
   }
 
   Widget _signInButton() {
-    return _isSigningIn
-        ? const CircularProgressIndicator(
+    return BlocConsumer<AppBloc, AppState>(
+      builder: (context, state) {
+        if (state is AppLoginLoading) {
+          return const CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-          )
-        : OutlinedButton(
+          );
+        }
+        if (state is AppLoginError) {
+          MessageService.showErrorMessage(
+              content: state.errorMessage!, context: context);
+        }
+        return OutlinedButton(
             style: ButtonStyle(
               backgroundColor: MaterialStateProperty.all(Colors.white),
               shape: MaterialStateProperty.all(
@@ -35,26 +41,29 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
               ),
             ),
             onPressed: () async {
-              setState(() {
-                _isSigningIn = true;
-              });
-              User? user =
-                  await Authentication.signInWithGoogle(context: context);
-
-              setState(() {
-                _isSigningIn = false;
-              });
-
-              if (user != null) {
-                context.read<AppBloc>().add(AppUserLoggedIn(user));
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => const AppScreen(),
-                  ),
-                );
-              }
+              context.read<AppBloc>().add(AppLoginRequested());
             },
             child: _buttonContent());
+      },
+      listener: (context, state) {
+        if (state is AppAuthenticated) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const AppScreen(),
+            ),
+          );
+        }
+        if (state is AppNewUser) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => SignUpScreen(
+                firebaseUser: state.firebaseUser,
+              ),
+            ),
+          );
+        }
+      },
+    );
   }
 
   Widget _buttonContent() {

@@ -1,4 +1,6 @@
-class EditHangEventsState {
+import 'package:equatable/equatable.dart';
+
+class EditHangEventsState extends Equatable {
   final String hangEventId;
   final String eventName;
   final String eventDescription;
@@ -33,4 +35,8 @@ class EditHangEventsState {
       eventEndDate: eventEndDate ?? this.eventEndDate,
     );
   }
+
+  @override
+  List<Object> get props =>
+      [hangEventId, eventName, eventDescription, eventStartDate, eventEndDate];
 }
