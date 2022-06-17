@@ -18,16 +18,22 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
   Stream<SignUpState> mapEventToState(SignUpEvent event) async* {
     if (event is UserNameChanged) {
       yield state.copyWith(userName: event.userName);
+    } else if (event is NameChanged) {
+      yield state.copyWith(name: event.name);
+    } else if (event is EmailChanged) {
+      yield state.copyWith(email: event.email);
+    } else if (event is PhoneNumberChanged) {
+      yield state.copyWith(name: event.phoneNumber);
     } else if (event is CreateAccountRequested) {
       yield SignUpSubmitLoading(
           userName: event.userName, firebaseUser: event.firebaseUser);
-      yield* _mapEventSavedState(event, state);
+      yield* _mapSignupSubmitToState(event, state);
     } else {
       yield state;
     }
   }
 
-  Stream<SignUpState> _mapEventSavedState(
+  Stream<SignUpState> _mapSignupSubmitToState(
       CreateAccountRequested createAccountRequested,
       SignUpState signUpState) async* {
     _userSubscription?.cancel();
@@ -35,10 +41,21 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
       HangUser? existingUserNameUser =
           await _userRepository.getUserByUserName(signUpState.userName);
       if (existingUserNameUser == null) {
-        await _userRepository.addUser(
-            signUpState.userName, signUpState.firebaseUser!);
-        HangUser curHangUser = HangUser.fromFirebaseUser(
-            signUpState.userName, signUpState.firebaseUser!);
+        HangUser curHangUser;
+        if (signUpState.firebaseUser != null) {
+          // user came through the firebase signup flow
+          await _userRepository.addUser(
+              signUpState.userName, signUpState.firebaseUser!);
+          curHangUser = HangUser.fromFirebaseUser(
+              signUpState.userName, signUpState.firebaseUser!);
+        } else {
+          curHangUser = HangUser(
+              name: signUpState.name,
+              userName: signUpState.userName,
+              email: signUpState.email,
+              phoneNumber: signUpState.phoneNumber);
+        }
+
         yield SignUpUserCreated(user: curHangUser);
       } else {
         yield SignUpError(errorMessage: "Username already exists");

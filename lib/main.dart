@@ -4,8 +4,10 @@ import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:letshang/screens/sign_in_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/services/authentication_service.dart';
 
-void main() {
+void main() async {
+  await AuthenticationService.initializeFirebase();
   runApp(const MyApp());
 }
 

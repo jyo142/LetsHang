@@ -20,18 +20,18 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
+  late final isFirebaseSignup;
+  void initState() {
+    isFirebaseSignup = widget.firebaseUser != null;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => SignUpBloc(
-              userRepository: UserRepository(),
-              firebaseUser: widget.firebaseUser),
-        ),
-      ],
+        body: BlocProvider(
+      create: (context) => SignUpBloc(
+          userRepository: UserRepository(), firebaseUser: widget.firebaseUser),
       child: SafeArea(
           child: Padding(
               padding: const EdgeInsets.only(
@@ -39,6 +39,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               child: Form(
                 key: _formKey,
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
@@ -51,6 +52,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ],
                     ),
                     ..._userNameField(),
+                    if (!isFirebaseSignup) ...[
+                      ..._signUpTextField(
+                          "Name", (value) => NameChanged(value)),
+                      ..._signUpTextField(
+                          "Email", (value) => EmailChanged(value)),
+                      ..._signUpTextField(
+                          "Phone Number", (value) => PhoneNumberChanged(value)),
+                    ],
                     _submitButton(),
                   ],
                 ),
@@ -82,6 +91,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
               },
               onChanged: (value) =>
                   context.read<SignUpBloc>().add(UserNameChanged(value)));
+        },
+      )
+    ];
+  }
+
+  List<Widget> _signUpTextField(String text, Function signUpEvent) {
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            text,
+            style: Theme.of(context).textTheme.headline5,
+          ),
+        ],
+      ),
+      BlocBuilder<SignUpBloc, SignUpState>(
+        builder: (context, state) {
+          return TextFormField(
+              initialValue: "",
+              // The validator receives the text that the user has entered.
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter some text';
+                }
+                return null;
+              },
+              onChanged: (value) =>
+                  context.read<SignUpBloc>().add(signUpEvent(value)));
         },
       )
     ];

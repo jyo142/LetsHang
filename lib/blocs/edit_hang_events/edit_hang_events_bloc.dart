@@ -9,17 +9,17 @@ class EditHangEventsBloc
     extends Bloc<EditHangEventsEvent, EditHangEventsState> {
   final HangEventRepository _hangEventRepository;
   StreamSubscription? _hangEventSubscription;
+  final HangEvent? existingHangEvent;
   // constructor
   EditHangEventsBloc(
       {required HangEventRepository hangEventRepository,
-      HangEvent? curHangEvent})
+      this.existingHangEvent})
       : _hangEventRepository = hangEventRepository,
         super(EditHangEventsState(
-            eventName: curHangEvent != null ? curHangEvent.eventName : '',
-            eventDescription:
-                curHangEvent != null ? curHangEvent.eventDescription : '',
-            eventStartDate: curHangEvent?.eventStartDate,
-            eventEndDate: curHangEvent?.eventEndDate));
+            eventName: existingHangEvent?.eventName ?? '',
+            eventDescription: existingHangEvent?.eventDescription ?? '',
+            eventStartDate: existingHangEvent?.eventStartDate,
+            eventEndDate: existingHangEvent?.eventEndDate));
 
   @override
   Stream<EditHangEventsState> mapEventToState(
@@ -59,12 +59,17 @@ class EditHangEventsBloc
       EventSaved eventSavedEvent, EditHangEventsState eventsState) async* {
     _hangEventSubscription?.cancel();
     try {
-      HangEvent savingEvent = eventSavedEvent.event;
-      if (savingEvent.id.isNotEmpty) {
+      HangEvent savingEvent = HangEvent(
+          id: existingHangEvent?.id ?? "",
+          eventName: state.eventName,
+          eventDescription: state.eventDescription,
+          eventStartDate: state.eventStartDate,
+          eventEndDate: state.eventEndDate);
+      if (existingHangEvent != null) {
         // this event is being edited if an id is present
-        await _hangEventRepository.editHangEvent(eventSavedEvent.event);
+        await _hangEventRepository.editHangEvent(savingEvent);
       } else {
-        await _hangEventRepository.addHangEvent(eventSavedEvent.event);
+        await _hangEventRepository.addHangEvent(savingEvent);
       }
     } catch (_) {}
   }

@@ -5,14 +5,29 @@ import 'package:letshang/models/hang_user_model.dart';
 class SignUpState extends Equatable {
   final User? firebaseUser;
   final String userName;
+  final String? name;
+  final String? email;
+  final String? phoneNumber;
 
-  SignUpState({this.firebaseUser, this.userName = ''}) {}
+  SignUpState(
+      {this.firebaseUser,
+      this.userName = '',
+      this.name = '',
+      this.email = '',
+      this.phoneNumber = ''}) {}
 
-  SignUpState copyWith({User? firebaseUser, String? userName}) {
+  SignUpState copyWith(
+      {User? firebaseUser,
+      String? userName,
+      String? name,
+      String? email,
+      String? phoneNumber}) {
     return SignUpState(
-      firebaseUser: firebaseUser ?? this.firebaseUser,
-      userName: userName ?? this.userName,
-    );
+        firebaseUser: firebaseUser ?? this.firebaseUser,
+        userName: userName ?? this.userName,
+        name: name ?? this.name,
+        email: email ?? this.email,
+        phoneNumber: phoneNumber ?? this.phoneNumber);
   }
 
   @override

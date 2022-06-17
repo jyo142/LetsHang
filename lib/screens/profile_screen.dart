@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_event.dart';
 import 'package:letshang/blocs/app/app_state.dart';
+import 'package:letshang/blocs/profile/profile_bloc.dart';
+import 'package:letshang/blocs/profile/profile_event.dart';
+import 'package:letshang/blocs/profile/profile_state.dart';
+import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:letshang/screens/sign_in_screen.dart';
 import 'package:letshang/services/authentication_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/widgets/profile_pic.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -38,40 +43,64 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.only(
-            left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
-        child: _profileInformation(),
-      ),
-    );
+    return Scaffold(
+        body: BlocProvider(
+            create: (context) => ProfileBloc(
+                userRepository: UserRepository(),
+                userName: (context.read<AppBloc>().state as AppAuthenticated)
+                    .user
+                    .userName)
+              ..add(LoadProfile()),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
+                child: _profileInformation(),
+              ),
+            )));
   }
 
   Widget _profileInformation() {
-    return BlocBuilder<AppBloc, AppState>(builder: (context, state) {
-      if (state is AppAuthenticated) {
+    return BlocBuilder<ProfileBloc, ProfileState>(builder: (context, state) {
+      if (state is ProfileInfoLoading) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      if (state is ProfileInfoRetrieved) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _profilePicture(state.user.photoUrl),
+            ProfilePic(photoUrl: state.hangUser.photoUrl),
             const SizedBox(height: 8.0),
+            const Text(
+              'UserName',
+              style: TextStyle(
+                  color: Colors.grey, fontSize: 15, letterSpacing: .5),
+            ),
+            Text(state.hangUser.userName,
+                style: Theme.of(context).textTheme.bodyText1),
+            const SizedBox(height: 10.0),
             const Text(
               'Name',
               style: TextStyle(
                   color: Colors.grey, fontSize: 15, letterSpacing: .5),
             ),
-            Text('${state.user.name!}',
-                style: const TextStyle(fontSize: 15, letterSpacing: .5)),
+            Text(state.hangUser.name!,
+                style: Theme.of(context).textTheme.bodyText1),
             const SizedBox(height: 10.0),
             const Text('Email',
                 style: TextStyle(
                     color: Colors.grey, fontSize: 15, letterSpacing: .5)),
             Text(
-              state.user.email! as String,
-              style: const TextStyle(
-                fontSize: 15,
-                letterSpacing: 0.5,
-              ),
+              state.hangUser.email!,
+              style: Theme.of(context).textTheme.bodyText1,
+            ),
+            const SizedBox(height: 10.0),
+            const Text('Phone Number',
+                style: TextStyle(
+                    color: Colors.grey, fontSize: 15, letterSpacing: .5)),
+            Text(
+              state.hangUser.phoneNumber!,
+              style: Theme.of(context).textTheme.bodyText1,
             ),
             const SizedBox(height: 24.0),
             const SizedBox(height: 16.0),

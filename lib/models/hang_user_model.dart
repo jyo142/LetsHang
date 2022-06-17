@@ -45,5 +45,5 @@ class HangUser extends Equatable {
   }
 
   @override
-  List<Object?> get props => [name, userName, email, phoneNumber];
+  List<Object?> get props => [name, userName, email, phoneNumber, photoUrl];
 }

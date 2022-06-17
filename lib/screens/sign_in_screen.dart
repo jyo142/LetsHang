@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/app/app_event.dart';
-import 'package:letshang/services/authentication_service.dart';
 import 'package:letshang/widgets/google_signin_button.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -45,30 +44,12 @@ class _SignInScreenState extends State<SignInScreen> {
                   ],
                 ),
               ),
-              _googleSignIn(),
+              GoogleSignInButton(),
               _createAccountButton()
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _googleSignIn() {
-    return FutureBuilder(
-      future: AuthenticationService.initializeFirebase(context: context),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return const Text('Error initializing Firebase');
-        } else if (snapshot.connectionState == ConnectionState.done) {
-          return GoogleSignInButton();
-        }
-        return const CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(
-            Colors.orange,
-          ),
-        );
-      },
     );
   }
 

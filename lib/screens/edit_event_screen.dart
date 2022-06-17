@@ -166,7 +166,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
         body: BlocProvider(
       create: (context) => EditHangEventsBloc(
           hangEventRepository: HangEventRepository(),
-          curHangEvent: widget.curEvent),
+          existingHangEvent: widget.curEvent),
       child: SafeArea(
           child: Padding(
               padding: const EdgeInsets.only(
@@ -315,13 +315,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Processing Data')),
                 );
-                context.read<EditHangEventsBloc>().add(EventSaved(
-                    event: HangEvent(
-                        id: widget.curEvent?.id ?? "",
-                        eventName: state.eventName,
-                        eventDescription: state.eventDescription,
-                        eventStartDate: state.eventStartDate,
-                        eventEndDate: state.eventEndDate)));
+                context.read<EditHangEventsBloc>().add(EventSaved());
 
                 MessageService.showSuccessMessage(
                     content: "Event saved successfully", context: context);

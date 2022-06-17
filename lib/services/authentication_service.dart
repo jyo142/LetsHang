@@ -5,23 +5,9 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:letshang/services/message_service.dart';
 
 class AuthenticationService {
-  static Future<FirebaseApp> initializeFirebase({
-    required BuildContext context,
-  }) async {
+  static Future<FirebaseApp> initializeFirebase() async {
+    WidgetsFlutterBinding.ensureInitialized();
     FirebaseApp firebaseApp = await Firebase.initializeApp();
-
-    User? user = FirebaseAuth.instance.currentUser;
-
-    // if (user != null) {
-    //   Navigator.of(context).pushReplacement(
-    //     MaterialPageRoute(
-    //       builder: (context) => UserInfoScreen(
-    //         user: user,
-    //       ),
-    //     ),
-    //   );
-    // }
-
     return firebaseApp;
   }
 

@@ -12,15 +12,17 @@ class Group extends Equatable {
     required this.groupOwner,
     this.id = '',
     this.groupName = '',
-    members,
-  }) : members = [];
+    List<HangUserPreview>? members,
+  }) : this.members = members ?? [];
 
   static Group fromSnapshot(DocumentSnapshot snap) {
     Group group = Group(
         id: snap.id,
-        groupName: snap["groupName"],
-        groupOwner: HangUserPreview.fromSnapshot(snap["groupOwner"]),
-        members: snap["members"]);
+        groupName: snap["name"],
+        groupOwner: HangUserPreview.fromMap(snap["groupOwner"]),
+        members: List.of(snap["members"])
+            .map((m) => HangUserPreview.fromMap(m))
+            .toList());
     return group;
   }
 
@@ -28,6 +30,8 @@ class Group extends Equatable {
     return {
       "name": groupName,
       "groupOwner": groupOwner.toDocument(),
+      "members": members.map((m) => (m.toDocument())).toList(),
+      "memberIds": members.map((m) => m.userName).toList()
     };
   }
 

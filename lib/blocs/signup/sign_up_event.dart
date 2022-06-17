@@ -17,11 +17,46 @@ class UserNameChanged extends SignUpEvent {
   List<Object> get props => [userName];
 }
 
+class NameChanged extends SignUpEvent {
+  const NameChanged(this.name);
+
+  final String name;
+
+  @override
+  List<Object> get props => [name];
+}
+
+class EmailChanged extends SignUpEvent {
+  const EmailChanged(this.email);
+
+  final String email;
+
+  @override
+  List<Object> get props => [email];
+}
+
+class PhoneNumberChanged extends SignUpEvent {
+  const PhoneNumberChanged(this.phoneNumber);
+
+  final String phoneNumber;
+
+  @override
+  List<Object> get props => [phoneNumber];
+}
+
 class CreateAccountRequested extends SignUpEvent {
   final User? firebaseUser;
   final String userName;
+  final String? email;
+  final String? name;
+  final String? phoneNumber;
 
-  CreateAccountRequested({this.firebaseUser, this.userName = ''}) {}
+  CreateAccountRequested(
+      {this.firebaseUser,
+      this.userName = '',
+      this.name = '',
+      this.email = '',
+      this.phoneNumber = ''}) {}
 
   @override
   List<Object?> get props => [firebaseUser, userName];
