@@ -2,17 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_event.dart';
 import 'package:letshang/blocs/app/app_state.dart';
-import 'package:letshang/screens/app_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:letshang/screens/sign_up_screen.dart';
 import 'package:letshang/services/message_service.dart';
 
-class GoogleSignInButton extends StatefulWidget {
-  @override
-  _GoogleSignInButtonState createState() => _GoogleSignInButtonState();
-}
+class GoogleSignInButton extends StatelessWidget {
+  const GoogleSignInButton({Key? key}) : super(key: key);
 
-class _GoogleSignInButtonState extends State<GoogleSignInButton> {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -20,7 +15,7 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
   }
 
   Widget _signInButton() {
-    return BlocConsumer<AppBloc, AppState>(
+    return BlocBuilder<AppBloc, AppState>(
       builder: (context, state) {
         if (state is AppLoginLoading) {
           return const CircularProgressIndicator(
@@ -41,27 +36,9 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
               ),
             ),
             onPressed: () async {
-              context.read<AppBloc>().add(AppLoginRequested());
+              context.read<AppBloc>().add(AppGoogleLoginRequested());
             },
             child: _buttonContent());
-      },
-      listener: (context, state) {
-        if (state is AppAuthenticated) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => const AppScreen(),
-            ),
-          );
-        }
-        if (state is AppNewUser) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => SignUpScreen(
-                firebaseUser: state.firebaseUser,
-              ),
-            ),
-          );
-        }
       },
     );
   }

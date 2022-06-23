@@ -6,7 +6,7 @@ import 'package:letshang/blocs/profile/profile_bloc.dart';
 import 'package:letshang/blocs/profile/profile_event.dart';
 import 'package:letshang/blocs/profile/profile_state.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
-import 'package:letshang/screens/sign_in_screen.dart';
+import 'package:letshang/screens/unauthorized_screen.dart';
 import 'package:letshang/services/authentication_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/widgets/profile_pic.dart';
@@ -24,7 +24,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Route _routeToSignInScreen() {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) =>
-          const SignInScreen(),
+          const UnAuthorizedScreen(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         var begin = const Offset(-1.0, 0.0);
         var end = Offset.zero;

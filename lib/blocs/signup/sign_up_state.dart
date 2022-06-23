@@ -6,6 +6,11 @@ class SignUpState extends Equatable {
   final User? firebaseUser;
   final String userName;
   final String? name;
+  final String? password;
+  final String? confirmPassword;
+  String get confirmPasswordError =>
+      confirmPassword != password ? "Passwords do not match" : "";
+
   final String? email;
   final String? phoneNumber;
 
@@ -13,6 +18,8 @@ class SignUpState extends Equatable {
       {this.firebaseUser,
       this.userName = '',
       this.name = '',
+      this.password = '',
+      this.confirmPassword = '',
       this.email = '',
       this.phoneNumber = ''}) {}
 
@@ -20,25 +27,42 @@ class SignUpState extends Equatable {
       {User? firebaseUser,
       String? userName,
       String? name,
+      String? password,
+      String? confirmPassword,
       String? email,
       String? phoneNumber}) {
     return SignUpState(
         firebaseUser: firebaseUser ?? this.firebaseUser,
         userName: userName ?? this.userName,
         name: name ?? this.name,
+        password: password ?? this.password,
+        confirmPassword: confirmPassword ?? this.confirmPassword,
         email: email ?? this.email,
         phoneNumber: phoneNumber ?? this.phoneNumber);
   }
 
   @override
-  List<Object?> get props => [firebaseUser, userName];
+  List<Object?> get props => [
+        firebaseUser,
+        userName,
+        name,
+        password,
+        confirmPassword,
+        email,
+        phoneNumber
+      ];
 }
 
 class SignUpSubmitLoading extends SignUpState {
-  SignUpSubmitLoading({firebaseUser, userName = ''})
-      : super(firebaseUser: firebaseUser, userName: userName);
-  @override
-  List<Object?> get props => [firebaseUser, userName];
+  SignUpSubmitLoading(SignUpState state)
+      : super(
+            firebaseUser: state.firebaseUser,
+            userName: state.userName,
+            name: state.name,
+            password: state.password,
+            confirmPassword: state.confirmPassword,
+            email: state.email,
+            phoneNumber: state.phoneNumber);
 }
 
 class SignUpError extends SignUpState {

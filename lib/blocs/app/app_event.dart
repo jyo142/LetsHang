@@ -11,10 +11,12 @@ abstract class AppEvent extends Equatable {
 
 class AppLoginRequested extends AppEvent {}
 
+class AppGoogleLoginRequested extends AppEvent {}
+
 class AppSignupRequested extends AppEvent {}
 
-class AppUserCreated extends AppEvent {
-  const AppUserCreated(this.hangUser);
+class AppUserAuthenticated extends AppEvent {
+  const AppUserAuthenticated({required this.hangUser});
 
   final HangUser hangUser;
 

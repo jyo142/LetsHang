@@ -12,10 +12,10 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   AppBloc({required UserRepository userRepository})
       : _userRepository = userRepository,
-        super(AppState());
+        super(const AppState());
   @override
   Stream<AppState> mapEventToState(AppEvent event) async* {
-    if (event is AppLoginRequested) {
+    if (event is AppGoogleLoginRequested) {
       yield AppLoginLoading();
       try {
         User? user = await AuthenticationService.signInWithGoogle();
@@ -30,12 +30,15 @@ class AppBloc extends Bloc<AppEvent, AppState> {
             yield AppAuthenticated(user: curHangUser);
           }
         } else {
-          yield AppLoginError(errorMessage: "Failed to login with google");
+          yield const AppLoginError(
+              errorMessage: "Failed to login with google");
         }
       } catch (e) {
-        yield AppLoginError(errorMessage: "Failed to login with google");
+        yield const AppLoginError(errorMessage: "Failed to login with google");
       }
-    } else if (event is AppUserCreated) {
+    } else if (event is AppLoginRequested) {
+      yield const AppIsLoggingIn();
+    } else if (event is AppUserAuthenticated) {
       yield AppAuthenticated(user: event.hangUser);
     } else if (event is AppSignupRequested) {
       yield const AppNewUser();

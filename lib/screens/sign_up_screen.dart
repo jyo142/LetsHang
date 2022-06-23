@@ -52,13 +52,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ],
                     ),
                     ..._userNameField(),
+                    ..._signUpTextField(
+                        "Email", false, (value) => EmailChanged(value)),
                     if (!isFirebaseSignup) ...[
                       ..._signUpTextField(
-                          "Name", (value) => NameChanged(value)),
+                          "Password", true, (value) => PasswordChanged(value)),
                       ..._signUpTextField(
-                          "Email", (value) => EmailChanged(value)),
+                          "Confirm Password",
+                          true,
+                          (value) => ConfirmPasswordChanged(value),
+                          (SignUpState state) => state.confirmPasswordError),
                       ..._signUpTextField(
-                          "Phone Number", (value) => PhoneNumberChanged(value)),
+                          "Name", false, (value) => NameChanged(value)),
+                      ..._signUpTextField("Phone Number", false,
+                          (value) => PhoneNumberChanged(value)),
                     ],
                     _submitButton(),
                   ],
@@ -69,18 +76,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   List<Widget> _userNameField() {
     return [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'What is your username?',
-            style: Theme.of(context).textTheme.headline5,
-          ),
-        ],
-      ),
       BlocBuilder<SignUpBloc, SignUpState>(
         builder: (context, state) {
           return TextFormField(
+              decoration: const InputDecoration(labelText: "Username"),
               initialValue: "",
               // The validator receives the text that the user has entered.
               validator: (value) {
@@ -96,27 +95,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
     ];
   }
 
-  List<Widget> _signUpTextField(String text, Function signUpEvent) {
+  List<Widget> _signUpTextField(
+      String text, bool isPassword, Function signUpEvent,
+      [Function? stateErrorMessage]) {
     return [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            text,
-            style: Theme.of(context).textTheme.headline5,
-          ),
-        ],
-      ),
       BlocBuilder<SignUpBloc, SignUpState>(
         builder: (context, state) {
           return TextFormField(
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              obscureText: isPassword,
+              decoration: InputDecoration(labelText: text),
               initialValue: "",
               // The validator receives the text that the user has entered.
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter some text';
-                }
-                return null;
+                return stateErrorMessage?.call(state);
               },
               onChanged: (value) =>
                   context.read<SignUpBloc>().add(signUpEvent(value)));
@@ -129,16 +121,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return BlocConsumer<SignUpBloc, SignUpState>(
       builder: (context, state) {
         if (state is SignUpSubmitLoading) {
-          return const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-          );
+          return const CircularProgressIndicator();
         }
         if (state is SignUpError) {
           MessageService.showErrorMessage(
               content: state.errorMessage, context: context);
         }
         if (state is SignUpUserCreated) {
-          context.read<AppBloc>().add(AppUserCreated(state.user));
+          context
+              .read<AppBloc>()
+              .add(AppUserAuthenticated(hangUser: state.user));
         }
         return ElevatedButton(
           onPressed: () {

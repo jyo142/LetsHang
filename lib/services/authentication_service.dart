@@ -47,6 +47,43 @@ class AuthenticationService {
     return user;
   }
 
+  static Future<void> signInEmailPassword(String email, String password) async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        throw Exception("The password provided is too weak");
+      } else if (e.code == 'email-already-in-use') {
+        throw Exception("Email already in use");
+      }
+      throw Exception(e.message);
+    } catch (e) {
+      throw Exception("An error occured signing in");
+    }
+  }
+
+  static Future<void> createEmailPasswordAccount(
+      String email, String password) async {
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        throw Exception("The password provided is too weak");
+      } else if (e.code == 'email-already-in-use') {
+        throw Exception("Email already in use");
+      }
+      throw Exception(e.message);
+    } catch (e) {
+      throw Exception("An error occured creating the account");
+    }
+  }
+
   static Future<void> signOut({required BuildContext context}) async {
     final GoogleSignIn googleSignIn = GoogleSignIn();
 

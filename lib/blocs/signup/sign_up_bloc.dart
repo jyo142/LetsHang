@@ -5,6 +5,7 @@ import 'package:letshang/blocs/signup/sign_up_state.dart';
 import 'package:letshang/models/hang_user_model.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:letshang/services/authentication_service.dart';
 
 class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
   final UserRepository _userRepository;
@@ -18,6 +19,10 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
   Stream<SignUpState> mapEventToState(SignUpEvent event) async* {
     if (event is UserNameChanged) {
       yield state.copyWith(userName: event.userName);
+    } else if (event is PasswordChanged) {
+      yield state.copyWith(password: event.password);
+    } else if (event is ConfirmPasswordChanged) {
+      yield state.copyWith(confirmPassword: event.confirmPassword);
     } else if (event is NameChanged) {
       yield state.copyWith(name: event.name);
     } else if (event is EmailChanged) {
@@ -25,8 +30,7 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
     } else if (event is PhoneNumberChanged) {
       yield state.copyWith(name: event.phoneNumber);
     } else if (event is CreateAccountRequested) {
-      yield SignUpSubmitLoading(
-          userName: event.userName, firebaseUser: event.firebaseUser);
+      yield SignUpSubmitLoading(state);
       yield* _mapSignupSubmitToState(event, state);
     } else {
       yield state;
@@ -36,29 +40,34 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
   Stream<SignUpState> _mapSignupSubmitToState(
       CreateAccountRequested createAccountRequested,
       SignUpState signUpState) async* {
-    _userSubscription?.cancel();
     try {
-      HangUser? existingUserNameUser =
-          await _userRepository.getUserByUserName(signUpState.userName);
-      if (existingUserNameUser == null) {
-        HangUser curHangUser;
-        if (signUpState.firebaseUser != null) {
-          // user came through the firebase signup flow
-          await _userRepository.addUser(
-              signUpState.userName, signUpState.firebaseUser!);
+      if (signUpState.firebaseUser != null) {
+        // user came through the firebase signup flow
+        HangUser? existingUserNameUser =
+            await _userRepository.getUserByUserName(signUpState.userName);
+        if (existingUserNameUser == null) {
+          // didnt find user in our db, create one
+          HangUser curHangUser;
           curHangUser = HangUser.fromFirebaseUser(
               signUpState.userName, signUpState.firebaseUser!);
-        } else {
-          curHangUser = HangUser(
-              name: signUpState.name,
-              userName: signUpState.userName,
-              email: signUpState.email,
-              phoneNumber: signUpState.phoneNumber);
-        }
+          await _userRepository.addFirebaseUser(
+              signUpState.userName, signUpState.firebaseUser!);
 
-        yield SignUpUserCreated(user: curHangUser);
+          yield SignUpUserCreated(user: curHangUser);
+        } else {
+          yield SignUpError(errorMessage: "Username already exists");
+        }
       } else {
-        yield SignUpError(errorMessage: "Username already exists");
+        // user came through normal create account flow
+        await AuthenticationService.createEmailPasswordAccount(
+            signUpState.email!, signUpState.password!);
+        HangUser newUser = HangUser(
+            name: signUpState.name,
+            userName: signUpState.userName,
+            email: signUpState.email,
+            phoneNumber: signUpState.phoneNumber);
+        await _userRepository.addUser(newUser);
+        yield SignUpUserCreated(user: newUser);
       }
     } catch (e) {
       yield SignUpError(

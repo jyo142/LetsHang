@@ -11,6 +11,16 @@ class AppState extends Equatable {
 
 class AppLoginLoading extends AppState {}
 
+class AppIsLoggingIn extends AppState {
+  const AppIsLoggingIn({this.email = '', this.password = ''});
+
+  final String email;
+  final String password;
+
+  @override
+  List<Object> get props => [email, password];
+}
+
 class AppLoginError extends AppState {
   const AppLoginError({this.errorMessage});
 
