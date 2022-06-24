@@ -20,6 +20,7 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
+
   late final isFirebaseSignup;
   void initState() {
     isFirebaseSignup = widget.firebaseUser != null;
@@ -37,40 +38,42 @@ class _SignUpScreenState extends State<SignUpScreen> {
               padding: const EdgeInsets.only(
                   left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
               child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Welcome!',
-                          style: Theme.of(context).textTheme.headline3,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Welcome!',
+                              style: Theme.of(context).textTheme.headline3,
+                            ),
+                          ],
                         ),
+                        ..._userNameField(),
+                        ..._signUpTextField(
+                            "Email", false, (value) => EmailChanged(value)),
+                        if (!isFirebaseSignup) ...[
+                          ..._signUpTextField("Password", true,
+                              (value) => PasswordChanged(value)),
+                          ..._signUpTextField(
+                              "Confirm Password",
+                              true,
+                              (value) => ConfirmPasswordChanged(value),
+                              (SignUpState state) =>
+                                  state.confirmPasswordError),
+                          ..._signUpTextField(
+                              "Name", false, (value) => NameChanged(value)),
+                          ..._signUpTextField("Phone Number", false,
+                              (value) => PhoneNumberChanged(value))
+                        ],
+                        _submitButton(),
                       ],
                     ),
-                    ..._userNameField(),
-                    ..._signUpTextField(
-                        "Email", false, (value) => EmailChanged(value)),
-                    if (!isFirebaseSignup) ...[
-                      ..._signUpTextField(
-                          "Password", true, (value) => PasswordChanged(value)),
-                      ..._signUpTextField(
-                          "Confirm Password",
-                          true,
-                          (value) => ConfirmPasswordChanged(value),
-                          (SignUpState state) => state.confirmPasswordError),
-                      ..._signUpTextField(
-                          "Name", false, (value) => NameChanged(value)),
-                      ..._signUpTextField("Phone Number", false,
-                          (value) => PhoneNumberChanged(value)),
-                    ],
-                    _submitButton(),
-                  ],
-                ),
-              ))),
+                  )))),
     ));
   }
 

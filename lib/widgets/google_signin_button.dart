@@ -10,8 +10,7 @@ class GoogleSignInButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.only(bottom: 16.0), child: _signInButton());
+    return _signInButton();
   }
 
   Widget _signInButton() {

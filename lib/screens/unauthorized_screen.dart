@@ -83,7 +83,7 @@ class UnAuthorizedScreen extends StatelessWidget {
 
   Widget _loginButton(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.only(top: 8.0, bottom: 10.0),
+      padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
       child: OutlinedButton(
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all(Colors.white),
@@ -115,32 +115,34 @@ class UnAuthorizedScreen extends StatelessWidget {
   }
 
   Widget _createAccountButton(BuildContext context) {
-    return OutlinedButton(
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all(Colors.white),
-          shape: MaterialStateProperty.all(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(40),
+    return Container(
+        padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
+        child: OutlinedButton(
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(Colors.white),
+              shape: MaterialStateProperty.all(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(40),
+                ),
+              ),
             ),
-          ),
-        ),
-        onPressed: () async {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const SignUpScreen(),
-            ),
-          );
-        },
-        child: const Padding(
-          padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
-          child: Text(
-            'Create Account',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2,
-            ),
-          ),
-        ));
+            onPressed: () async {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SignUpScreen(),
+                ),
+              );
+            },
+            child: const Padding(
+              padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+              child: Text(
+                'Create Account',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2,
+                ),
+              ),
+            )));
   }
 }
