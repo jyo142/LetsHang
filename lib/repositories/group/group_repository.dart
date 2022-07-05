@@ -9,6 +9,18 @@ class GroupRepository extends BaseGroupRepository {
       : _firebaseFirestore = firebaseFirestore ?? FirebaseFirestore.instance;
 
   @override
+  Future<Group?> getGroupByName(String groupName) async {
+    QuerySnapshot querySnapshot = await _firebaseFirestore
+        .collection('groups')
+        .where('name', isEqualTo: groupName)
+        .get();
+    if (querySnapshot.size > 0) {
+      return Group.fromSnapshot(querySnapshot.docs.single);
+    }
+    return null;
+  }
+
+  @override
   Future<List<Group>> getGroupsForUser(String userName) async {
     QuerySnapshot querySnapshots = await _firebaseFirestore
         .collection('groups')

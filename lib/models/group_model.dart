@@ -26,6 +26,16 @@ class Group extends Equatable {
     return group;
   }
 
+  static Group fromMap(Map<String, dynamic> map) {
+    Group group = Group(
+        groupName: map["name"],
+        groupOwner: HangUserPreview.fromMap(map["groupOwner"]),
+        members: List.of(map["members"])
+            .map((m) => HangUserPreview.fromMap(m))
+            .toList());
+    return group;
+  }
+
   Map<String, Object> toDocument() {
     return {
       "name": groupName,

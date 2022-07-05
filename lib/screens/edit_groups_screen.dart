@@ -155,7 +155,7 @@ class EditGroupsView extends StatelessWidget {
                     content: "Group saved successfully", context: context);
 
                 // after the event is saved go back to home screen
-                Navigator.pop(context);
+                Navigator.pop(context, true);
               } else {
                 // not validated
               }

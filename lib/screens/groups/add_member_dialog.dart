@@ -1,8 +1,9 @@
+import 'package:change_case/src/change_case.dart';
 import 'package:flutter/material.dart';
 import 'package:letshang/blocs/edit_groups/edit_group_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/models/hang_user_model.dart';
-import 'package:letshang/widgets/profile_pic.dart';
+import 'package:letshang/widgets/find_user_search_result.dart';
 
 class AddMemberDialog extends StatelessWidget {
   const AddMemberDialog({Key? key}) : super(key: key);
@@ -18,13 +19,14 @@ class AddMemberDialog extends StatelessWidget {
             left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
         child: Column(
           children: [
-            Text(
-              'Username',
-              style: Theme.of(context).textTheme.headline5,
-            ),
+            _searchByOption(),
             BlocBuilder<EditGroupBloc, EditGroupState>(
               builder: (context, state) {
                 return TextFormField(
+                    decoration: InputDecoration(
+                        labelText: state.searchGroupMemberBy
+                            .toShortString()
+                            .toCapitalCase()),
                     initialValue: "",
                     // The validator receives the text that the user has entered.
                     validator: (value) {
@@ -57,6 +59,42 @@ class AddMemberDialog extends StatelessWidget {
     );
   }
 
+  Widget _searchByOption() {
+    return BlocBuilder<EditGroupBloc, EditGroupState>(
+      builder: (context, state) {
+        return Row(
+          children: [
+            Text(
+              'Search By ',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headline5,
+            ),
+            Container(
+                padding: const EdgeInsets.only(left: 15.0, right: 1.0),
+                child: DropdownButton<SearchUserBy>(
+                  value: state.searchGroupMemberBy,
+                  onChanged: (SearchUserBy? newValue) {
+                    context
+                        .read<EditGroupBloc>()
+                        .add(SearchByGroupMemberChanged(newValue!));
+                  },
+                  items: SearchUserBy.values
+                      .where(
+                          (searchByUser) => searchByUser != SearchUserBy.group)
+                      .map<DropdownMenuItem<SearchUserBy>>(
+                          (SearchUserBy value) {
+                    return DropdownMenuItem<SearchUserBy>(
+                      value: value,
+                      child: Text(value.toShortString().toCapitalCase()),
+                    );
+                  }).toList(),
+                ))
+          ],
+        );
+      },
+    );
+  }
+
   Widget _searchButton() {
     return BlocBuilder<EditGroupBloc, EditGroupState>(
       builder: (context, state) {
@@ -68,9 +106,8 @@ class AddMemberDialog extends StatelessWidget {
 
         return ElevatedButton(
           onPressed: () {
-            context
-                .read<EditGroupBloc>()
-                .add(FindGroupMemberInitiated(userName: state.findGroupMember));
+            context.read<EditGroupBloc>().add(
+                FindGroupMemberInitiated(userValue: state.findGroupMember));
           },
           child: const Text('Search'),
         );
@@ -86,39 +123,12 @@ class AddMemberDialog extends StatelessWidget {
         }
         if (state is FindGroupMemberRetrieved) {
           if (state.groupMember != null) {
-            return Container(
-                margin: const EdgeInsets.only(bottom: 20.0, top: 30.0),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        ProfilePic(photoUrl: state.groupMember!.photoUrl),
-                        Column(
-                          children: [
-                            ..._userNameSearchResults(
-                                state.groupMember!.userName, context),
-                            const SizedBox(height: 10.0),
-                            ..._nameSearchResults(
-                                state.groupMember!.name, context),
-                            const SizedBox(height: 10.0),
-                          ],
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 20.0),
-                    if (state.groupMembers
-                        .containsKey(state.groupMember!.userName)) ...[
-                      Text(
-                        'User already a part of this group',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyText1,
-                      )
-                    ] else ...[
-                      _addMemberToGroupButton(state.groupMember!, context)
-                    ]
-                  ],
-                ));
+            return FindUserSearchResult(
+                user: state.groupMember!,
+                doesUserExist:
+                    state.groupMembers.containsKey(state.groupMember!.userName),
+                addMemberButton:
+                    _addMemberToGroupButton(state.groupMember!, context));
           } else {
             return Text(
               'No users found with that username',
@@ -131,36 +141,6 @@ class AddMemberDialog extends StatelessWidget {
         }
       },
     );
-  }
-
-  List<Widget> _userNameSearchResults(String userName, BuildContext context) {
-    return [
-      Text(
-        'Username',
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.headline5,
-      ),
-      Text(
-        userName,
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodyText1,
-      ),
-    ];
-  }
-
-  List<Widget> _nameSearchResults(String? name, BuildContext context) {
-    return [
-      Text(
-        'Name',
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.headline5,
-      ),
-      Text(
-        name ?? '',
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodyText1,
-      ),
-    ];
   }
 
   Widget _addMemberToGroupButton(

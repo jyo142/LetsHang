@@ -43,13 +43,19 @@ class EditGroupBloc extends Bloc<EditGroupEvent, EditGroupState> {
     if (event is FindGroupMemberInitiated) {
       yield FindGroupMemberLoading(state);
       try {
-        // first check if a user with the email already exists. if not create new user
-        HangUser? curHangUser =
-            await _userRepository.getUserByUserName(event.userName);
-        yield FindGroupMemberRetrieved(state, groupMember: curHangUser);
+        HangUser? retValUser;
+        if (state.searchGroupMemberBy == SearchUserBy.username) {
+          retValUser = await _userRepository.getUserByUserName(event.userValue);
+        } else if (state.searchGroupMemberBy == SearchUserBy.email) {
+          retValUser = await _userRepository.getUserByEmail(event.userValue);
+        }
+        yield FindGroupMemberRetrieved(state, groupMember: retValUser);
       } catch (e) {
         yield FindGroupMemberError(state, errorMessage: "Failed to find user");
       }
+    }
+    if (event is SearchByGroupMemberChanged) {
+      yield state.copyWith(searchGroupMemberBy: event.searchGroupMemberBy);
     }
 
     // events to do with the group metadata
@@ -62,6 +68,7 @@ class EditGroupBloc extends Bloc<EditGroupEvent, EditGroupState> {
     if (event is DeleteGroupMemberInitialized) {
       yield state.deleteGroupMember(event.groupMemberUserName);
     }
+
     if (event is SaveGroupInitiated) {
       final resultGroupMembers = List.of(state.groupMembers.values);
       Group resultGroup = Group(

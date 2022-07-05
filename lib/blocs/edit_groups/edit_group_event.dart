@@ -17,12 +17,12 @@ class FindGroupMemberChanged extends EditGroupEvent {
 }
 
 class FindGroupMemberInitiated extends EditGroupEvent {
-  const FindGroupMemberInitiated({required this.userName});
+  const FindGroupMemberInitiated({required this.userValue});
 
-  final String userName;
+  final String userValue;
 
   @override
-  List<Object> get props => [userName];
+  List<Object> get props => [userValue];
 }
 
 class GroupNameChanged extends EditGroupEvent {
@@ -53,3 +53,11 @@ class DeleteGroupMemberInitialized extends EditGroupEvent {
 }
 
 class SaveGroupInitiated extends EditGroupEvent {}
+
+class SearchByGroupMemberChanged extends EditGroupEvent {
+  const SearchByGroupMemberChanged(this.searchGroupMemberBy);
+
+  final SearchUserBy searchGroupMemberBy;
+  @override
+  List<Object> get props => [searchGroupMemberBy];
+}

@@ -18,52 +18,65 @@ class GroupsScreen extends StatelessWidget {
                 .userName,
             groupRepository: GroupRepository())
           ..add(LoadGroups()),
-        child: Scaffold(
-            body: SafeArea(
-                child: Padding(
-                    padding: const EdgeInsets.only(
-                        left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'My Groups',
-                          style: Theme.of(context).textTheme.headline5,
+        child: const GroupsView());
+  }
+}
+
+class GroupsView extends StatelessWidget {
+  const GroupsView({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        body: SafeArea(
+            child: Padding(
+                padding: const EdgeInsets.only(
+                    left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'My Groups',
+                      style: Theme.of(context).textTheme.headline5,
+                    ),
+                    _groupListView(),
+                    ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(
+                          Colors.redAccent,
                         ),
-                        _groupListView(),
-                        ElevatedButton(
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all(
-                              Colors.redAccent,
-                            ),
-                            shape: MaterialStateProperty.all(
-                              RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-                          onPressed: () async {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const EditGroupsScreen(),
-                              ),
-                            );
-                          },
-                          child: const Padding(
-                            padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
-                            child: Text(
-                              'Create New Group',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                letterSpacing: 2,
-                              ),
-                            ),
+                        shape: MaterialStateProperty.all(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                      ],
-                    )))));
+                      ),
+                      onPressed: () async {
+                        final bool shouldRefresh =
+                            await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const EditGroupsScreen(),
+                          ),
+                        );
+                        if (shouldRefresh) {
+                          context.read<GroupOverviewBloc>().add(LoadGroups());
+                        }
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+                        child: Text(
+                          'Create New Group',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ))));
   }
 
   Widget _groupListView() {
@@ -82,14 +95,18 @@ class GroupsScreen extends StatelessWidget {
                         child: ListTile(
                       leading: IconButton(
                         icon: const Icon(Icons.edit),
-                        onPressed: () {
-                          Navigator.of(context).push(
+                        onPressed: () async {
+                          final bool shouldRefresh =
+                              await Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => EditGroupsScreen(
                                 curGroup: state.groupsForUser[index],
                               ),
                             ),
                           );
+                          if (shouldRefresh) {
+                            context.read<GroupOverviewBloc>().add(LoadGroups());
+                          }
                         },
                       ),
                       title: Text(state.groupsForUser[index].groupName),

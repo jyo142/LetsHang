@@ -2,21 +2,33 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:letshang/blocs/edit_hang_events/edit_hang_events_event.dart';
 import 'package:letshang/blocs/edit_hang_events/edit_hang_events_state.dart';
+import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/hang_event_model.dart';
+import 'package:letshang/models/hang_user_model.dart';
+import 'package:letshang/models/hang_user_preview_model.dart';
+import 'package:letshang/repositories/group/group_repository.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
+import 'package:letshang/repositories/user/user_repository.dart';
 
 class EditHangEventsBloc
     extends Bloc<EditHangEventsEvent, EditHangEventsState> {
   final HangEventRepository _hangEventRepository;
+  final UserRepository _userRepository;
+  final GroupRepository _groupRepository;
   StreamSubscription? _hangEventSubscription;
+  final HangUserPreview creatingUser;
   final HangEvent? existingHangEvent;
   // constructor
   EditHangEventsBloc(
       {required HangEventRepository hangEventRepository,
+      required this.creatingUser,
       this.existingHangEvent})
       : _hangEventRepository = hangEventRepository,
+        _userRepository = UserRepository(),
+        _groupRepository = GroupRepository(),
         super(EditHangEventsState(
             eventName: existingHangEvent?.eventName ?? '',
+            eventOwner: existingHangEvent?.eventOwner ?? creatingUser,
             eventDescription: existingHangEvent?.eventDescription ?? '',
             eventStartDate: existingHangEvent?.eventStartDate,
             eventEndDate: existingHangEvent?.eventEndDate));
@@ -50,6 +62,36 @@ class EditHangEventsBloc
       yield state.copyWith(eventEndDate: newEventEndDateTime);
     } else if (event is EventSaved) {
       yield* _mapEventSavedState(event, state);
+    }
+    // events to do with finding an event invitee
+    else if (event is EventSearchByInviteeChanged) {
+      yield state.copyWith(searchEventInviteeBy: event.searchEventInviteeBy);
+    } else if (event is EventInviteeValueChanged) {
+      yield state.copyWith(searchEventInvitee: event.inviteeValue);
+    } else if (event is EventSearchByInviteeInitiated) {
+      yield FindEventInviteeLoading(state);
+      try {
+        if (state.searchEventInviteeBy == SearchUserBy.username) {
+          HangUser? retValUser =
+              await _userRepository.getUserByUserName(event.inviteeValue);
+          yield FindEventInviteeRetrieved(state, eventInvitee: retValUser);
+        } else if (state.searchEventInviteeBy == SearchUserBy.email) {
+          HangUser? retValUser =
+              await _userRepository.getUserByEmail(event.inviteeValue);
+          yield FindEventInviteeRetrieved(state, eventInvitee: retValUser);
+        } else if (state.searchEventInviteeBy == SearchUserBy.group) {
+          Group? retValGroup =
+              await _groupRepository.getGroupByName(event.inviteeValue);
+          yield FindEventGroupInviteeRetrieved(state,
+              eventGroupInvitee: retValGroup);
+        }
+      } catch (e) {
+        yield FindEventInviteeError(state, errorMessage: "Failed to find user");
+      }
+    } else if (event is AddEventInviteeInitiated) {
+      yield state.addEventInvitee(HangUserPreview.fromUser(event.eventInvitee));
+    } else if (event is AddEventGroupInviteeInitiated) {
+      yield state.addEventGroupInvitee(event.eventGroupInvitee);
     } else {
       yield state;
     }
@@ -59,12 +101,16 @@ class EditHangEventsBloc
       EventSaved eventSavedEvent, EditHangEventsState eventsState) async* {
     _hangEventSubscription?.cancel();
     try {
+      final resultEventGroupInvitees = List.of(state.eventGroupInvitees.values);
+
       HangEvent savingEvent = HangEvent(
           id: existingHangEvent?.id ?? "",
+          eventOwner: creatingUser,
           eventName: state.eventName,
           eventDescription: state.eventDescription,
           eventStartDate: state.eventStartDate,
-          eventEndDate: state.eventEndDate);
+          eventEndDate: state.eventEndDate,
+          eventGroupInvitees: resultEventGroupInvitees);
       if (existingHangEvent != null) {
         // this event is being edited if an id is present
         await _hangEventRepository.editHangEvent(savingEvent);

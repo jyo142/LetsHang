@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:letshang/blocs/app/app_bloc.dart';
+import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/edit_hang_events/edit_hang_events_bloc.dart';
 import 'package:letshang/blocs/edit_hang_events/edit_hang_events_event.dart';
 import 'package:letshang/blocs/edit_hang_events/edit_hang_events_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
+import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
 import 'package:letshang/assets/Constants.dart' as constants;
+import 'package:letshang/screens/events/add_invitee_dialog.dart';
 import 'package:letshang/services/message_service.dart';
 import 'package:letshang/utils/date_time_utils.dart';
 
@@ -57,15 +61,15 @@ class _EditEventScreenState extends State<EditEventScreen> {
       setState(() {
         selectedStartDate = picked;
         selectedStartTime = constants.startOfDay;
-        context.read<EditHangEventsBloc>().add(
-            EventStartDateTimeChanged(selectedStartDate, selectedStartTime));
+        context.read<EditHangEventsBloc>().add(EventStartDateTimeChanged(
+            eventStartDate: selectedStartDate,
+            eventStartTime: selectedStartTime));
         if (selectedStartDate.isAfter(selectedEndDate)) {
           // if the start date is after the end date, then we need to adjust the end date to be the start date
           selectedEndDate = selectedStartDate;
           selectedEndTime = constants.startOfDay;
-          context
-              .read<EditHangEventsBloc>()
-              .add(EventEndDateTimeChanged(selectedEndDate, selectedEndTime));
+          context.read<EditHangEventsBloc>().add(EventEndDateTimeChanged(
+              eventEndDate: selectedEndDate, eventEndTime: selectedEndTime));
         }
       });
     }
@@ -82,9 +86,8 @@ class _EditEventScreenState extends State<EditEventScreen> {
       setState(() {
         selectedEndDate = picked;
         selectedEndTime = constants.startOfDay;
-        context
-            .read<EditHangEventsBloc>()
-            .add(EventEndDateTimeChanged(selectedEndDate, selectedEndTime));
+        context.read<EditHangEventsBloc>().add(EventEndDateTimeChanged(
+            eventEndDate: selectedEndDate, eventEndTime: selectedEndTime));
       });
     }
   }
@@ -98,8 +101,9 @@ class _EditEventScreenState extends State<EditEventScreen> {
     if (timeOfDay != null && timeOfDay != selectedStartTime) {
       setState(() {
         selectedStartTime = timeOfDay;
-        context.read<EditHangEventsBloc>().add(
-            EventStartDateTimeChanged(selectedStartDate, selectedStartTime));
+        context.read<EditHangEventsBloc>().add(EventStartDateTimeChanged(
+            eventStartDate: selectedStartDate,
+            eventStartTime: selectedStartTime));
 
         DateTime curStartDateTime = DateTimeUtils.getCurrentDateTime(
             date: selectedStartDate, timeOfDay: selectedStartTime);
@@ -109,9 +113,8 @@ class _EditEventScreenState extends State<EditEventScreen> {
           // if the start date is after the end date, then we need to adjust the end date to be the start date
           selectedEndDate = selectedStartDate;
           selectedEndTime = selectedStartTime;
-          context
-              .read<EditHangEventsBloc>()
-              .add(EventEndDateTimeChanged(selectedEndDate, selectedEndTime));
+          context.read<EditHangEventsBloc>().add(EventEndDateTimeChanged(
+              eventEndDate: selectedEndDate, eventEndTime: selectedEndTime));
         }
       });
     }
@@ -126,9 +129,8 @@ class _EditEventScreenState extends State<EditEventScreen> {
     if (timeOfDay != null && timeOfDay != selectedEndTime) {
       setState(() {
         selectedEndTime = timeOfDay;
-        context
-            .read<EditHangEventsBloc>()
-            .add(EventEndDateTimeChanged(selectedEndDate, selectedEndTime));
+        context.read<EditHangEventsBloc>().add(EventEndDateTimeChanged(
+            eventEndDate: selectedEndDate, eventEndTime: selectedEndTime));
 
         DateTime curStartDateTime = DateTimeUtils.getCurrentDateTime(
             date: selectedStartDate, timeOfDay: selectedStartTime);
@@ -137,8 +139,9 @@ class _EditEventScreenState extends State<EditEventScreen> {
         if (curStartDateTime.isAfter(curEndDateTime)) {
           selectedEndDate = selectedStartDate;
           selectedEndTime = selectedStartTime;
-          context.read<EditHangEventsBloc>().add(
-              EventStartDateTimeChanged(selectedStartDate, selectedStartTime));
+          context.read<EditHangEventsBloc>().add(EventStartDateTimeChanged(
+              eventStartDate: selectedStartDate,
+              eventStartTime: selectedStartTime));
           MessageService.showErrorMessage(
               content: 'End date cannot be before the start date',
               context: context);
@@ -166,6 +169,9 @@ class _EditEventScreenState extends State<EditEventScreen> {
         body: BlocProvider(
       create: (context) => EditHangEventsBloc(
           hangEventRepository: HangEventRepository(),
+          creatingUser: HangUserPreview.fromUser(
+            (context.read<AppBloc>().state as AppAuthenticated).user,
+          ),
           existingHangEvent: widget.curEvent),
       child: SafeArea(
           child: Padding(
@@ -176,6 +182,19 @@ class _EditEventScreenState extends State<EditEventScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text(
+                      'Event Owner',
+                      style: Theme.of(context).textTheme.headline5,
+                    ),
+                    BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
+                      builder: (context, state) {
+                        return Text(
+                          state.eventOwner.userName,
+                          style: Theme.of(context).textTheme.bodyText1,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 10.0),
                     const Text('Date and Time *'),
                     Row(
                       children: _startDateTimeFields(),
@@ -189,6 +208,8 @@ class _EditEventScreenState extends State<EditEventScreen> {
                     ..._nameFields(),
                     ..._detailsFields(),
                     const Text('Location'),
+                    const Text('Send Invites To'),
+                    _addInviteeButton(),
                     Row(
                       children: [
                         _submitButton(),
@@ -259,10 +280,10 @@ class _EditEventScreenState extends State<EditEventScreen> {
 
   List<Widget> _nameFields() {
     return [
-      const Text('Name *'),
       BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
         builder: (context, state) {
           return TextFormField(
+              decoration: const InputDecoration(labelText: "Name *"),
               initialValue: widget.curEvent?.eventName ?? "",
               // The validator receives the text that the user has entered.
               validator: (value) {
@@ -273,7 +294,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
               },
               onChanged: (value) => context
                   .read<EditHangEventsBloc>()
-                  .add(EventNameChanged(value)));
+                  .add(EventNameChanged(eventName: value)));
         },
       )
     ];
@@ -281,10 +302,10 @@ class _EditEventScreenState extends State<EditEventScreen> {
 
   List<Widget> _detailsFields() {
     return [
-      const Text('Details'),
       BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
         builder: (context, state) {
           return TextFormField(
+              decoration: const InputDecoration(labelText: "Details"),
               initialValue: widget.curEvent?.eventDescription ?? "",
               // The validator receives the text that the user has entered.
               validator: (value) {
@@ -295,10 +316,53 @@ class _EditEventScreenState extends State<EditEventScreen> {
               },
               onChanged: (value) => context
                   .read<EditHangEventsBloc>()
-                  .add(EventDescriptionChanged(value)));
+                  .add(EventDescriptionChanged(eventDescription: value)));
         },
       )
     ];
+  }
+
+  Widget _addInviteeButton() {
+    return BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
+      builder: (context, state) {
+        return ElevatedButton(
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(
+              Colors.redAccent,
+            ),
+            shape: MaterialStateProperty.all(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+          onPressed: () async {
+            final editHangEventsBloc =
+                BlocProvider.of<EditHangEventsBloc>(context);
+
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) {
+                  return BlocProvider.value(
+                      value: editHangEventsBloc,
+                      child: const AddInviteeDialog());
+                },
+                fullscreenDialog: true));
+          },
+          child: const Padding(
+            padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+            child: Text(
+              'Add invitee',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 2,
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Widget _submitButton() {

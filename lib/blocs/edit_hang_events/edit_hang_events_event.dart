@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:letshang/models/group_model.dart';
+import 'package:letshang/models/hang_user_model.dart';
 
 abstract class EditHangEventsEvent extends Equatable {
   const EditHangEventsEvent();
@@ -9,7 +11,7 @@ abstract class EditHangEventsEvent extends Equatable {
 }
 
 class EventNameChanged extends EditHangEventsEvent {
-  const EventNameChanged(this.eventName);
+  const EventNameChanged({required this.eventName});
 
   final String eventName;
 
@@ -18,7 +20,7 @@ class EventNameChanged extends EditHangEventsEvent {
 }
 
 class EventDescriptionChanged extends EditHangEventsEvent {
-  const EventDescriptionChanged(this.eventDescription);
+  const EventDescriptionChanged({required this.eventDescription});
 
   final String eventDescription;
 
@@ -27,7 +29,8 @@ class EventDescriptionChanged extends EditHangEventsEvent {
 }
 
 class EventStartDateTimeChanged extends EditHangEventsEvent {
-  const EventStartDateTimeChanged(this.eventStartDate, this.eventStartTime);
+  const EventStartDateTimeChanged(
+      {required this.eventStartDate, required this.eventStartTime});
 
   final DateTime eventStartDate;
   final TimeOfDay eventStartTime;
@@ -37,7 +40,8 @@ class EventStartDateTimeChanged extends EditHangEventsEvent {
 }
 
 class EventEndDateTimeChanged extends EditHangEventsEvent {
-  const EventEndDateTimeChanged(this.eventEndDate, this.eventEndTime);
+  const EventEndDateTimeChanged(
+      {required this.eventEndDate, required this.eventEndTime});
 
   final DateTime eventEndDate;
   final TimeOfDay eventEndTime;
@@ -46,3 +50,45 @@ class EventEndDateTimeChanged extends EditHangEventsEvent {
 }
 
 class EventSaved extends EditHangEventsEvent {}
+
+class EventSearchByInviteeChanged extends EditHangEventsEvent {
+  const EventSearchByInviteeChanged({required this.searchEventInviteeBy});
+
+  final SearchUserBy searchEventInviteeBy;
+  @override
+  List<Object> get props => [searchEventInviteeBy];
+}
+
+class EventInviteeValueChanged extends EditHangEventsEvent {
+  const EventInviteeValueChanged({required this.inviteeValue});
+
+  final String inviteeValue;
+  @override
+  List<Object> get props => [inviteeValue];
+}
+
+class EventSearchByInviteeInitiated extends EditHangEventsEvent {
+  const EventSearchByInviteeInitiated({required this.inviteeValue});
+
+  final String inviteeValue;
+  @override
+  List<Object> get props => [inviteeValue];
+}
+
+class AddEventInviteeInitiated extends EditHangEventsEvent {
+  const AddEventInviteeInitiated({required this.eventInvitee});
+
+  final HangUser eventInvitee;
+
+  @override
+  List<Object> get props => [eventInvitee];
+}
+
+class AddEventGroupInviteeInitiated extends EditHangEventsEvent {
+  const AddEventGroupInviteeInitiated({required this.eventGroupInvitee});
+
+  final Group eventGroupInvitee;
+
+  @override
+  List<Object> get props => [eventGroupInvitee];
+}
