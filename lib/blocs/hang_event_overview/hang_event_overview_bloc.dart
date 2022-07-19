@@ -12,10 +12,11 @@ part 'hang_event_overview_state.dart';
 class HangEventOverviewBloc
     extends Bloc<HangEventOverviewEvent, HangEventOverviewState> {
   final HangEventRepository _hangEventRepository;
-  StreamSubscription? _hangEventSubscription;
-
+  final String userName;
   // constructor
-  HangEventOverviewBloc({required HangEventRepository hangEventRepository})
+  HangEventOverviewBloc(
+      {required HangEventRepository hangEventRepository,
+      required this.userName})
       : _hangEventRepository = hangEventRepository,
         super(HangEventsLoading());
 
@@ -25,21 +26,10 @@ class HangEventOverviewBloc
     if (event is LoadHangEvents) {
       yield* _mapLoadHangEventsToState();
     }
-    if (event is UpdateHangEvents) {
-      yield* _mapUpdateHangEventsToState(event);
-    }
   }
 
   Stream<HangEventOverviewState> _mapLoadHangEventsToState() async* {
-    _hangEventSubscription?.cancel();
-    _hangEventSubscription =
-        _hangEventRepository.getAllEvents().listen((hangEvent) {
-      add(UpdateHangEvents(hangEvent));
-    });
-  }
-
-  Stream<HangEventOverviewState> _mapUpdateHangEventsToState(
-      UpdateHangEvents event) async* {
-    yield HangEventsRetrieved(hangEvents: event.hangEvents);
+    final eventsForUser = await _hangEventRepository.getEventsForUser(userName);
+    yield HangEventsRetrieved(hangEvents: eventsForUser);
   }
 }

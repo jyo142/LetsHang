@@ -101,7 +101,7 @@ class EditHangEventsBloc
       EventSaved eventSavedEvent, EditHangEventsState eventsState) async* {
     _hangEventSubscription?.cancel();
     try {
-      final resultEventGroupInvitees = List.of(state.eventGroupInvitees.values);
+      final resultEventInvitees = List.of(state.eventInvitees.values);
 
       HangEvent savingEvent = HangEvent(
           id: existingHangEvent?.id ?? "",
@@ -110,7 +110,7 @@ class EditHangEventsBloc
           eventDescription: state.eventDescription,
           eventStartDate: state.eventStartDate,
           eventEndDate: state.eventEndDate,
-          eventGroupInvitees: resultEventGroupInvitees);
+          eventInvitees: resultEventInvitees);
       if (existingHangEvent != null) {
         // this event is being edited if an id is present
         await _hangEventRepository.editHangEvent(savingEvent);

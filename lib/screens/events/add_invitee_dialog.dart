@@ -153,8 +153,6 @@ class _AddInviteeDialogState extends State {
           if (state.eventGroupInvitee != null) {
             return FindGroupSearchResult(
                 group: state.eventGroupInvitee!,
-                doesGroupExist: state.eventGroupInvitees
-                    .containsKey(state.eventGroupInvitee!.groupName),
                 addGroupButton: _addGroupInviteeToEventButton(
                     state.eventGroupInvitee!, context));
           } else {

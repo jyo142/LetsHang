@@ -74,7 +74,7 @@ class UnAuthorizedScreen extends StatelessWidget {
           children: [
             _loginButton(context),
             const GoogleSignInButton(),
-            _createAccountButton(context)
+            _createAccountButton(context),
           ],
         );
       },

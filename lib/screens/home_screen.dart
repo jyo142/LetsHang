@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:letshang/blocs/app/app_bloc.dart';
+import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
@@ -19,7 +21,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
         body: BlocProvider(
             create: (context) => HangEventOverviewBloc(
-                hangEventRepository: HangEventRepository())
+                hangEventRepository: HangEventRepository(),
+                userName: (context.read<AppBloc>().state as AppAuthenticated)
+                    .user
+                    .userName)
               ..add(LoadHangEvents()),
             child: SafeArea(
                 child: Padding(

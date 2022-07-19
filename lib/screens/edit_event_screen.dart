@@ -13,6 +13,7 @@ import 'package:letshang/assets/Constants.dart' as constants;
 import 'package:letshang/screens/events/add_invitee_dialog.dart';
 import 'package:letshang/services/message_service.dart';
 import 'package:letshang/utils/date_time_utils.dart';
+import 'package:letshang/widgets/member_card.dart';
 
 class EditEventScreen extends StatefulWidget {
   final HangEvent? curEvent;
@@ -209,6 +210,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                     ..._detailsFields(),
                     const Text('Location'),
                     const Text('Send Invites To'),
+                    _eventInvitees(),
                     _addInviteeButton(),
                     Row(
                       children: [
@@ -320,6 +322,33 @@ class _EditEventScreenState extends State<EditEventScreen> {
         },
       )
     ];
+  }
+
+  Widget _eventInvitees() {
+    return BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
+      builder: (context, state) {
+        if (state.eventInvitees.isEmpty) {
+          return Text('No members');
+        }
+        return Expanded(
+          child: ListView.builder(
+              itemCount: state.eventInvitees.length,
+              itemBuilder: (BuildContext context, int index) {
+                String key = state.eventInvitees.keys.elementAt(index);
+                return MemberCard(
+                    userName: state.eventInvitees[key]!.userName,
+                    name: state.eventInvitees[key]!.name!,
+                    canDelete: state.eventInvitees[key]!.userName !=
+                        state.eventOwner.userName,
+                    onDelete: () {
+                      context.read<EditHangEventsBloc>().add(
+                          DeleteEventInviteeInitiated(
+                              eventInviteeUserName: key));
+                    });
+              }),
+        );
+      },
+    );
   }
 
   Widget _addInviteeButton() {

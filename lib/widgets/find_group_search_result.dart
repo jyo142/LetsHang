@@ -5,13 +5,9 @@ import 'package:letshang/widgets/profile_pic.dart';
 
 class FindGroupSearchResult extends StatelessWidget {
   final Group group;
-  final bool doesGroupExist;
   final Widget addGroupButton;
   const FindGroupSearchResult(
-      {Key? key,
-      required this.group,
-      required this.doesGroupExist,
-      required this.addGroupButton})
+      {Key? key, required this.group, required this.addGroupButton})
       : super(key: key);
 
   @override
@@ -37,15 +33,7 @@ class FindGroupSearchResult extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20.0),
-            if (doesGroupExist) ...[
-              Text(
-                'Group already a part of this event',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyText1,
-              )
-            ] else ...[
-              addGroupButton
-            ]
+            addGroupButton
           ],
         ));
   }

@@ -8,7 +8,9 @@ import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/repositories/group/group_repository.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:letshang/screens/groups/add_member_dialog.dart';
+import 'package:letshang/screens/groups/view_all_members.dart';
 import 'package:letshang/services/message_service.dart';
+import 'package:letshang/widgets/member_card.dart';
 
 class EditGroupsScreen extends StatelessWidget {
   final Group? curGroup;
@@ -85,14 +87,6 @@ class EditGroupsView extends StatelessWidget {
                       style: Theme.of(context).textTheme.headline5,
                     ),
                     const SizedBox(height: 10.0),
-                    Row(
-                      children: [
-                        Text(
-                          'Members',
-                          style: Theme.of(context).textTheme.headline5,
-                        ),
-                      ],
-                    ),
                     _groupMembers(),
                     const SizedBox(height: 10.0),
                     _addNewMembersButton(context),
@@ -170,59 +164,69 @@ class EditGroupsView extends StatelessWidget {
   Widget _groupMembers() {
     return BlocBuilder<EditGroupBloc, EditGroupState>(
       builder: (context, state) {
-        if (state.groupMembers.isEmpty) {
-          return Text('No members');
-        }
-        return Expanded(
-          child: ListView.builder(
-              itemCount: state.groupMembers.length,
-              itemBuilder: (BuildContext context, int index) {
-                String key = state.groupMembers.keys.elementAt(index);
-                return Card(
-                    child: ListTile(
-                  trailing: _getMemberDeleteWidget(context, state, key),
-                  title: Text(state.groupMembers[key]!.userName),
-                  subtitle: Text(state.groupMembers[key]!.name!),
-                ));
-              }),
-        );
-      },
-    );
-  }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Members (${state.groupMembers.length})',
+              style: Theme.of(context).textTheme.headline5,
+            ),
+            if (state.groupMembers.isEmpty) ...[
+              const Text('No members')
+            ] else ...[
+              ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: state.groupMembers.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    String key = state.groupMembers.keys.elementAt(index);
+                    return MemberCard(
+                        userName: state.groupMembers[key]!.userName,
+                        name: state.groupMembers[key]!.name!,
+                        canDelete: state.groupMembers[key]!.userName !=
+                            state.groupOwner.userName,
+                        onDelete: () {
+                          context.read<EditGroupBloc>().add(
+                              DeleteGroupMemberInitialized(
+                                  groupMemberUserName: key));
+                        });
+                  }),
+              ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(
+                    Colors.redAccent,
+                  ),
+                  shape: MaterialStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                onPressed: () async {
+                  final editGroupBloc = BlocProvider.of<EditGroupBloc>(context);
 
-  Widget _getMemberDeleteWidget(
-      BuildContext context, EditGroupState state, String curMemberKey) {
-    if (state.groupOwner.userName == curMemberKey) {
-      // dont allow delete of owner
-      return Text("Owner");
-    }
-    return IconButton(
-      icon: const Icon(Icons.delete),
-      onPressed: () {
-        final alert = AlertDialog(
-          title: Text("Confirm Delete"),
-          content: Text("Are you sure you want to delete?"),
-          actions: [
-            TextButton(
-                onPressed: () {
-                  context.read<EditGroupBloc>().add(
-                      DeleteGroupMemberInitialized(
-                          groupMemberUserName: curMemberKey));
-                  Navigator.pop(context);
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (BuildContext context) {
+                        return BlocProvider.value(
+                            value: editGroupBloc,
+                            child: const ViewAllMembers());
+                      },
+                      fullscreenDialog: true));
                 },
-                child: Text("Delete")),
-            TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text("Cancel"))
+                child: const Padding(
+                  padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+                  child: Text(
+                    'View all members',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ),
+              )
+            ]
           ],
-        );
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return alert;
-          },
         );
       },
     );

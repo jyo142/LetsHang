@@ -84,6 +84,15 @@ class AddEventInviteeInitiated extends EditHangEventsEvent {
   List<Object> get props => [eventInvitee];
 }
 
+class DeleteEventInviteeInitiated extends EditHangEventsEvent {
+  const DeleteEventInviteeInitiated({required this.eventInviteeUserName});
+
+  final String eventInviteeUserName;
+
+  @override
+  List<Object> get props => [eventInviteeUserName];
+}
+
 class AddEventGroupInviteeInitiated extends EditHangEventsEvent {
   const AddEventGroupInviteeInitiated({required this.eventGroupInvitee});
 
