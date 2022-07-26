@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:googleapis/calendar/v3.dart';
 import 'package:letshang/services/message_service.dart';
 
 class AuthenticationService {
@@ -15,7 +16,9 @@ class AuthenticationService {
     FirebaseAuth auth = FirebaseAuth.instance;
     User? user;
 
-    final GoogleSignIn googleSignIn = GoogleSignIn();
+    final GoogleSignIn googleSignIn = GoogleSignIn(
+      scopes: <String>[CalendarApi.calendarReadonlyScope],
+    );
 
     final GoogleSignInAccount? googleSignInAccount =
         await googleSignIn.signIn();

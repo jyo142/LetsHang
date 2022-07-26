@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:letshang/blocs/app/app_event.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/models/hang_user_model.dart';
@@ -27,7 +28,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           if (curHangUser == null) {
             yield AppNewUser(firebaseUser: user);
           } else {
-            yield AppAuthenticated(user: curHangUser);
+            yield* mapAuthenticatedUser(curHangUser);
           }
         } else {
           yield const AppLoginError(
@@ -39,12 +40,18 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     } else if (event is AppLoginRequested) {
       yield const AppIsLoggingIn();
     } else if (event is AppUserAuthenticated) {
-      yield AppAuthenticated(user: event.hangUser);
+      yield* mapAuthenticatedUser(event.hangUser);
     } else if (event is AppSignupRequested) {
       yield const AppNewUser();
     } else {
       // user is logging out
       yield AppUnauthenticated();
     }
+  }
+
+  Stream<AppState> mapAuthenticatedUser(HangUser curUser) async* {
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    await _userRepository.updateFCMToken(curUser.userName, fcmToken);
+    yield AppAuthenticated(user: curUser);
   }
 }

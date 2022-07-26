@@ -46,4 +46,16 @@ class UserRepository extends BaseUserRepository {
         .doc(userName)
         .set(HangUser.fromFirebaseUser(userName, firebaseUser).toDocument());
   }
+
+  @override
+  Future<void> updateFCMToken(String userName, String? fcmToken) async {
+    HangUser? curUser = await getUserByUserName(userName);
+    if (curUser != null && curUser.fcmToken != fcmToken) {
+      // only update the token if it is different
+      return _firebaseFirestore
+          .collection('users')
+          .doc(userName)
+          .update({"fcmToken": fcmToken});
+    }
+  }
 }

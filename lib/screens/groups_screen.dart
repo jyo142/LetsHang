@@ -96,7 +96,7 @@ class GroupsView extends StatelessWidget {
                       leading: IconButton(
                         icon: const Icon(Icons.edit),
                         onPressed: () async {
-                          final bool shouldRefresh =
+                          final bool? shouldRefresh =
                               await Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => EditGroupsScreen(
@@ -104,7 +104,7 @@ class GroupsView extends StatelessWidget {
                               ),
                             ),
                           );
-                          if (shouldRefresh) {
+                          if (shouldRefresh != null && shouldRefresh) {
                             context.read<GroupOverviewBloc>().add(LoadGroups());
                           }
                         },

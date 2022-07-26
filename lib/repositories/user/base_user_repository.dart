@@ -6,4 +6,5 @@ abstract class BaseUserRepository {
   Future<HangUser?> getUserByEmail(String userName);
   Future<void> addUser(HangUser user);
   Future<void> addFirebaseUser(String userName, User firebaseUser);
+  Future<void> updateFCMToken(String userName, String fcmToken);
 }

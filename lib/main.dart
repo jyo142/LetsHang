@@ -5,9 +5,11 @@ import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:letshang/screens/unauthorized_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/services/authentication_service.dart';
+import 'package:letshang/services/push_notification_service.dart';
 
 void main() async {
   await AuthenticationService.initializeFirebase();
+  await PushNotificationService.initialize();
   runApp(const MyApp());
 }
 
