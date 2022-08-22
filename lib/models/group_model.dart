@@ -1,38 +1,33 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
+import 'package:letshang/models/user_invite_model.dart';
 
 class Group extends Equatable {
   final String id;
   final String groupName;
   final HangUserPreview groupOwner;
-  final List<HangUserPreview> members;
+  final List<UserInvite> userInvites;
 
   Group({
     required this.groupOwner,
     this.id = '',
     this.groupName = '',
-    List<HangUserPreview>? members,
-  }) : this.members = members ?? [];
+    List<UserInvite>? userInvites,
+  }) : userInvites = userInvites ?? [];
 
-  static Group fromSnapshot(DocumentSnapshot snap) {
-    Group group = Group(
-        id: snap.id,
-        groupName: snap["name"],
-        groupOwner: HangUserPreview.fromMap(snap["groupOwner"]),
-        members: List.of(snap["members"])
-            .map((m) => HangUserPreview.fromMap(m))
-            .toList());
-    return group;
+  static Group fromSnapshot(DocumentSnapshot snap,
+      [List<UserInvite>? userInvites]) {
+    return fromMap(snap.data()!, userInvites);
   }
 
-  static Group fromMap(Map<String, dynamic> map) {
+  static Group fromMap(Map<String, dynamic> map,
+      [List<UserInvite>? userInvites]) {
     Group group = Group(
         groupName: map["name"],
         groupOwner: HangUserPreview.fromMap(map["groupOwner"]),
-        members: List.of(map["members"])
-            .map((m) => HangUserPreview.fromMap(m))
-            .toList());
+        userInvites: userInvites ?? []);
+
     return group;
   }
 
@@ -40,11 +35,10 @@ class Group extends Equatable {
     return {
       "name": groupName,
       "groupOwner": groupOwner.toDocument(),
-      "members": members.map((m) => (m.toDocument())).toList(),
-      "memberIds": members.map((m) => m.userName).toList()
+      "members": userInvites.map((m) => (m.toDocument())).toList(),
     };
   }
 
   @override
-  List<Object> get props => [id, groupName, groupOwner, members];
+  List<Object> get props => [id, groupName, groupOwner, userInvites];
 }

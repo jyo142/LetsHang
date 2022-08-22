@@ -125,8 +125,8 @@ class AddMemberDialog extends StatelessWidget {
           if (state.groupMember != null) {
             return FindUserSearchResult(
                 user: state.groupMember!,
-                doesUserExist:
-                    state.groupMembers.containsKey(state.groupMember!.userName),
+                doesUserExist: state.groupUserInvitees
+                    .containsKey(state.groupMember!.userName),
                 addMemberButton:
                     _addMemberToGroupButton(state.groupMember!, context));
           } else {

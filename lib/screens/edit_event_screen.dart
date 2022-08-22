@@ -218,7 +218,8 @@ class _EditEventScreenState extends State<EditEventScreen> {
                         ElevatedButton(
                           onPressed: () {
                             // after the event is saved go back to home screen
-                            Navigator.of(context, rootNavigator: true).pop();
+                            // Navigator.of(context, rootNavigator: true).pop(true);
+                            Navigator.pop(context, true);
                           },
                           child: const Text('Cancel'),
                         )
@@ -327,18 +328,18 @@ class _EditEventScreenState extends State<EditEventScreen> {
   Widget _eventInvitees() {
     return BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
       builder: (context, state) {
-        if (state.eventInvitees.isEmpty) {
+        if (state.eventUserInvitees.isEmpty) {
           return Text('No members');
         }
         return Expanded(
           child: ListView.builder(
-              itemCount: state.eventInvitees.length,
+              itemCount: state.eventUserInvitees.length,
               itemBuilder: (BuildContext context, int index) {
-                String key = state.eventInvitees.keys.elementAt(index);
+                String key = state.eventUserInvitees.keys.elementAt(index);
                 return MemberCard(
-                    userName: state.eventInvitees[key]!.userName,
-                    name: state.eventInvitees[key]!.name!,
-                    canDelete: state.eventInvitees[key]!.userName !=
+                    userName: state.eventUserInvitees[key]!.user.userName,
+                    name: state.eventUserInvitees[key]!.user.name!,
+                    canDelete: state.eventUserInvitees[key]!.user.userName !=
                         state.eventOwner.userName,
                     onDelete: () {
                       context.read<EditHangEventsBloc>().add(
@@ -414,7 +415,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                     content: "Event saved successfully", context: context);
 
                 // after the event is saved go back to home screen
-                Navigator.pop(context);
+                Navigator.pop(context, true);
               } else {
                 // not validated
               }

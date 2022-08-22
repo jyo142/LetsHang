@@ -8,11 +8,14 @@ import 'package:letshang/models/hang_user_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/repositories/group/group_repository.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
+import 'package:letshang/repositories/invites/invites_repository.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
+import 'package:letshang/repositories/invites/invites_repository.dart';
 
 class EditHangEventsBloc
     extends Bloc<EditHangEventsEvent, EditHangEventsState> {
   final HangEventRepository _hangEventRepository;
+  final InvitesRepository _invitesRepository;
   final UserRepository _userRepository;
   final GroupRepository _groupRepository;
   StreamSubscription? _hangEventSubscription;
@@ -24,6 +27,7 @@ class EditHangEventsBloc
       required this.creatingUser,
       this.existingHangEvent})
       : _hangEventRepository = hangEventRepository,
+        _invitesRepository = InvitesRepository(),
         _userRepository = UserRepository(),
         _groupRepository = GroupRepository(),
         super(EditHangEventsState(
@@ -31,7 +35,13 @@ class EditHangEventsBloc
             eventOwner: existingHangEvent?.eventOwner ?? creatingUser,
             eventDescription: existingHangEvent?.eventDescription ?? '',
             eventStartDate: existingHangEvent?.eventStartDate,
-            eventEndDate: existingHangEvent?.eventEndDate));
+            eventEndDate: existingHangEvent?.eventEndDate,
+            eventUserInvitees: existingHangEvent?.userInvites != null
+                ? {
+                    for (var member in existingHangEvent!.userInvites)
+                      member.user.userName: member
+                  }
+                : null));
 
   @override
   Stream<EditHangEventsState> mapEventToState(
@@ -89,7 +99,8 @@ class EditHangEventsBloc
         yield FindEventInviteeError(state, errorMessage: "Failed to find user");
       }
     } else if (event is AddEventInviteeInitiated) {
-      yield state.addEventInvitee(HangUserPreview.fromUser(event.eventInvitee));
+      yield state
+          .addUserEventInvitee(HangUserPreview.fromUser(event.eventInvitee));
     } else if (event is AddEventGroupInviteeInitiated) {
       yield state.addEventGroupInvitee(event.eventGroupInvitee);
     } else {
@@ -101,7 +112,7 @@ class EditHangEventsBloc
       EventSaved eventSavedEvent, EditHangEventsState eventsState) async* {
     _hangEventSubscription?.cancel();
     try {
-      final resultEventInvitees = List.of(state.eventInvitees.values);
+      final resultEventUserInvitees = List.of(state.eventUserInvitees.values);
 
       HangEvent savingEvent = HangEvent(
           id: existingHangEvent?.id ?? "",
@@ -110,12 +121,17 @@ class EditHangEventsBloc
           eventDescription: state.eventDescription,
           eventStartDate: state.eventStartDate,
           eventEndDate: state.eventEndDate,
-          eventInvitees: resultEventInvitees);
+          userInvites: resultEventUserInvitees);
       if (existingHangEvent != null) {
         // this event is being edited if an id is present
-        await _hangEventRepository.editHangEvent(savingEvent);
+        HangEvent editingEvent =
+            await _hangEventRepository.editHangEvent(savingEvent);
+        await _invitesRepository.editEventUserInvites(editingEvent);
       } else {
-        await _hangEventRepository.addHangEvent(savingEvent);
+        HangEvent newEvent =
+            await _hangEventRepository.addHangEvent(savingEvent);
+        await _invitesRepository.addEventUserInvites(
+            newEvent, savingEvent.userInvites);
       }
     } catch (_) {}
   }

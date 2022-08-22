@@ -2,6 +2,8 @@ import 'package:equatable/equatable.dart';
 import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/hang_user_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
+import 'package:letshang/models/invite.dart';
+import 'package:letshang/models/user_invite_model.dart';
 
 class EditHangEventsState extends Equatable {
   final String hangEventId;
@@ -14,7 +16,7 @@ class EditHangEventsState extends Equatable {
   // metadata
   final String searchEventInvitee;
   final SearchUserBy searchEventInviteeBy;
-  late final Map<String, HangUserPreview> eventInvitees;
+  late final Map<String, UserInvite> eventUserInvitees;
 
   EditHangEventsState({
     this.hangEventId = '',
@@ -25,14 +27,20 @@ class EditHangEventsState extends Equatable {
     DateTime? eventEndDate,
     this.searchEventInvitee = '',
     this.searchEventInviteeBy = SearchUserBy.username,
-    Map<String, HangUserPreview>? eventInvitees,
+    Map<String, UserInvite>? eventUserInvitees,
   }) {
     final dateNow = DateTime.now();
     this.eventStartDate =
         eventStartDate ?? DateTime(dateNow.year, dateNow.month, dateNow.day);
     this.eventEndDate =
         eventEndDate ?? DateTime(dateNow.year, dateNow.month, dateNow.day);
-    this.eventInvitees = eventInvitees ?? {eventOwner.userName: eventOwner};
+    this.eventUserInvitees = eventUserInvitees ??
+        {
+          eventOwner.userName: UserInvite(
+              status: InviteStatus.pending,
+              user: eventOwner,
+              type: InviteType.event)
+        };
   }
 
   EditHangEventsState.fromState(EditHangEventsState state)
@@ -45,7 +53,7 @@ class EditHangEventsState extends Equatable {
             eventEndDate: state.eventEndDate,
             searchEventInvitee: state.searchEventInvitee,
             searchEventInviteeBy: state.searchEventInviteeBy,
-            eventInvitees: state.eventInvitees);
+            eventUserInvitees: state.eventUserInvitees);
 
   EditHangEventsState copyWith(
       {String? hangEventId,
@@ -56,7 +64,7 @@ class EditHangEventsState extends Equatable {
       DateTime? eventEndDate,
       String? searchEventInvitee,
       SearchUserBy? searchEventInviteeBy,
-      Map<String, HangUserPreview>? eventInvitees}) {
+      Map<String, UserInvite>? eventUserInvitees}) {
     return EditHangEventsState(
         hangEventId: hangEventId ?? this.hangEventId,
         eventOwner: eventOwner ?? this.eventOwner,
@@ -66,28 +74,37 @@ class EditHangEventsState extends Equatable {
         eventEndDate: eventEndDate ?? this.eventEndDate,
         searchEventInvitee: searchEventInvitee ?? this.searchEventInvitee,
         searchEventInviteeBy: searchEventInviteeBy ?? this.searchEventInviteeBy,
-        eventInvitees: eventInvitees ?? this.eventInvitees);
+        eventUserInvitees: eventUserInvitees ?? this.eventUserInvitees);
   }
 
-  EditHangEventsState addEventInvitee(HangUserPreview newEventInvitee) {
-    final newEventInvitees = Map.of(eventInvitees);
+  EditHangEventsState addUserEventInvitee(HangUserPreview newEventInvitee) {
+    final newEventInvitees = Map.of(eventUserInvitees);
     newEventInvitees.putIfAbsent(
-        newEventInvitee.userName, () => newEventInvitee);
-    return copyWith(eventInvitees: newEventInvitees);
+        newEventInvitee.userName,
+        () => UserInvite(
+            user: newEventInvitee,
+            status: InviteStatus.pending,
+            type: InviteType.event));
+    return copyWith(eventUserInvitees: newEventInvitees);
   }
 
-  EditHangEventsState deleteEventInvitee(String eventInviteeUserName) {
-    final newEventInvitees = Map.of(eventInvitees);
+  EditHangEventsState deleteUserEventInvitee(String eventInviteeUserName) {
+    final newEventInvitees = Map.of(eventUserInvitees);
     newEventInvitees.remove(eventInviteeUserName);
-    return copyWith(eventInvitees: newEventInvitees);
+    return copyWith(eventUserInvitees: newEventInvitees);
   }
 
   EditHangEventsState addEventGroupInvitee(Group newEventGroupInvitee) {
-    final newEventInvitees = Map.of(eventInvitees);
-    for (final member in newEventGroupInvitee.members) {
-      newEventInvitees.putIfAbsent(member.userName, () => member);
+    final newEventInvitees = Map.of(eventUserInvitees);
+    for (final member in newEventGroupInvitee.userInvites) {
+      newEventInvitees.putIfAbsent(
+          member.user.userName,
+          () => UserInvite(
+              user: member.user,
+              status: InviteStatus.pending,
+              type: InviteType.event));
     }
-    return copyWith(eventInvitees: newEventInvitees);
+    return copyWith(eventUserInvitees: newEventInvitees);
   }
 
   @override
@@ -100,7 +117,7 @@ class EditHangEventsState extends Equatable {
         eventEndDate,
         searchEventInvitee,
         searchEventInviteeBy,
-        eventInvitees
+        eventUserInvitees,
       ];
 }
 

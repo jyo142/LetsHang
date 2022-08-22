@@ -26,7 +26,7 @@ class FindGroupSearchResult extends StatelessWidget {
                     const SizedBox(height: 10.0),
                     ..._groupOwner(group.groupOwner, context),
                     const SizedBox(height: 10.0),
-                    ..._groupMemberCount(group.members.length, context),
+                    ..._groupMemberCount(group.userInvites.length, context),
                     const SizedBox(height: 10.0)
                   ],
                 )

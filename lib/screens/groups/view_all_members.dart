@@ -18,13 +18,13 @@ class ViewAllMembers extends StatelessWidget {
         child: Expanded(child: BlocBuilder<EditGroupBloc, EditGroupState>(
           builder: (context, state) {
             return ListView.builder(
-                itemCount: state.groupMembers.length,
+                itemCount: state.groupUserInvitees.length,
                 itemBuilder: (BuildContext context, int index) {
-                  String key = state.groupMembers.keys.elementAt(index);
+                  String key = state.groupUserInvitees.keys.elementAt(index);
                   return MemberCard(
-                      userName: state.groupMembers[key]!.userName,
-                      name: state.groupMembers[key]!.name!,
-                      canDelete: state.groupMembers[key]!.userName !=
+                      userName: state.groupUserInvitees[key]!.user.userName,
+                      name: state.groupUserInvitees[key]!.user.name!,
+                      canDelete: state.groupUserInvitees[key]!.user.userName !=
                           state.groupOwner.userName,
                       onDelete: () {
                         context.read<EditGroupBloc>().add(

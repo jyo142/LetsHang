@@ -11,23 +11,23 @@ abstract class HangEventOverviewState extends Equatable {
 class HangEventsLoading extends HangEventOverviewState {}
 
 class HangEventsRetrieved extends HangEventOverviewState {
-  late final List<HangEvent> hangEvents;
-  late final List<HangEvent> pastHangEvents;
-  late final List<HangEvent> currentUpcomingHangEvents;
+  late final List<HangEventInvite> hangEvents;
+  late final List<HangEventInvite> pastHangEvents;
+  late final List<HangEventInvite> currentUpcomingHangEvents;
 
-  HangEventsRetrieved({this.hangEvents = const <HangEvent>[]}) {
+  HangEventsRetrieved({this.hangEvents = const <HangEventInvite>[]}) {
     final dateNow = DateTime.now();
     // past events are when the current date is after both the start and end date of the event
     pastHangEvents = hangEvents
         .where((element) =>
-            dateNow.isAfter(element.eventStartDate) &&
-            dateNow.isAfter(element.eventEndDate))
+            dateNow.isAfter(element.event.eventStartDate) &&
+            dateNow.isAfter(element.event.eventEndDate))
         .toList();
 
     currentUpcomingHangEvents = hangEvents
         .where((element) =>
-            dateNow.compareTo(element.eventStartDate) <= 0 ||
-            dateNow.compareTo(element.eventEndDate) <= 0)
+            dateNow.compareTo(element.event.eventStartDate) <= 0 ||
+            dateNow.compareTo(element.event.eventEndDate) <= 0)
         .toList();
   }
 

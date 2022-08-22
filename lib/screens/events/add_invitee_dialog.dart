@@ -137,7 +137,7 @@ class _AddInviteeDialogState extends State {
           if (state.eventInvitee != null) {
             return FindUserSearchResult(
                 user: state.eventInvitee!,
-                doesUserExist: state.eventInvitees
+                doesUserExist: state.eventUserInvitees
                     .containsKey(state.eventInvitee!.userName),
                 addMemberButton:
                     _addInviteeToEventButton(state.eventInvitee!, context));
