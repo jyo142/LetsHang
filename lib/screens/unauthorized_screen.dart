@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
+import 'package:letshang/blocs/app/app_event.dart';
 import 'package:letshang/blocs/app/app_state.dart';
+import 'package:letshang/blocs/login/login_bloc.dart';
+import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:letshang/screens/app_screen.dart';
 import 'package:letshang/screens/login_screen.dart';
 import 'package:letshang/screens/sign_up_screen.dart';
+import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/google_signin_button.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/widgets/lh_button.dart';
 
 class UnAuthorizedScreen extends StatelessWidget {
   const UnAuthorizedScreen({Key? key}) : super(key: key);
@@ -13,39 +19,165 @@ class UnAuthorizedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(
-            left: 16.0,
-            right: 16.0,
-            bottom: 20.0,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Row(),
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    SizedBox(height: 20),
-                    Text(
-                      'Let\'s Hang',
-                      style: TextStyle(
-                        color: Colors.yellow,
-                        fontSize: 40,
+        backgroundColor: Color(0xFFCCCCCC),
+        body: BlocProvider(
+          create: (context) => LoginBloc(userRepository: UserRepository()),
+          child: SafeArea(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  margin: EdgeInsets.fromLTRB(0, 30, 0, 40),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: const [
+                      Image(
+                        height: 96,
+                        width: 96,
+                        image: AssetImage("assets/images/logo.png"),
                       ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                        color: Color(0xFFFFFFFF),
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.elliptical(300, 50),
+                            topRight: Radius.elliptical(300, 50))),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: BlocConsumer<AppBloc, AppState>(
+                            listener: (context, state) {
+                              if (state is AppAuthenticated) {
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                    builder: (context) => const AppScreen(),
+                                  ),
+                                );
+                              }
+                              if (state is AppNewUser) {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => SignUpScreen(
+                                      firebaseUser: state.firebaseUser,
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            builder: (context, state) {
+                              return _signInContainer(context);
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ));
+  }
+
+  Widget _signInContainer(BuildContext context) {
+    return Container(
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Text(
+              'SIGN IN',
+              style: Theme.of(context).textTheme.headline5,
+            ),
+            ..._loginTextField(
+                "Email", false, (value) => LoginEmailChanged(value)),
+            ..._loginTextField(
+                "Password", true, (value) => LoginPasswordChanged(value)),
+            _loginSubmitButton(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                GoogleSignInButton(),
+              ],
+            ),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              const Text("Don't have an account? "),
+              InkWell(
+                // on Tap function used and call back function os defined here
+                onTap: () async {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const SignUpScreen(),
+                    ),
+                  );
+                },
+                child: Text(
+                  'Sign up',
+                  style: Theme.of(context).textTheme.linkText,
                 ),
               ),
-              _authButtons()
-            ],
-          ),
-        ),
-      ),
+            ])
+          ],
+        ));
+  }
+
+  List<Widget> _loginTextField(
+      String text, bool isPassword, Function loginEvent,
+      [Function? stateErrorMessage]) {
+    return [
+      BlocBuilder<LoginBloc, LoginState>(
+        builder: (context, state) {
+          return TextFormField(
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              obscureText: isPassword,
+              decoration: InputDecoration(
+                fillColor: Color(0xFFCCCCCC),
+                filled: true,
+                labelText: text,
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(50.0),
+                ),
+              ),
+              initialValue: "",
+              // The validator receives the text that the user has entered.
+              validator: (value) {
+                return stateErrorMessage?.call(state);
+              },
+              onChanged: (value) =>
+                  context.read<LoginBloc>().add(loginEvent(value)));
+        },
+      )
+    ];
+  }
+
+  Widget _loginSubmitButton() {
+    return BlocBuilder<LoginBloc, LoginState>(
+      builder: (context, state) {
+        if (state is LoginSubmitLoading) {
+          return const CircularProgressIndicator();
+        }
+        if (state is LoginError) {
+          MessageService.showErrorMessage(
+              content: state.errorMessage, context: context);
+        }
+        if (state is LoginSuccess) {
+          context
+              .read<AppBloc>()
+              .add(AppUserAuthenticated(hangUser: state.loggedInUser));
+        }
+        return LHButton(
+            buttonText: 'Login',
+            onPressed: () {
+              context.read<LoginBloc>().add(LoginRequested());
+            });
+      },
     );
   }
 
