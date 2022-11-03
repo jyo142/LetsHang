@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: mainTheme,
-        home: const UnAuthorizedScreen(),
+        home: UnAuthorizedScreen(),
       ),
     );
   }

@@ -4,10 +4,12 @@ import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_event.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/login/login_bloc.dart';
+import 'package:letshang/layouts/unauthorized_layout.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:letshang/screens/app_screen.dart';
 import 'package:letshang/screens/login_screen.dart';
 import 'package:letshang/screens/sign_up_screen.dart';
+import 'package:letshang/screens/sign_up_screen_old.dart';
 import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/google_signin_button.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,70 +20,42 @@ class UnAuthorizedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Color(0xFFCCCCCC),
-        body: BlocProvider(
-          create: (context) => LoginBloc(userRepository: UserRepository()),
-          child: SafeArea(
+    return UnAuthorizedLayout(
+        content: BlocProvider(
+            create: (context) => LoginBloc(userRepository: UserRepository()),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
-                  margin: EdgeInsets.fromLTRB(0, 30, 0, 40),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: const [
-                      Image(
-                        height: 96,
-                        width: 96,
-                        image: AssetImage("assets/images/logo.png"),
-                      ),
-                    ],
-                  ),
-                ),
                 Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                        color: Color(0xFFFFFFFF),
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.elliptical(300, 50),
-                            topRight: Radius.elliptical(300, 50))),
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: BlocConsumer<AppBloc, AppState>(
-                            listener: (context, state) {
-                              if (state is AppAuthenticated) {
-                                Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                    builder: (context) => const AppScreen(),
-                                  ),
-                                );
-                              }
-                              if (state is AppNewUser) {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => SignUpScreen(
-                                      firebaseUser: state.firebaseUser,
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
-                            builder: (context, state) {
-                              return _signInContainer(context);
-                            },
+                  child: BlocConsumer<AppBloc, AppState>(
+                    listener: (context, state) {
+                      if (state is AppAuthenticated) {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => const AppScreen(),
                           ),
-                        ),
-                      ],
-                    ),
+                        );
+                      }
+                      if (state is AppNewUser) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => SignUpScreen(
+                              firebaseUser: state.firebaseUser,
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    builder: (context, state) {
+                      return _signInContainer(context);
+                    },
                   ),
                 ),
               ],
-            ),
-          ),
+            )),
+        imageContent: Image(
+          height: 96,
+          width: 96,
+          image: AssetImage("assets/images/logo.png"),
         ));
   }
 
