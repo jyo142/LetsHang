@@ -6,25 +6,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
-import 'package:letshang/blocs/app/app_event.dart';
 import 'package:letshang/blocs/app/app_state.dart';
-import 'package:letshang/blocs/login/login_bloc.dart';
-import 'package:letshang/blocs/signup/sign_up_bloc.dart';
-import 'package:letshang/blocs/signup/sign_up_event.dart';
+import 'package:letshang/blocs/profile/username_pic_bloc.dart';
+import 'package:letshang/blocs/profile/username_pic_event.dart';
+import 'package:letshang/blocs/profile/username_pic_state.dart';
 import 'package:letshang/blocs/signup/sign_up_state.dart';
 import 'package:letshang/layouts/unauthorized_layout.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:letshang/screens/app_screen.dart';
 import 'package:letshang/services/message_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:letshang/services/storage_service.dart';
-import 'package:letshang/widgets/google_signin_button.dart';
 import 'package:letshang/widgets/lh_button.dart';
 
 class UsernamePictureProfile extends StatefulWidget {
-  const UsernamePictureProfile({Key? key, this.title}) : super(key: key);
+  const UsernamePictureProfile({Key? key, this.username}) : super(key: key);
 
-  final String? title;
+  final String? username;
 
   @override
   State<UsernamePictureProfile> createState() => _UsernamePictureProfileState();
@@ -33,32 +30,35 @@ class UsernamePictureProfile extends StatefulWidget {
 class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
   final ImagePicker _picker = ImagePicker();
   String? _retrieveDataError;
-  XFile? _imageFile;
+  File? _imageFile;
   dynamic _pickImageError;
 
   @override
   Widget build(BuildContext context) {
     return UnAuthorizedLayout(
-        content: Column(
-          children: [
-            Expanded(
-              child: BlocConsumer<AppBloc, AppState>(
-                listener: (context, state) {
-                  if (state is AppAuthenticated) {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (context) => const AppScreen(),
-                      ),
-                    );
-                  }
-                },
-                builder: (context, state) {
-                  return _emailPasswordContainer(context);
-                },
-              ),
-            ),
-          ],
-        ),
+        content: BlocProvider(
+            create: (context) => UsernamePicBloc(
+                userRepository: UserRepository(), userName: widget.username),
+            child: Column(
+              children: [
+                Expanded(
+                  child: BlocConsumer<AppBloc, AppState>(
+                    listener: (context, state) {
+                      if (state is AppAuthenticated) {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => const AppScreen(),
+                          ),
+                        );
+                      }
+                    },
+                    builder: (context, state) {
+                      return _usernamePicContainer(context);
+                    },
+                  ),
+                ),
+              ],
+            )),
         imageContent: Image(
           height: 96,
           width: 96,
@@ -66,10 +66,9 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
         ));
   }
 
-  Widget _emailPasswordContainer(BuildContext context) {
+  Widget _usernamePicContainer(BuildContext context) {
     return Container(
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-        alignment: Alignment.center,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -82,24 +81,18 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
                         switch (snapshot.connectionState) {
                           case ConnectionState.none:
                           case ConnectionState.waiting:
-                            return const Text(
-                              'You have not yet picked an image.',
-                              textAlign: TextAlign.center,
-                            );
+                            return _chooseImageButton();
                           case ConnectionState.done:
                             if (_imageFile != null) {
                               return CircleAvatar(
-                                radius: 60.0,
+                                radius: 80.0,
                                 backgroundImage:
-                                    FileImage(File(_imageFile!.path))
-                                        as ImageProvider,
+                                    FileImage(_imageFile!) as ImageProvider,
                                 backgroundColor: Colors.transparent,
                               );
                             }
-                            return const Text(
-                              'You have not yet picked an image.',
-                              textAlign: TextAlign.center,
-                            );
+                            return _chooseImageButton();
+
                           default:
                             if (snapshot.hasError) {
                               return Text(
@@ -107,50 +100,33 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
                                 textAlign: TextAlign.center,
                               );
                             } else {
-                              return const Text(
-                                'You have not yet picked an image.',
-                                textAlign: TextAlign.center,
-                              );
+                              return _chooseImageButton();
                             }
                         }
                       },
                     )
                   : _previewImage(),
             ),
-            LHButton(
-                buttonText: 'Upload',
-                onPressed: () async {
-                  await _onImageButtonPressed(ImageSource.gallery);
-                  // StorageService.uploadFile(image!.path!, image!.name);
-                }),
-            Text(
-              'SIGN UP',
-              style: Theme.of(context).textTheme.headline5,
-            ),
+            _usernameTextField(),
+            _nextButton()
           ],
         ));
   }
 
-  Widget _signUpSubmitButton() {
-    return BlocConsumer<SignUpBloc, SignUpState>(
+  Widget _nextButton() {
+    return BlocConsumer<UsernamePicBloc, UsernamePicState>(
       builder: (context, state) {
-        if (state is SignUpSubmitLoading ||
-            state is SignUpEmailPasswordSubmitLoading) {
+        if (state is UsernamePicSubmitLoading) {
           return const CircularProgressIndicator();
         }
-        if (state is SignUpError) {
+        if (state is UsernamePicSubmitError) {
           MessageService.showErrorMessage(
               content: state.errorMessage, context: context);
-        }
-        if (state is SignUpUserCreated) {
-          context
-              .read<AppBloc>()
-              .add(AppUserAuthenticated(hangUser: state.user));
         }
         return LHButton(
             buttonText: 'NEXT',
             onPressed: () {
-              context.read<SignUpBloc>().add(EmailPasswordSubmitted());
+              context.read<UsernamePicBloc>().add(SubmitUsernamePicEvent());
             });
       },
       listener: (context, state) {
@@ -181,7 +157,47 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
     return null;
   }
 
-  Future<void> _onImageButtonPressed(ImageSource source) async {
+  Widget _chooseImageButton() {
+    return BlocBuilder<UsernamePicBloc, UsernamePicState>(
+      builder: (imageContext, state) {
+        return IconButton(
+            icon: Image.asset('assets/images/choose_profile_pic.png'),
+            iconSize: 100,
+            onPressed: () async {
+              showModalBottomSheet(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return SafeArea(
+                      child: new Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          new ListTile(
+                              leading: new Icon(Icons.camera),
+                              title: new Text('Camera'),
+                              onTap: () async => {
+                                    Navigator.pop(context),
+                                    await _onImageButtonPressed(
+                                        imageContext, ImageSource.camera),
+                                  }),
+                          new ListTile(
+                              leading: new Icon(Icons.image),
+                              title: new Text('Gallery'),
+                              onTap: () async => {
+                                    Navigator.pop(context),
+                                    await _onImageButtonPressed(
+                                        imageContext, ImageSource.gallery),
+                                  }),
+                        ],
+                      ),
+                    );
+                  });
+            });
+      },
+    );
+  }
+
+  Future<void> _onImageButtonPressed(
+      BuildContext context, ImageSource source) async {
     try {
       final XFile? pickedFile = await _picker.pickImage(
         source: source,
@@ -190,13 +206,16 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
         final croppedFile = await ImageCropper().cropImage(
           cropStyle: CropStyle.circle,
           sourcePath: pickedFile.path,
-          compressFormat: ImageCompressFormat.jpg,
+          compressFormat: ImageCompressFormat.png,
           compressQuality: 100,
         );
         if (croppedFile != null) {
+          context.read<UsernamePicBloc>().add(
+              UsernamePicProfilePicChanged(profilePicPath: croppedFile.path));
           setState(() {
-            _setImageFile(pickedFile);
+            _setImageFile(croppedFile.path);
           });
+          // StorageService.uploadFile(croppedFile!.path!, "profilePic");
         }
       }
     } catch (e) {
@@ -226,8 +245,8 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
     }
   }
 
-  void _setImageFile(XFile? value) {
-    _imageFile = value;
+  void _setImageFile(String value) {
+    _imageFile = File(value);
   }
 
   Future<void> retrieveLostData() async {
@@ -237,10 +256,35 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
     }
     if (response.file != null) {
       setState(() {
-        _setImageFile(response.file);
+        _setImageFile(response.file!.path);
       });
     } else {
       _retrieveDataError = response.exception!.code;
     }
+  }
+
+  Widget _usernameTextField([Function? stateErrorMessage]) {
+    return BlocBuilder<UsernamePicBloc, UsernamePicState>(
+      builder: (context, state) {
+        return TextFormField(
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            decoration: InputDecoration(
+              fillColor: Color(0xFFCCCCCC),
+              filled: true,
+              labelText: 'Username',
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(50.0),
+              ),
+            ),
+            initialValue: "",
+            // The validator receives the text that the user has entered.
+            validator: (value) {
+              return stateErrorMessage?.call(state);
+            },
+            onChanged: (value) => context
+                .read<UsernamePicBloc>()
+                .add(UsernamePicUsernameChanged(value)));
+      },
+    );
   }
 }

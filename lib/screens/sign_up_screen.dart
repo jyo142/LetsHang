@@ -10,7 +10,7 @@ import 'package:letshang/blocs/signup/sign_up_state.dart';
 import 'package:letshang/layouts/unauthorized_layout.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:letshang/screens/app_screen.dart';
-import 'package:letshang/screens/profile/username_pic.dart';
+import 'package:letshang/screens/profile/username_pic_screen.dart';
 import 'package:letshang/services/message_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:letshang/widgets/google_signin_button.dart';
