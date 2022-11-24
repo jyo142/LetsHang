@@ -40,6 +40,14 @@ class UserRepository extends BaseUserRepository {
   }
 
   @override
+  Future<void> updateUser(HangUser user) {
+    return _firebaseFirestore
+        .collection('hangEvents')
+        .doc(user.userName)
+        .set(user.toDocument());
+  }
+
+  @override
   Future<void> addFirebaseUser(String userName, User firebaseUser) {
     return _firebaseFirestore
         .collection('users')

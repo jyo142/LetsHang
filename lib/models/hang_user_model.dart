@@ -17,13 +17,15 @@ class HangUser extends Equatable {
   late final String? phoneNumber;
   late final String? photoUrl;
   late final String? fcmToken;
+  late final String? profilePicDownloadUrl;
   HangUser(
       {this.name = '',
       this.userName = '',
       this.email = '',
       this.phoneNumber = '',
       this.photoUrl = '',
-      this.fcmToken = ''}) {}
+      this.fcmToken = '',
+      this.profilePicDownloadUrl = ''}) {}
 
   HangUser.fromFirebaseUser(this.userName, User firebaseUser) {
     name = firebaseUser.displayName;
@@ -39,7 +41,8 @@ class HangUser extends Equatable {
         email: snap["email"],
         phoneNumber: snap["phoneNumber"],
         photoUrl: snap["photoUrl"],
-        fcmToken: snap["fcmToken"]);
+        fcmToken: snap["fcmToken"],
+        profilePicDownloadUrl: snap["profilePicDownloadUrl"]);
     return userPreview;
   }
 
@@ -51,11 +54,19 @@ class HangUser extends Equatable {
       'phoneNumber': phoneNumber ?? "",
       'photoUrl': photoUrl ?? "",
       'fcmToken': fcmToken ?? "",
+      'profilePicDownloadUrl': profilePicDownloadUrl ?? ""
     };
     return retVal;
   }
 
   @override
-  List<Object?> get props =>
-      [name, userName, email, phoneNumber, photoUrl, fcmToken];
+  List<Object?> get props => [
+        name,
+        userName,
+        email,
+        phoneNumber,
+        photoUrl,
+        fcmToken,
+        profilePicDownloadUrl
+      ];
 }

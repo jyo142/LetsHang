@@ -3,16 +3,20 @@ import 'package:bloc/bloc.dart';
 import 'package:letshang/blocs/profile/profile_event.dart';
 import 'package:letshang/blocs/profile/username_pic_event.dart';
 import 'package:letshang/blocs/profile/username_pic_state.dart';
+import 'package:letshang/models/hang_user_model.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
+import 'package:letshang/services/storage_service.dart';
 
 class UsernamePicBloc extends Bloc<UsernamePicEvent, UsernamePicState> {
   final UserRepository _userRepository;
   final String? userName;
-
+  final String email;
   UsernamePicBloc(
-      {required UserRepository userRepository, required this.userName})
+      {required UserRepository userRepository,
+      required this.userName,
+      required this.email})
       : _userRepository = userRepository,
-        super(UsernamePicLoading(username: userName));
+        super(UsernamePicLoading(username: userName, email: email));
   @override
   Stream<UsernamePicState> mapEventToState(UsernamePicEvent event) async* {
     if (event is LoadProfile) {
@@ -27,14 +31,38 @@ class UsernamePicBloc extends Bloc<UsernamePicEvent, UsernamePicState> {
     if (event is SubmitUsernamePicEvent) {}
   }
 
-  // Stream<UsernamePicState> _mapLoadProfileToState() async* {
-  //   try {
-  //     HangUser? hangUser = await _userRepository.getUserByUserName(userName!);
-  //     // user has to be in the system at this point
-  //     yield UsernamePicRetrieved(hangUser: hangUser!);
-  //   } catch (e) {
-  //     yield UsernamePicError(
-  //         errorMessage: "Unable to retrieve profile information.");
-  //   }
-  // }
+  Stream<UsernamePicState> _mapSubmitUsernamePicToState(
+      UsernamePicState state) async* {
+    try {
+      HangUser? hangUser = await _userRepository.getUserByEmail(email);
+      if (hangUser == null) {
+        yield UsernamePicError(state,
+            errorMessage:
+                "Unable to save profile information. User was not found");
+        return;
+      }
+      if (state.profilePicPath == null) {
+        yield UsernamePicError(state,
+            errorMessage:
+                "Unable to save profile information. Invalid profile picture");
+        return;
+      }
+      final downloadUrl = await StorageService.uploadFile(
+          state.profilePicPath!, '${state.username}-profilePic');
+      if (downloadUrl == null) {
+        yield UsernamePicError(state,
+            errorMessage:
+                "Unable to save profile information. An error occured saving your profile picture");
+        return;
+      }
+      hangUser.profilePicDownloadUrl = downloadUrl;
+      // all information is valid and was able to update the profile picture.
+      await _userRepository.updateUser(hangUser);
+      // user has to be in the system at this point
+      yield UsernamePicSubmitSuccessful(state);
+    } catch (e) {
+      yield UsernamePicError(state,
+          errorMessage: "Unable to retrieve profile information.");
+    }
+  }
 }

@@ -151,7 +151,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
         if (state is SignUpEmailPasswordCreated) {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => const UsernamePictureProfile(),
+              builder: (context) => UsernamePictureProfile(
+                email: state.email!,
+              ),
             ),
           );
         }

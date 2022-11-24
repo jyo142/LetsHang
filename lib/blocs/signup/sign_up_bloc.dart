@@ -43,35 +43,44 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
   Stream<SignUpState> _mapEmailPasswordSubmitToState(
       EmailPasswordSubmitted emailPasswordSubmitted,
       SignUpState signUpState) async* {
-    try {
-      if (signUpState.email == null ||
-          signUpState.email!.isEmpty ||
-          signUpState.password == null ||
-          signUpState.password!.isEmpty ||
-          signUpState.confirmPassword == null ||
-          signUpState.confirmPassword!.isEmpty) {
-        yield SignUpError(signUpState,
-            errorMessage:
-                "Missing data. Please make sure to fill out all data before continuing.");
-        return;
-      }
-      if (signUpState.password != signUpState.confirmPassword) {
-        yield SignUpError(signUpState,
-            errorMessage:
-                "Passwords do not match. Please make sure the passwords match before continuing.");
-        return;
-      }
-      HangUser? existingEmailUser =
-          await _userRepository.getUserByEmail(signUpState.email!);
-      if (existingEmailUser == null) {
-        // didnt find user in our db, create one
-        yield SignUpEmailPasswordCreated(signUpState);
-      } else {
-        yield SignUpError(signUpState, errorMessage: "Email already exists");
-      }
-    } catch (e) {
+    if (signUpState.email == null ||
+        signUpState.email!.isEmpty ||
+        signUpState.password == null ||
+        signUpState.password!.isEmpty ||
+        signUpState.confirmPassword == null ||
+        signUpState.confirmPassword!.isEmpty) {
       yield SignUpError(signUpState,
-          errorMessage: "Unable to create new account. Please try again later");
+          errorMessage:
+              "Missing data. Please make sure to fill out all data before continuing.");
+      return;
+    }
+    if (signUpState.password != signUpState.confirmPassword) {
+      yield SignUpError(signUpState,
+          errorMessage:
+              "Passwords do not match. Please make sure the passwords match before continuing.");
+      return;
+    }
+    HangUser? existingEmailUser =
+        await _userRepository.getUserByEmail(signUpState.email!);
+    if (existingEmailUser == null) {
+      // didnt find user in our db, create one
+      try {
+        await AuthenticationService.createEmailPasswordAccount(
+            signUpState.email!, signUpState.password!);
+        HangUser newUser = HangUser(
+            name: signUpState.name,
+            userName: signUpState.userName,
+            email: signUpState.email,
+            phoneNumber: signUpState.phoneNumber);
+        await _userRepository.addUser(newUser);
+        yield SignUpEmailPasswordCreated(signUpState);
+      } on Exception catch (e) {
+        yield SignUpError(signUpState,
+            errorMessage:
+                "Unable to create new account. Please try again later. ${e.toString()}");
+      }
+    } else {
+      yield SignUpError(signUpState, errorMessage: "Email already exists");
     }
   }
 

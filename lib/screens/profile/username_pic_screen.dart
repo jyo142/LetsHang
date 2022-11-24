@@ -19,8 +19,10 @@ import 'package:letshang/services/storage_service.dart';
 import 'package:letshang/widgets/lh_button.dart';
 
 class UsernamePictureProfile extends StatefulWidget {
-  const UsernamePictureProfile({Key? key, this.username}) : super(key: key);
+  const UsernamePictureProfile({Key? key, required this.email, this.username})
+      : super(key: key);
 
+  final String email;
   final String? username;
 
   @override
@@ -38,7 +40,9 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
     return UnAuthorizedLayout(
         content: BlocProvider(
             create: (context) => UsernamePicBloc(
-                userRepository: UserRepository(), userName: widget.username),
+                userRepository: UserRepository(),
+                userName: widget.username,
+                email: widget.email),
             child: Column(
               children: [
                 Expanded(
@@ -59,7 +63,7 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
                 ),
               ],
             )),
-        imageContent: Image(
+        imageContent: const Image(
           height: 96,
           width: 96,
           image: AssetImage("assets/images/logo.png"),
@@ -130,20 +134,20 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
             });
       },
       listener: (context, state) {
-        if (state is SignUpEmailPasswordCreated) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const UsernamePictureProfile(),
-            ),
-          );
-        }
-        if (state is SignUpUserCreated) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const AppScreen(),
-            ),
-          );
-        }
+        // if (state is SignUpEmailPasswordCreated) {
+        //   Navigator.of(context).push(
+        //     MaterialPageRoute(
+        //       builder: (context) => const UsernamePictureProfile(),
+        //     ),
+        //   );
+        // }
+        // if (state is SignUpUserCreated) {
+        //   Navigator.of(context).push(
+        //     MaterialPageRoute(
+        //       builder: (context) => const AppScreen(),
+        //     ),
+        //   );
+        // }
       },
     );
   }
@@ -168,20 +172,20 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
                   context: context,
                   builder: (BuildContext context) {
                     return SafeArea(
-                      child: new Column(
+                      child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          new ListTile(
-                              leading: new Icon(Icons.camera),
-                              title: new Text('Camera'),
+                          ListTile(
+                              leading: const Icon(Icons.camera),
+                              title: const Text('Camera'),
                               onTap: () async => {
                                     Navigator.pop(context),
                                     await _onImageButtonPressed(
                                         imageContext, ImageSource.camera),
                                   }),
-                          new ListTile(
-                              leading: new Icon(Icons.image),
-                              title: new Text('Gallery'),
+                          ListTile(
+                              leading: const Icon(Icons.image),
+                              title: const Text('Gallery'),
                               onTap: () async => {
                                     Navigator.pop(context),
                                     await _onImageButtonPressed(
@@ -269,7 +273,7 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
         return TextFormField(
             autovalidateMode: AutovalidateMode.onUserInteraction,
             decoration: InputDecoration(
-              fillColor: Color(0xFFCCCCCC),
+              fillColor: const Color(0xFFCCCCCC),
               filled: true,
               labelText: 'Username',
               enabledBorder: OutlineInputBorder(
