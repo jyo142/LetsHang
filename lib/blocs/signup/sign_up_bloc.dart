@@ -9,7 +9,6 @@ import 'package:letshang/services/authentication_service.dart';
 
 class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
   final UserRepository _userRepository;
-  StreamSubscription? _userSubscription;
   // constructor
   SignUpBloc({required UserRepository userRepository, User? firebaseUser})
       : _userRepository = userRepository,
@@ -44,7 +43,7 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
       EmailPasswordSubmitted emailPasswordSubmitted,
       SignUpState signUpState) async* {
     if (signUpState.email == null ||
-        signUpState.email!.isEmpty ||
+        signUpState.email.isEmpty ||
         signUpState.password == null ||
         signUpState.password!.isEmpty ||
         signUpState.confirmPassword == null ||
@@ -61,17 +60,14 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
       return;
     }
     HangUser? existingEmailUser =
-        await _userRepository.getUserByEmail(signUpState.email!);
+        await _userRepository.getUserByEmail(signUpState.email);
     if (existingEmailUser == null) {
       // didnt find user in our db, create one
       try {
         await AuthenticationService.createEmailPasswordAccount(
-            signUpState.email!, signUpState.password!);
-        HangUser newUser = HangUser(
-            name: signUpState.name,
-            userName: signUpState.userName,
-            email: signUpState.email,
-            phoneNumber: signUpState.phoneNumber);
+            signUpState.email, signUpState.password!);
+        HangUser newUser =
+            HangUser(userName: signUpState.userName, email: signUpState.email);
         await _userRepository.addUser(newUser);
         yield SignUpEmailPasswordCreated(signUpState);
       } on Exception catch (e) {
@@ -96,9 +92,9 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
           // didnt find user in our db, create one
           HangUser curHangUser;
           curHangUser = HangUser.fromFirebaseUser(
-              signUpState.userName, signUpState.firebaseUser!);
+              signUpState.email, signUpState.firebaseUser!);
           await _userRepository.addFirebaseUser(
-              signUpState.userName, signUpState.firebaseUser!);
+              signUpState.email, signUpState.firebaseUser!);
 
           yield SignUpUserCreated(user: curHangUser);
         } else {
@@ -108,7 +104,7 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
       } else {
         // user came through normal create account flow
         await AuthenticationService.createEmailPasswordAccount(
-            signUpState.email!, signUpState.password!);
+            signUpState.email, signUpState.password!);
         HangUser newUser = HangUser(
             name: signUpState.name,
             userName: signUpState.userName,

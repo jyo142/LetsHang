@@ -11,7 +11,7 @@ class SignUpState extends Equatable {
   String? get confirmPasswordError =>
       confirmPassword != password ? "Passwords do not match" : null;
 
-  final String? email;
+  final String email;
   final String? phoneNumber;
 
   SignUpState(

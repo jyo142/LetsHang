@@ -219,7 +219,6 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
           setState(() {
             _setImageFile(croppedFile.path);
           });
-          // StorageService.uploadFile(croppedFile!.path!, "profilePic");
         }
       }
     } catch (e) {
@@ -276,6 +275,9 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
               fillColor: const Color(0xFFCCCCCC),
               filled: true,
               labelText: 'Username',
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(50.0),
+              ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(50.0),
               ),

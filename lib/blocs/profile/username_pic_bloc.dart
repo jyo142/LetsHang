@@ -28,12 +28,29 @@ class UsernamePicBloc extends Bloc<UsernamePicEvent, UsernamePicState> {
     } else if (event is UsernamePicProfilePicChanged) {
       yield state.copyWith(profilePicPath: event.profilePicPath);
     }
-    if (event is SubmitUsernamePicEvent) {}
+    if (event is SubmitUsernamePicEvent) {
+      yield UsernamePicSubmitLoading(state);
+      yield* _mapSubmitUsernamePicToState(state);
+    }
   }
 
   Stream<UsernamePicState> _mapSubmitUsernamePicToState(
       UsernamePicState state) async* {
     try {
+      if (state.username == null || state.username!.isEmpty) {
+        yield UsernamePicError(state,
+            errorMessage:
+                "Unable to save profile information. Username is required");
+        return;
+      }
+
+      if (state.profilePicPath == null) {
+        yield UsernamePicError(state,
+            errorMessage:
+                "Unable to save profile information. Invalid profile picture");
+        return;
+      }
+
       HangUser? hangUser = await _userRepository.getUserByEmail(email);
       if (hangUser == null) {
         yield UsernamePicError(state,
@@ -41,12 +58,7 @@ class UsernamePicBloc extends Bloc<UsernamePicEvent, UsernamePicState> {
                 "Unable to save profile information. User was not found");
         return;
       }
-      if (state.profilePicPath == null) {
-        yield UsernamePicError(state,
-            errorMessage:
-                "Unable to save profile information. Invalid profile picture");
-        return;
-      }
+
       final downloadUrl = await StorageService.uploadFile(
           state.profilePicPath!, '${state.username}-profilePic');
       if (downloadUrl == null) {
@@ -56,6 +68,7 @@ class UsernamePicBloc extends Bloc<UsernamePicEvent, UsernamePicState> {
         return;
       }
       hangUser.profilePicDownloadUrl = downloadUrl;
+      hangUser.userName = state.username!;
       // all information is valid and was able to update the profile picture.
       await _userRepository.updateUser(hangUser);
       // user has to be in the system at this point

@@ -36,29 +36,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     return UnAuthorizedLayout(
         content: BlocProvider(
-            create: (context) => SignUpBloc(
-                userRepository: UserRepository(),
-                firebaseUser: widget.firebaseUser),
-            child: Column(
-              children: [
-                Expanded(
-                  child: BlocConsumer<AppBloc, AppState>(
-                    listener: (context, state) {
-                      if (state is AppAuthenticated) {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (context) => const AppScreen(),
-                          ),
-                        );
-                      }
-                    },
-                    builder: (context, state) {
-                      return _emailPasswordContainer(context);
-                    },
+          create: (context) => SignUpBloc(
+              userRepository: UserRepository(),
+              firebaseUser: widget.firebaseUser),
+          child: BlocConsumer<AppBloc, AppState>(
+            listener: (context, state) {
+              if (state is AppAuthenticated) {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => const AppScreen(),
                   ),
-                ),
-              ],
-            )),
+                );
+              }
+            },
+            builder: (context, state) {
+              return _emailPasswordContainer(context);
+            },
+          ),
+        ),
         imageContent: Image(
           height: 96,
           width: 96,
@@ -109,6 +104,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 fillColor: Color(0xFFCCCCCC),
                 filled: true,
                 labelText: text,
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(50.0),
+                ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(50.0),
                 ),
@@ -152,7 +150,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => UsernamePictureProfile(
-                email: state.email!,
+                email: state.email,
               ),
             ),
           );
