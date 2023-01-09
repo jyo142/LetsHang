@@ -38,14 +38,14 @@ class UsernamePicBloc extends Bloc<UsernamePicEvent, UsernamePicState> {
       UsernamePicState state) async* {
     try {
       if (state.username == null || state.username!.isEmpty) {
-        yield UsernamePicError(state,
+        yield UsernamePicSubmitError(state,
             errorMessage:
                 "Unable to save profile information. Username is required");
         return;
       }
 
       if (state.profilePicPath == null) {
-        yield UsernamePicError(state,
+        yield UsernamePicSubmitError(state,
             errorMessage:
                 "Unable to save profile information. Invalid profile picture");
         return;
@@ -53,7 +53,7 @@ class UsernamePicBloc extends Bloc<UsernamePicEvent, UsernamePicState> {
 
       HangUser? hangUser = await _userRepository.getUserByEmail(email);
       if (hangUser == null) {
-        yield UsernamePicError(state,
+        yield UsernamePicSubmitError(state,
             errorMessage:
                 "Unable to save profile information. User was not found");
         return;
@@ -62,7 +62,7 @@ class UsernamePicBloc extends Bloc<UsernamePicEvent, UsernamePicState> {
       final downloadUrl = await StorageService.uploadFile(
           state.profilePicPath!, '${state.username}-profilePic');
       if (downloadUrl == null) {
-        yield UsernamePicError(state,
+        yield UsernamePicSubmitError(state,
             errorMessage:
                 "Unable to save profile information. An error occured saving your profile picture");
         return;
@@ -72,9 +72,9 @@ class UsernamePicBloc extends Bloc<UsernamePicEvent, UsernamePicState> {
       // all information is valid and was able to update the profile picture.
       await _userRepository.updateUser(hangUser);
       // user has to be in the system at this point
-      yield UsernamePicSubmitSuccessful(state);
+      yield UsernamePicSubmitSuccessful(state, curUser: hangUser);
     } catch (e) {
-      yield UsernamePicError(state,
+      yield UsernamePicSubmitError(state,
           errorMessage: "Unable to retrieve profile information.");
     }
   }

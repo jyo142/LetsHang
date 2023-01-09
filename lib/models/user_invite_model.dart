@@ -18,7 +18,7 @@ class UserInvite extends Equatable {
 
   static UserInvite fromMap(Map<String, dynamic> map) {
     UserInvite group = UserInvite(
-        user: HangUserPreview.fromSnapshot(map["user"]),
+        user: HangUserPreview.fromMap(map["user"]),
         status: InviteStatus.values
             .firstWhere((e) => describeEnum(e) == map["status"]),
         type: InviteType.values
@@ -30,8 +30,8 @@ class UserInvite extends Equatable {
   Map<String, Object> toDocument() {
     return {
       "user": user.toDocument(),
-      "status": status.toString(),
-      "type": type.toString(),
+      "status": describeEnum(status),
+      "type": describeEnum(type),
     };
   }
 

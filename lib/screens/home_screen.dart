@@ -3,19 +3,14 @@ import 'package:intl/intl.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
-import 'package:letshang/models/hang_event_model.dart';
+import 'package:letshang/models/event_invite.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
 import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,52 +21,69 @@ class _HomeScreenState extends State<HomeScreen> {
                     .user
                     .userName)
               ..add(LoadHangEvents()),
-            child: SafeArea(
-                child: Padding(
-                    padding: const EdgeInsets.only(
-                        left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ..._upcomingEvents(),
-                        ElevatedButton(
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all(
-                              Colors.redAccent,
-                            ),
-                            shape: MaterialStateProperty.all(
-                              RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-                          onPressed: () async {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const EditEventScreen(),
-                              ),
-                            );
-                          },
-                          child: const Padding(
-                            padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
-                            child: Text(
-                              'Create New Event',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                letterSpacing: 2,
-                              ),
-                            ),
-                          ),
+            child: const HomeView()));
+  }
+}
+
+class HomeView extends StatelessWidget {
+  const HomeView({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+          child: Padding(
+              padding: const EdgeInsets.only(
+                  left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ..._upcomingEvents(context),
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                        Colors.redAccent,
+                      ),
+                      shape: MaterialStateProperty.all(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        const SizedBox(height: 20.0),
-                        ..._pastEvents(),
-                      ],
-                    )))));
+                      ),
+                    ),
+                    onPressed: () async {
+                      final bool? shouldRefresh =
+                          await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const EditEventScreen(),
+                        ),
+                      );
+                      if (shouldRefresh != null && shouldRefresh) {
+                        context
+                            .read<HangEventOverviewBloc>()
+                            .add(LoadHangEvents());
+                      }
+                    },
+                    child: const Padding(
+                      padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+                      child: Text(
+                        'Create New Event',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20.0),
+                  ..._pastEvents(context),
+                ],
+              ))),
+    );
   }
 
-  List<Widget> _upcomingEvents() {
+  List<Widget> _upcomingEvents(BuildContext context) {
     return [
       Text(
         'My Upcoming Events',
@@ -100,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
   }
 
-  List<Widget> _pastEvents() {
+  List<Widget> _pastEvents(BuildContext context) {
     return [
       Text(
         'My Past Events',
@@ -129,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
   }
 
-  Widget _eventListView(List<HangEvent> events) {
+  Widget _eventListView(List<HangEventInvite> events) {
     return Expanded(
       child: ListView.builder(
           itemCount: events.length,
@@ -138,19 +150,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ListTile(
               leading: IconButton(
                 icon: const Icon(Icons.edit),
-                onPressed: () {
-                  Navigator.of(context).push(
+                onPressed: () async {
+                  final bool? shouldRefresh = await Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => EditEventScreen(
-                        curEvent: events[index],
+                        curEvent: events[index].event,
                       ),
                     ),
                   );
+                  if (shouldRefresh != null && shouldRefresh) {
+                    context.read<HangEventOverviewBloc>().add(LoadHangEvents());
+                  }
                 },
               ),
               title: Text(DateFormat('MM/dd/yyyy h:mm a')
-                  .format(events[index].eventStartDate)),
-              subtitle: Text(events[index].eventName),
+                  .format(events[index].event.eventStartDate)),
+              subtitle: Text(events[index].event.eventName),
             ));
           }),
     );

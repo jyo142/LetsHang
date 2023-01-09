@@ -39,6 +39,24 @@ class HangEvent extends Equatable {
     return fromMap(snap.data()!, eventInvites);
   }
 
+  HangEvent copyWith(
+      {String? id,
+      HangUserPreview? eventOwner,
+      String? eventName,
+      String? eventDescription,
+      DateTime? eventStartDate,
+      DateTime? eventEndDate,
+      List<UserInvite>? userInvites}) {
+    return HangEvent(
+        id: id ?? this.id,
+        eventOwner: eventOwner ?? this.eventOwner,
+        eventName: eventName ?? this.eventName,
+        eventDescription: eventDescription ?? this.eventDescription,
+        eventStartDate: eventStartDate ?? this.eventStartDate,
+        eventEndDate: eventEndDate ?? this.eventEndDate,
+        userInvites: userInvites ?? this.userInvites);
+  }
+
   static HangEvent fromMap(Map<String, dynamic> map,
       [List<UserInvite>? userInvites]) {
     Timestamp startDateTimestamp = map['eventStartDate'];

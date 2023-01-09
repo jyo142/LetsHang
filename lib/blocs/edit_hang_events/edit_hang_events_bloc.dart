@@ -6,16 +6,17 @@ import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/hang_user_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
+import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/repositories/group/group_repository.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
+import 'package:letshang/repositories/invites/base_invites_repository.dart';
 import 'package:letshang/repositories/invites/invites_repository.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
-import 'package:letshang/repositories/invites/invites_repository.dart';
 
 class EditHangEventsBloc
     extends Bloc<EditHangEventsEvent, EditHangEventsState> {
   final HangEventRepository _hangEventRepository;
-  final InvitesRepository _invitesRepository;
+  final BaseUserInvitesRepository _invitesRepository;
   final UserRepository _userRepository;
   final GroupRepository _groupRepository;
   StreamSubscription? _hangEventSubscription;
@@ -27,7 +28,7 @@ class EditHangEventsBloc
       required this.creatingUser,
       this.existingHangEvent})
       : _hangEventRepository = hangEventRepository,
-        _invitesRepository = InvitesRepository(),
+        _invitesRepository = UserInvitesRepository(),
         _userRepository = UserRepository(),
         _groupRepository = GroupRepository(),
         super(EditHangEventsState(
@@ -46,7 +47,13 @@ class EditHangEventsBloc
   @override
   Stream<EditHangEventsState> mapEventToState(
       EditHangEventsEvent event) async* {
-    if (event is EventNameChanged) {
+    if (event is LoadUserInvites) {
+      if (existingHangEvent != null) {
+        List<UserInvite> eventUserInvites = await _hangEventRepository
+            .getUserInvitesForEvent(existingHangEvent!.id);
+        // yield state.copyWith(eventUserInvitees: eventUserInvites);
+      }
+    } else if (event is EventNameChanged) {
       yield state.copyWith(eventName: event.eventName);
     } else if (event is EventDescriptionChanged) {
       yield state.copyWith(eventDescription: event.eventDescription);
@@ -70,7 +77,7 @@ class EditHangEventsBloc
           event.eventEndTime.minute);
 
       yield state.copyWith(eventEndDate: newEventEndDateTime);
-    } else if (event is EventSaved) {
+    } else if (event is EventSavedInitiated) {
       yield* _mapEventSavedState(event, state);
     }
     // events to do with finding an event invitee
@@ -109,7 +116,8 @@ class EditHangEventsBloc
   }
 
   Stream<EditHangEventsState> _mapEventSavedState(
-      EventSaved eventSavedEvent, EditHangEventsState eventsState) async* {
+      EventSavedInitiated eventSavedEvent,
+      EditHangEventsState eventsState) async* {
     _hangEventSubscription?.cancel();
     try {
       final resultEventUserInvitees = List.of(state.eventUserInvitees.values);
@@ -126,13 +134,14 @@ class EditHangEventsBloc
         // this event is being edited if an id is present
         HangEvent editingEvent =
             await _hangEventRepository.editHangEvent(savingEvent);
-        await _invitesRepository.editEventUserInvites(editingEvent);
+        await _invitesRepository.editUserEventInvites(editingEvent);
       } else {
         HangEvent newEvent =
             await _hangEventRepository.addHangEvent(savingEvent);
-        await _invitesRepository.addEventUserInvites(
+        await _invitesRepository.addUserEventInvites(
             newEvent, savingEvent.userInvites);
       }
+      yield EventSavedSuccessfully(state);
     } catch (_) {}
   }
 }

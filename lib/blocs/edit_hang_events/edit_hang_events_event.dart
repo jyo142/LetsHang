@@ -10,6 +10,8 @@ abstract class EditHangEventsEvent extends Equatable {
   List<Object> get props => [];
 }
 
+class LoadUserInvites extends EditHangEventsEvent {}
+
 class EventNameChanged extends EditHangEventsEvent {
   const EventNameChanged({required this.eventName});
 
@@ -49,7 +51,7 @@ class EventEndDateTimeChanged extends EditHangEventsEvent {
   List<Object> get props => [eventEndDate];
 }
 
-class EventSaved extends EditHangEventsEvent {}
+class EventSavedInitiated extends EditHangEventsEvent {}
 
 class EventSearchByInviteeChanged extends EditHangEventsEvent {
   const EventSearchByInviteeChanged({required this.searchEventInviteeBy});

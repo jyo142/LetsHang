@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
+import 'package:letshang/blocs/app/app_event.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/profile/username_pic_bloc.dart';
 import 'package:letshang/blocs/profile/username_pic_event.dart';
@@ -39,30 +40,25 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
   Widget build(BuildContext context) {
     return UnAuthorizedLayout(
         content: BlocProvider(
-            create: (context) => UsernamePicBloc(
-                userRepository: UserRepository(),
-                userName: widget.username,
-                email: widget.email),
-            child: Column(
-              children: [
-                Expanded(
-                  child: BlocConsumer<AppBloc, AppState>(
-                    listener: (context, state) {
-                      if (state is AppAuthenticated) {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (context) => const AppScreen(),
-                          ),
-                        );
-                      }
-                    },
-                    builder: (context, state) {
-                      return _usernamePicContainer(context);
-                    },
+          create: (context) => UsernamePicBloc(
+              userRepository: UserRepository(),
+              userName: widget.username,
+              email: widget.email),
+          child: BlocConsumer<AppBloc, AppState>(
+            listener: (context, state) {
+              if (state is UsernamePicSubmitSuccessful) {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => const AppScreen(),
                   ),
-                ),
-              ],
-            )),
+                );
+              }
+            },
+            builder: (context, state) {
+              return _usernamePicContainer(context);
+            },
+          ),
+        ),
         imageContent: const Image(
           height: 96,
           width: 96,
@@ -127,6 +123,15 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
           MessageService.showErrorMessage(
               content: state.errorMessage, context: context);
         }
+        if (state is UsernamePicSubmitSuccessful) {
+          final appState = context.read<AppBloc>().state;
+          if (appState is AppNewFirebaseUser || appState is AppNewUser) {
+            // user came from the signup flow, we need to authenticate them
+            context
+                .read<AppBloc>()
+                .add(AppUserAuthenticated(hangUser: state.curUser));
+          }
+        }
         return LHButton(
             buttonText: 'NEXT',
             onPressed: () {
@@ -134,14 +139,7 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
             });
       },
       listener: (context, state) {
-        // if (state is SignUpEmailPasswordCreated) {
-        //   Navigator.of(context).push(
-        //     MaterialPageRoute(
-        //       builder: (context) => const UsernamePictureProfile(),
-        //     ),
-        //   );
-        // }
-        // if (state is SignUpUserCreated) {
+        // if (state is UsernamePicSubmitSuccessful) {
         //   Navigator.of(context).push(
         //     MaterialPageRoute(
         //       builder: (context) => const AppScreen(),

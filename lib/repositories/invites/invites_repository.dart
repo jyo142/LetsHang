@@ -6,14 +6,14 @@ import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/repositories/invites/base_invites_repository.dart';
 
-class InvitesRepository extends BaseInvitesRepository {
+class UserInvitesRepository extends BaseUserInvitesRepository {
   final FirebaseFirestore _firebaseFirestore;
 
-  InvitesRepository({FirebaseFirestore? firebaseFirestore})
+  UserInvitesRepository({FirebaseFirestore? firebaseFirestore})
       : _firebaseFirestore = firebaseFirestore ?? FirebaseFirestore.instance;
 
   @override
-  Future<List<HangEventInvite>> getEventInvites(String userName) async {
+  Future<List<HangEventInvite>> getUserEventInvites(String userName) async {
     DocumentSnapshot eventInviteSnapshot = await _firebaseFirestore
         .collection("userInvites")
         .doc(userName)
@@ -27,15 +27,36 @@ class InvitesRepository extends BaseInvitesRepository {
           .map((m) => HangEventInvite.fromMap(m))
           .toList();
     }
-    return eventInvites;
+
+    List<HangEventInvite> retValInvites = [];
+    // we need to get the event invite previews
+    for (HangEventInvite curEventInvite in eventInvites) {
+      DocumentSnapshot eventInviteSnapshot = await _firebaseFirestore
+          .collection("hangEvents")
+          .doc(curEventInvite.event.id)
+          .collection("invites")
+          .doc("userInvites")
+          .get();
+      List<UserInvite> allEventUserInvites =
+          List.of(eventInviteSnapshot["userInvites"])
+              .map((m) => UserInvite.fromMap(m))
+              .toList();
+      HangEvent newEvent =
+          curEventInvite.event.copyWith(userInvites: allEventUserInvites);
+      retValInvites.add(HangEventInvite(
+          event: newEvent,
+          status: curEventInvite.status,
+          type: curEventInvite.type));
+    }
+    return retValInvites;
   }
 
   @override
-  Future<void> addEventUserInvites(
+  Future<void> addUserEventInvites(
       HangEvent hangEvent, List<UserInvite> userInvites) async {
     try {
       await _firebaseFirestore.runTransaction((transaction) async {
-        DocumentReference dbUserInvitesRef = _firebaseFirestore
+        DocumentReference dbEventsUserInvitesRef = _firebaseFirestore
             .collection('hangEvents')
             .doc(hangEvent.id)
             .collection('invites')
@@ -45,7 +66,7 @@ class InvitesRepository extends BaseInvitesRepository {
           await addUserInvites(hangEvent, userInvites, transaction);
         }
 
-        transaction.set(dbUserInvitesRef, {
+        transaction.set(dbEventsUserInvitesRef, {
           "userInvites":
               hangEvent.userInvites.map((ui) => ui.toDocument()).toList()
         });
@@ -56,7 +77,7 @@ class InvitesRepository extends BaseInvitesRepository {
   }
 
   @override
-  Future<void> editEventUserInvites(HangEvent hangEvent) async {
+  Future<void> editUserEventInvites(HangEvent hangEvent) async {
     await _firebaseFirestore.runTransaction((transaction) async {
       DocumentReference dbUserInvitesRef = _firebaseFirestore
           .collection('hangEvents')
@@ -108,8 +129,8 @@ class InvitesRepository extends BaseInvitesRepository {
       } else {
         retValEvents.add(newEventInvite);
       }
-      transaction.update(eventInviteRef,
-          {"eventInvites": List.of(retValEvents.map((e) => e.toDocument()))});
+      transaction.set(eventInviteRef,
+          {"eventInvites": retValEvents.map((e) => e.toDocument()).toList()});
     }));
   }
 

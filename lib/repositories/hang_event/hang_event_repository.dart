@@ -66,4 +66,22 @@ class HangEventRepository extends BaseHangEventRepository {
         .set(hangEvent.toDocument());
     return hangEvent;
   }
+
+  @override
+  Future<List<UserInvite>> getUserInvitesForEvent(String hangEventId) async {
+    DocumentSnapshot eventsUserInvitesSnap = await _firebaseFirestore
+        .collection('hangEvents')
+        .doc(hangEventId)
+        .collection('invites')
+        .doc("userInvites")
+        .get();
+
+    List<UserInvite> invites = [];
+    if (eventsUserInvitesSnap.exists) {
+      invites = List.of(eventsUserInvitesSnap["userInvites"])
+          .map((m) => UserInvite.fromMap(m))
+          .toList();
+    }
+    return invites;
+  }
 }

@@ -10,9 +10,9 @@ import 'package:letshang/services/authentication_service.dart';
 class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
   final UserRepository _userRepository;
   // constructor
-  SignUpBloc({required UserRepository userRepository, User? firebaseUser})
+  SignUpBloc({required UserRepository userRepository})
       : _userRepository = userRepository,
-        super(SignUpState(firebaseUser: firebaseUser));
+        super(SignUpState());
 
   @override
   Stream<SignUpState> mapEventToState(SignUpEvent event) async* {
@@ -31,9 +31,6 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
       yield state.copyWith(email: event.email);
     } else if (event is PhoneNumberChanged) {
       yield state.copyWith(name: event.phoneNumber);
-    } else if (event is CreateAccountRequested) {
-      yield SignUpSubmitLoading(state);
-      yield* _mapSignupSubmitToState(event, state);
     } else {
       yield state;
     }
@@ -77,45 +74,6 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
       }
     } else {
       yield SignUpError(signUpState, errorMessage: "Email already exists");
-    }
-  }
-
-  Stream<SignUpState> _mapSignupSubmitToState(
-      CreateAccountRequested createAccountRequested,
-      SignUpState signUpState) async* {
-    try {
-      if (signUpState.firebaseUser != null) {
-        // user came through the firebase signup flow
-        HangUser? existingUserNameUser =
-            await _userRepository.getUserByUserName(signUpState.userName);
-        if (existingUserNameUser == null) {
-          // didnt find user in our db, create one
-          HangUser curHangUser;
-          curHangUser = HangUser.fromFirebaseUser(
-              signUpState.email, signUpState.firebaseUser!);
-          await _userRepository.addFirebaseUser(
-              signUpState.email, signUpState.firebaseUser!);
-
-          yield SignUpUserCreated(user: curHangUser);
-        } else {
-          yield SignUpError(signUpState,
-              errorMessage: "Username already exists");
-        }
-      } else {
-        // user came through normal create account flow
-        await AuthenticationService.createEmailPasswordAccount(
-            signUpState.email, signUpState.password!);
-        HangUser newUser = HangUser(
-            name: signUpState.name,
-            userName: signUpState.userName,
-            email: signUpState.email,
-            phoneNumber: signUpState.phoneNumber);
-        await _userRepository.addUser(newUser);
-        yield SignUpUserCreated(user: newUser);
-      }
-    } catch (e) {
-      yield SignUpError(signUpState,
-          errorMessage: "Unable to create new account. Please try again later");
     }
   }
 }

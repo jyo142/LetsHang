@@ -52,7 +52,7 @@ class UserRepository extends BaseUserRepository {
     return _firebaseFirestore
         .collection('users')
         .doc(email)
-        .set(HangUser.fromFirebaseUser(email, firebaseUser).toDocument());
+        .set(HangUser.fromFirebaseUser("", firebaseUser).toDocument());
   }
 
   @override

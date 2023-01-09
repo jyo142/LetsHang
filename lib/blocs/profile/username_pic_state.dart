@@ -49,7 +49,12 @@ class UsernamePicSubmitLoading extends UsernamePicState {
 }
 
 class UsernamePicSubmitSuccessful extends UsernamePicState {
-  UsernamePicSubmitSuccessful(UsernamePicState state) : super.fromState(state);
+  final HangUser curUser;
+  UsernamePicSubmitSuccessful(UsernamePicState state, {required this.curUser})
+      : super.fromState(state);
+
+  @override
+  List<Object> get props => [curUser];
 }
 
 class UsernamePicSubmitError extends UsernamePicState {

@@ -22,8 +22,15 @@ final ThemeData mainTheme = ThemeData(
         fontWeight: FontWeight.w800,
         letterSpacing: .5,
         fontFamily: "Outfit"),
+    headline6: TextStyle(
+        fontSize: 15.0,
+        fontWeight: FontWeight.w500,
+        letterSpacing: .5,
+        fontFamily: "Outfit"),
     bodyText1:
         TextStyle(fontSize: 15.0, letterSpacing: .5, fontFamily: "Outfit"),
+    bodyText2:
+        TextStyle(fontSize: 11.0, letterSpacing: .5, fontFamily: "Outfit"),
   ),
 );
 
@@ -32,6 +39,14 @@ extension CustomStyles on TextTheme {
     return TextStyle(
       fontSize: 14.0,
       color: Color(0xFF0287BF),
+    );
+  }
+
+  TextStyle get tabText {
+    return TextStyle(
+      fontSize: 14.0,
+      fontFamily: "TT Norms",
+      letterSpacing: 0.01,
     );
   }
 }

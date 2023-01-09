@@ -3,6 +3,8 @@ import 'package:bloc/bloc.dart';
 import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/hang_user_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
+import 'package:letshang/models/invite.dart';
+import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/repositories/group/group_repository.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:meta/meta.dart';
@@ -27,10 +29,10 @@ class EditGroupBloc extends Bloc<EditGroupEvent, EditGroupState> {
         super(EditGroupState(
             groupName: existingGroup?.groupName ?? '',
             groupOwner: existingGroup?.groupOwner ?? creatingUser,
-            groupMembers: existingGroup?.members != null
+            groupUserInvitees: existingGroup?.userInvites != null
                 ? {
-                    for (var member in existingGroup!.members)
-                      member.userName: member
+                    for (var member in existingGroup!.userInvites)
+                      member.user.userName: member
                   }
                 : null));
 
@@ -70,11 +72,11 @@ class EditGroupBloc extends Bloc<EditGroupEvent, EditGroupState> {
     }
 
     if (event is SaveGroupInitiated) {
-      final resultGroupMembers = List.of(state.groupMembers.values);
+      final resultGroupMembers = List.of(state.groupUserInvitees.values);
       Group resultGroup = Group(
           id: existingGroup?.id ?? "",
           groupName: state.groupName,
-          members: resultGroupMembers,
+          userInvites: resultGroupMembers,
           groupOwner: creatingUser);
       if (existingGroup != null) {
         await _groupRepository.editGroup(resultGroup);

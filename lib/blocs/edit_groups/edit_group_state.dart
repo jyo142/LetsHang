@@ -5,62 +5,73 @@ class EditGroupState extends Equatable {
   final String groupName;
   final HangUserPreview groupOwner;
   final String findGroupMember;
-  late final Map<String, HangUserPreview> groupMembers;
+  late final Map<String, UserInvite> groupUserInvitees;
   final SearchUserBy searchGroupMemberBy;
 
   EditGroupState(
       {this.groupName = '',
       required this.groupOwner,
       this.findGroupMember = '',
-      Map<String, HangUserPreview>? groupMembers,
+      Map<String, UserInvite>? groupUserInvitees,
       this.searchGroupMemberBy = SearchUserBy.username})
-      : this.groupMembers = groupMembers ?? {groupOwner.userName: groupOwner};
+      : this.groupUserInvitees = groupUserInvitees ??
+            {
+              groupOwner.userName: UserInvite(
+                  status: InviteStatus.pending,
+                  user: groupOwner,
+                  type: InviteType.event)
+            };
 
   EditGroupState.fromState(EditGroupState state)
       : this(
             groupName: state.groupName,
             groupOwner: state.groupOwner,
             findGroupMember: state.findGroupMember,
-            groupMembers: state.groupMembers,
+            groupUserInvitees: state.groupUserInvitees,
             searchGroupMemberBy: state.searchGroupMemberBy);
 
   EditGroupState copyWith(
       {String? groupName,
       HangUserPreview? groupOwner,
       String? findGroupMember,
-      Map<String, HangUserPreview>? groupMembers,
+      Map<String, UserInvite>? groupUserInvitees,
       SearchUserBy? searchGroupMemberBy}) {
     return EditGroupState(
         groupName: groupName ?? this.groupName,
         groupOwner: groupOwner ?? this.groupOwner,
         findGroupMember: findGroupMember ?? this.findGroupMember,
-        groupMembers: groupMembers ?? this.groupMembers,
+        groupUserInvitees: groupUserInvitees ?? this.groupUserInvitees,
         searchGroupMemberBy: searchGroupMemberBy ?? this.searchGroupMemberBy);
   }
 
   EditGroupState addGroupMember(HangUserPreview newGroupMember) {
-    final newGroupMembers = Map.of(groupMembers);
-    newGroupMembers.putIfAbsent(newGroupMember.userName, () => newGroupMember);
+    final newGroupMembers = Map.of(groupUserInvitees);
+    newGroupMembers.putIfAbsent(
+        newGroupMember.userName,
+        () => UserInvite(
+            user: newGroupMember,
+            status: InviteStatus.pending,
+            type: InviteType.event));
     return EditGroupState(
         groupName: groupName,
         groupOwner: groupOwner,
         findGroupMember: findGroupMember,
-        groupMembers: newGroupMembers);
+        groupUserInvitees: newGroupMembers);
   }
 
   EditGroupState deleteGroupMember(String groupMemberUserName) {
-    final newGroupMembers = Map.of(groupMembers);
+    final newGroupMembers = Map.of(groupUserInvitees);
     newGroupMembers.remove(groupMemberUserName);
     return EditGroupState(
         groupName: groupName,
         groupOwner: groupOwner,
         findGroupMember: findGroupMember,
-        groupMembers: newGroupMembers);
+        groupUserInvitees: newGroupMembers);
   }
 
   @override
   List<Object?> get props => [
-        groupMembers,
+        groupUserInvitees,
         groupName,
         groupOwner,
         findGroupMember,

@@ -26,9 +26,14 @@ class AppBloc extends Bloc<AppEvent, AppState> {
               await _userRepository.getUserByEmail(user.email!);
 
           if (curHangUser == null) {
-            yield AppNewUser(firebaseUser: user);
+            await _userRepository.addFirebaseUser(user.email!, user);
+            yield AppNewFirebaseUser(firebaseUser: user);
           } else {
-            yield* mapAuthenticatedUser(curHangUser);
+            if (curHangUser.userName.isEmpty) {
+              yield AppNewFirebaseUser(firebaseUser: user);
+            } else {
+              yield* mapAuthenticatedUser(curHangUser);
+            }
           }
         } else {
           yield const AppLoginError(
@@ -42,7 +47,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     } else if (event is AppUserAuthenticated) {
       yield* mapAuthenticatedUser(event.hangUser);
     } else if (event is AppSignupRequested) {
-      yield const AppNewUser();
+      yield AppNewUser();
     } else {
       // user is logging out
       yield AppUnauthenticated();
@@ -51,7 +56,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   Stream<AppState> mapAuthenticatedUser(HangUser curUser) async* {
     final fcmToken = await FirebaseMessaging.instance.getToken();
-    await _userRepository.updateFCMToken(curUser.userName, fcmToken);
+    await _userRepository.updateFCMToken(curUser.email!, fcmToken);
     yield AppAuthenticated(user: curUser);
   }
 }

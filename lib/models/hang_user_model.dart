@@ -12,12 +12,12 @@ extension ParseToString on SearchUserBy {
 
 class HangUser extends Equatable {
   late final String? name;
-  late final String userName;
+  late String userName;
   late final String? email;
   late final String? phoneNumber;
   late final String? photoUrl;
-  late final String? fcmToken;
-  late final String? profilePicDownloadUrl;
+  late String? fcmToken;
+  late String? profilePicDownloadUrl;
   HangUser(
       {this.name = '',
       this.userName = '',
@@ -27,12 +27,13 @@ class HangUser extends Equatable {
       this.fcmToken = '',
       this.profilePicDownloadUrl = ''}) {}
 
-  HangUser.fromFirebaseUser(this.userName, User firebaseUser) {
-    name = firebaseUser.displayName;
-    email = firebaseUser.email;
-    phoneNumber = firebaseUser.phoneNumber;
-    photoUrl = firebaseUser.photoURL;
-  }
+  HangUser.fromFirebaseUser(String userName, User firebaseUser)
+      : this(
+            userName: userName,
+            name: firebaseUser.displayName,
+            email: firebaseUser.email,
+            phoneNumber: firebaseUser.phoneNumber,
+            photoUrl: firebaseUser.photoURL);
 
   static HangUser fromSnapshot(DocumentSnapshot snap) {
     HangUser userPreview = HangUser(

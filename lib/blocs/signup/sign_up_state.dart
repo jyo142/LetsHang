@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 import 'package:letshang/models/hang_user_model.dart';
 
 class SignUpState extends Equatable {
-  final User? firebaseUser;
   final String userName;
   final String? name;
   final String? password;
@@ -15,8 +14,7 @@ class SignUpState extends Equatable {
   final String? phoneNumber;
 
   SignUpState(
-      {this.firebaseUser,
-      this.userName = '',
+      {this.userName = '',
       this.name = '',
       this.password = '',
       this.confirmPassword = '',
@@ -25,7 +23,6 @@ class SignUpState extends Equatable {
 
   SignUpState.fromState(SignUpState state)
       : this(
-            firebaseUser: state.firebaseUser,
             userName: state.userName,
             name: state.name,
             password: state.password,
@@ -42,7 +39,6 @@ class SignUpState extends Equatable {
       String? email,
       String? phoneNumber}) {
     return SignUpState(
-        firebaseUser: firebaseUser ?? this.firebaseUser,
         userName: userName ?? this.userName,
         name: name ?? this.name,
         password: password ?? this.password,
@@ -52,15 +48,8 @@ class SignUpState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-        firebaseUser,
-        userName,
-        name,
-        password,
-        confirmPassword,
-        email,
-        phoneNumber
-      ];
+  List<Object?> get props =>
+      [userName, name, password, confirmPassword, email, phoneNumber];
 }
 
 class SignUpSubmitLoading extends SignUpState {

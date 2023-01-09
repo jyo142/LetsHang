@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_event.dart';
 import 'package:letshang/blocs/app/app_state.dart';
-import 'package:letshang/blocs/login/login_bloc.dart';
 import 'package:letshang/blocs/signup/sign_up_bloc.dart';
 import 'package:letshang/blocs/signup/sign_up_event.dart';
 import 'package:letshang/blocs/signup/sign_up_state.dart';
@@ -12,33 +11,22 @@ import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:letshang/screens/app_screen.dart';
 import 'package:letshang/screens/profile/username_pic_screen.dart';
 import 'package:letshang/services/message_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:letshang/widgets/google_signin_button.dart';
 import 'package:letshang/widgets/lh_button.dart';
 
 class SignUpScreen extends StatefulWidget {
-  final User? firebaseUser;
-  const SignUpScreen({Key? key, this.firebaseUser}) : super(key: key);
+  const SignUpScreen({Key? key}) : super(key: key);
 
   @override
   _SignUpScreenState createState() => _SignUpScreenState();
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  late final isFirebaseSignup;
-
-  void initState() {
-    isFirebaseSignup = widget.firebaseUser != null;
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return UnAuthorizedLayout(
         content: BlocProvider(
-          create: (context) => SignUpBloc(
-              userRepository: UserRepository(),
-              firebaseUser: widget.firebaseUser),
+          create: (context) => SignUpBloc(userRepository: UserRepository()),
           child: BlocConsumer<AppBloc, AppState>(
             listener: (context, state) {
               if (state is AppAuthenticated) {

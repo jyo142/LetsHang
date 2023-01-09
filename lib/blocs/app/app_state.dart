@@ -32,8 +32,10 @@ class AppLoginError extends AppState {
 
 class AppUnauthenticated extends AppState {}
 
-class AppNewUser extends AppState {
-  const AppNewUser({this.firebaseUser});
+class AppNewUser extends AppState {}
+
+class AppNewFirebaseUser extends AppState {
+  const AppNewFirebaseUser({this.firebaseUser});
 
   final User? firebaseUser;
 

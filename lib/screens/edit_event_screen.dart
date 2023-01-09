@@ -396,7 +396,16 @@ class _EditEventScreenState extends State<EditEventScreen> {
   }
 
   Widget _submitButton() {
-    return BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
+    return BlocConsumer<EditHangEventsBloc, EditHangEventsState>(
+      listener: (context, state) {
+        if (state is EventSavedSuccessfully) {
+          MessageService.showSuccessMessage(
+              content: "Event saved successfully", context: context);
+
+          // after the event is saved go back to home screen
+          Navigator.pop(context, true);
+        }
+      },
       builder: (context, state) {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -409,13 +418,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Processing Data')),
                 );
-                context.read<EditHangEventsBloc>().add(EventSaved());
-
-                MessageService.showSuccessMessage(
-                    content: "Event saved successfully", context: context);
-
-                // after the event is saved go back to home screen
-                Navigator.pop(context, true);
+                context.read<EditHangEventsBloc>().add(EventSavedInitiated());
               } else {
                 // not validated
               }

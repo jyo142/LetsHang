@@ -13,6 +13,14 @@ class HangEventInvite extends Invite {
     return fromMap(snap.data()!);
   }
 
+  HangEventInvite copyWith(
+      {HangEvent? event, InviteStatus? status, InviteType? type}) {
+    return HangEventInvite(
+        event: event ?? this.event,
+        status: status ?? this.status,
+        type: type ?? this.type);
+  }
+
   static HangEventInvite fromMap(Map<String, dynamic> map) {
     HangEventInvite group = HangEventInvite(
         event: HangEvent.fromMap(map["event"]),
