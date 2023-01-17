@@ -4,7 +4,9 @@ import 'package:intl/intl.dart';
 import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/user_invite_model.dart';
+import 'package:letshang/screens/event_details_screen.dart';
 import 'package:letshang/screens/sign_up_screen.dart';
+import 'package:letshang/widgets/avatars/user_avatar.dart';
 
 class EventCard extends StatelessWidget {
   final HangEvent curEvent;
@@ -58,7 +60,9 @@ class EventCard extends StatelessWidget {
                   onTap: () async {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => const SignUpScreen(),
+                        builder: (context) => EventDetailsScreen(
+                          curEvent: curEvent,
+                        ),
                       ),
                     );
                   },
@@ -96,36 +100,7 @@ class EventCard extends StatelessWidget {
                   ),
                 );
               }
-              if (userInvites[index].user?.photoUrl != null) {
-                return CircleAvatar(
-                  radius: 15,
-                  backgroundImage:
-                      NetworkImage(curEvent.userInvites[0].user.photoUrl!),
-                );
-              } else {
-                return CircleAvatar(
-                  radius: 15,
-                  backgroundColor: Color(0xFF0287BF),
-                  child: Text(
-                    _userInitials(userInvites[index].user!),
-                    style: Theme.of(context).textTheme.bodyText2!.merge(
-                        TextStyle(fontSize: 9, color: Color(0xFFFFFFFF))),
-                  ),
-                );
-              }
+              return UserAvatar(curUser: userInvites[index].user);
             }));
-  }
-
-  String _userInitials(HangUserPreview user) {
-    if (user.name != null) {
-      String trimmedName = user.name!.trim();
-      List<String> splitName = user.name!.split(' ');
-      final result = splitName.fold<String>(
-          '',
-          (previousValue, element) =>
-              previousValue + element.substring(0, 1).toUpperCase());
-      return result;
-    }
-    return user.userName.substring(0, 1).toUpperCase();
   }
 }

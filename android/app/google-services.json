@@ -14,11 +14,19 @@
       },
       "oauth_client": [
         {
-          "client_id": "234546462541-sj7m6ucasi6voraeb1js73pve803adek.apps.googleusercontent.com",
+          "client_id": "234546462541-orv48nfpn35pjae25pp7c89i8p6vk603.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.company.letshang",
-            "certificate_hash": "01ca694590e27e70e2148d7e1744f6c85c8f2674"
+            "certificate_hash": "3b17c77be85212c66b9ae16776a7e35575970ded"
+          }
+        },
+        {
+          "client_id": "234546462541-sme5q6lurhbg86ehir6q3sko6n1jrdhk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.company.letshang",
+            "certificate_hash": "1cdea5ef83c439d3711fc11a6f8bdda7a4bcf494"
           }
         },
         {
