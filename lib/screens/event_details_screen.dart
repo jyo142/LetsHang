@@ -10,6 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/screens/event_participants_screen.dart';
 import 'package:letshang/widgets/avatars/attendees_avatar.dart';
 import 'package:letshang/widgets/avatars/user_avatar.dart';
+import 'package:letshang/widgets/cards/user_event_card.dart';
 import 'package:letshang/widgets/lh_button.dart';
 
 class EventDetailsScreen extends StatelessWidget {
@@ -185,7 +186,9 @@ class _EventDetailsView extends StatelessWidget {
                                         Navigator.of(context).push(
                                           MaterialPageRoute(
                                             builder: (context) =>
-                                                EventParticipantsScreen(),
+                                                EventParticipantsScreen(
+                                              curEventId: curEvent.id,
+                                            ),
                                           ),
                                         );
                                       },
@@ -201,37 +204,19 @@ class _EventDetailsView extends StatelessWidget {
                               ),
                               Container(
                                   margin: EdgeInsets.only(top: 30),
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFFF4F8FA),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  padding:
-                                      const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                                  child: Row(
-                                    children: [
-                                      UserAvatar(curUser: curEvent.eventOwner),
-                                      Padding(
-                                        padding: EdgeInsets.only(
-                                            left: 15, right: 15),
-                                        child: Text(
-                                          curEvent.eventOwner.name!,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyText1,
-                                        ),
+                                  child: UserEventCard(
+                                    curUser: curEvent.eventOwner,
+                                    backgroundColor: Color(0xFFF4F8FA),
+                                    label: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(5.0),
+                                        color: Color(0xFFDEEFE8),
                                       ),
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(5.0),
-                                          color: Color(0xFFDEEFE8),
-                                        ),
-                                        padding: const EdgeInsets.fromLTRB(
-                                            20, 10, 20, 10),
-                                        child: Text("Organizer"),
-                                      )
-                                    ],
+                                      padding: const EdgeInsets.fromLTRB(
+                                          20, 10, 20, 10),
+                                      child: Text("Organizer"),
+                                    ),
                                   )),
                               Container(
                                   margin: EdgeInsets.only(top: 20),

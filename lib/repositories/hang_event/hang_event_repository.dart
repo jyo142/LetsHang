@@ -39,18 +39,6 @@ class HangEventRepository extends BaseHangEventRepository {
   }
 
   @override
-  Future<List<HangEvent>> getEventsForUser(String userName) async {
-    QuerySnapshot querySnapshots = await _firebaseFirestore
-        .collection('hangEvents')
-        .where('eventInviteeIds', arrayContains: userName)
-        .get();
-
-    return querySnapshots.docs
-        .map((doc) => HangEvent.fromSnapshot(doc))
-        .toList();
-  }
-
-  @override
   Future<HangEvent> addHangEvent(HangEvent hangEvent) async {
     DocumentReference docRef = await _firebaseFirestore
         .collection('hangEvents')
