@@ -34,10 +34,14 @@ class HangEventParticipantsBloc
       yield state.copyWith(addParticipantBy: AddParticipantBy.none);
     }
     if (event is SearchByEmailPressed) {
-      yield state.copyWith(addParticipantBy: AddParticipantBy.email);
+      yield state.copyWith(
+          addParticipantBy: AddParticipantBy.email, searchByEmailValue: '');
     }
     if (event is SearchByUsernamePressed) {
-      yield state.copyWith(addParticipantBy: AddParticipantBy.username);
+      yield state.copyWith(
+        addParticipantBy: AddParticipantBy.username,
+        searchByUsernameValue: '',
+      );
     }
     if (event is SearchByUsernameChanged) {
       yield state.copyWith(searchByUsernameValue: event.usernameValue);
@@ -48,6 +52,16 @@ class HangEventParticipantsBloc
     if (event is SearchByUsernameSubmitted) {
       yield SearchParticipantLoading(state);
       yield* _mapSearchParticipantsState();
+    }
+    if (event is SearchByEmailSubmitted) {
+      yield SearchParticipantLoading(state);
+      yield* _mapSearchParticipantsState();
+    }
+    if (event is ClearSearchFields) {
+      yield state.copyWith(
+          searchByEmailValue: '',
+          searchByUsernameValue: '',
+          addParticipantBy: AddParticipantBy.none);
     }
   }
 
@@ -73,15 +87,19 @@ class HangEventParticipantsBloc
   }
 
   Stream<HangEventParticipantsState> _mapSearchParticipantsState() async* {
-    HangUser? retValUser;
-    if (state.addParticipantBy == AddParticipantBy.username) {
-      retValUser =
-          await _userRepository.getUserByUserName(state.searchByUsernameValue);
+    try {
+      HangUser? retValUser;
+      if (state.addParticipantBy == AddParticipantBy.username) {
+        retValUser = await _userRepository
+            .getUserByUserName(state.searchByUsernameValue);
+      }
+      if (state.addParticipantBy == AddParticipantBy.email) {
+        retValUser =
+            await _userRepository.getUserByEmail(state.searchByEmailValue);
+      }
+      yield SearchParticipantRetrieved(state, foundUser: retValUser);
+    } catch (e) {
+      yield SearchParticipantError(state, errorMessage: "Failed to find user");
     }
-    if (state.addParticipantBy == AddParticipantBy.email) {
-      retValUser =
-          await _userRepository.getUserByEmail(state.searchByEmailValue);
-    }
-    yield SearchParticipantRetrieved(state, foundUser: retValUser);
   }
 }

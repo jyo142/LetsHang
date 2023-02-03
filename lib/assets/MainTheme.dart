@@ -50,3 +50,20 @@ extension CustomStyles on TextTheme {
     );
   }
 }
+
+extension CustomButtonStyles on ButtonThemeData {
+  ButtonStyle get secondaryButtonStyle {
+    return OutlinedButton.styleFrom(
+        primary: Color(0xFFFFFFFF),
+        foregroundColor: Color(0xFFA7BAC2), //adding this would work
+
+        backgroundColor: Color(0xFFFFFFFF),
+        side: BorderSide(width: 1.0, color: Color(0xFFA7BAC2)),
+        textStyle: TextStyle(
+            fontSize: 16.0,
+            letterSpacing: .5,
+            fontFamily: "Outfit",
+            fontWeight: FontWeight.w600,
+            color: Colors.black));
+  }
+}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/hang_event_participants/hang_event_participants_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/models/event_participants.dart';
@@ -50,12 +51,12 @@ class _EventParticipantsView extends StatelessWidget {
                                     topRight: Radius.elliptical(300, 50)),
                               ),
                               context: context,
+                              isScrollControlled: true,
                               builder: (ctx) =>
                                   BlocProvider<HangEventParticipantsBloc>.value(
                                       value: context
                                           .read<HangEventParticipantsBloc>(),
-                                      child: SafeArea(
-                                          child: Padding(
+                                      child: Container(
                                         padding: const EdgeInsets.only(
                                             left: 40.0,
                                             right: 40.0,
@@ -64,16 +65,15 @@ class _EventParticipantsView extends StatelessWidget {
                                         child: Column(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Text(
-                                              'Add People',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .headline5,
-                                            ),
-                                            _addPeopleSection()
+                                            _addPeopleBottomModal(),
+                                            Padding(
+                                                padding: MediaQuery.of(context)
+                                                    .viewInsets)
                                           ],
                                         ),
-                                      ))));
+                                      ))).whenComplete(() => context
+                              .read<HangEventParticipantsBloc>()
+                              .add(ClearSearchFields()));
                         },
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
@@ -111,6 +111,7 @@ class _EventParticipantsView extends StatelessWidget {
                                       topRight: Radius.elliptical(300, 50)),
                                 ),
                                 context: context,
+                                isScrollControlled: true,
                                 builder: (BuildContext context) {
                                   return SafeArea(
                                       child: Padding(
@@ -133,7 +134,13 @@ class _EventParticipantsView extends StatelessWidget {
                                               const EdgeInsets.only(top: 30),
                                           child: InkWell(
                                             // on Tap function used and call back function os defined here
-                                            onTap: () async {},
+                                            onTap: () {
+                                              context
+                                                  .read<
+                                                      HangEventParticipantsBloc>()
+                                                  .add(
+                                                      SearchByUsernamePressed());
+                                            },
                                             child: Row(
                                               children: [
                                                 const Icon(
@@ -158,7 +165,12 @@ class _EventParticipantsView extends StatelessWidget {
                                               const EdgeInsets.only(top: 20),
                                           child: InkWell(
                                             // on Tap function used and call back function os defined here
-                                            onTap: () async {},
+                                            onTap: () {
+                                              context
+                                                  .read<
+                                                      HangEventParticipantsBloc>()
+                                                  .add(SearchByEmailPressed());
+                                            },
                                             child: Row(
                                               children: [
                                                 const Icon(
@@ -263,98 +275,172 @@ class _EventParticipantsView extends StatelessWidget {
             )));
   }
 
-  Widget _addPeopleSection() {
+  Widget _addPeopleBottomModal() {
     return BlocBuilder<HangEventParticipantsBloc, HangEventParticipantsState>(
         builder: (context, state) {
-      if (state is SearchParticipantLoading) {
-        return Container(
-            margin: const EdgeInsets.only(top: 40),
-            child: const CircularProgressIndicator());
-      }
-      if (state is SearchParticipantRetrieved) {
-        if (state.foundUser == null) {
-          return Container(
-              margin: const EdgeInsets.only(top: 40),
-              child: const Text('No user found'));
-        }
-        return Container(
-          margin: const EdgeInsets.only(top: 40),
-          child: Column(children: [
-            UserAvatar(curUser: HangUserPreview.fromUser(state.foundUser!))
-          ]),
-        );
-      }
-      if (state.addParticipantBy == AddParticipantBy.username) {
-        _searchParticipantBySection(
-            context,
-            'Search Username',
-            (value) => context
-                .read<HangEventParticipantsBloc>()
-                .add(SearchByUsernameChanged(usernameValue: value)),
-            () => context
-                .read<HangEventParticipantsBloc>()
-                .add(SearchByUsernameSubmitted()));
-      }
-      if (state.addParticipantBy == AddParticipantBy.email) {
-        _searchParticipantBySection(
-            context,
-            'Search Email',
-            (value) => context
-                .read<HangEventParticipantsBloc>()
-                .add(SearchByEmailChanged(emailValue: value)),
-            () => context
-                .read<HangEventParticipantsBloc>()
-                .add(SearchByEmailSubmitted()));
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (state is! SearchParticipantRetrieved) ...[
+            Container(
+                margin: const EdgeInsets.only(bottom: 40),
+                child: Text(
+                  'Add People',
+                  style: Theme.of(context).textTheme.headline5,
+                )),
+          ],
+          _addPeopleBottomModalContent(context, state),
+          Padding(padding: MediaQuery.of(context).viewInsets)
+        ],
+      );
+    });
+  }
+
+  Widget _addPeopleBottomModalContent(
+      BuildContext context, HangEventParticipantsState state) {
+    if (state is SearchParticipantLoading) {
+      return const CircularProgressIndicator();
+    }
+    if (state is SearchParticipantRetrieved) {
+      if (state.foundUser == null) {
+        return const Text('No user found');
       }
       return Column(children: [
+        UserAvatar(
+          curUser: HangUserPreview.fromUser(state.foundUser!),
+          radius: 25,
+        ),
         Container(
-          margin: const EdgeInsets.only(top: 40),
-          child: InkWell(
-            // on Tap function used and call back function os defined here
-            onTap: () {
-              context
-                  .read<HangEventParticipantsBloc>()
-                  .add(SearchByUsernamePressed());
-            },
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.person_outlined,
-                  color: Color(0xFF0286BF),
-                ),
-                Padding(
-                    padding: const EdgeInsets.only(left: 20),
-                    child: Text('Search By Username',
-                        style: Theme.of(context).textTheme.bodyText1))
-              ],
-            ),
+          margin: EdgeInsets.only(top: 20),
+          child: Text(
+            state.foundUser!.name!,
+            style: Theme.of(context).textTheme.headline5,
           ),
         ),
         Container(
-          margin: const EdgeInsets.only(top: 20),
-          child: InkWell(
-            // on Tap function used and call back function os defined here
-            onTap: () {
-              context
-                  .read<HangEventParticipantsBloc>()
-                  .add(SearchByEmailPressed());
-            },
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.email_outlined,
-                  color: Color(0xFF0286BF),
-                ),
-                Padding(
-                    padding: const EdgeInsets.only(left: 20),
-                    child: Text('Search By Email',
-                        style: Theme.of(context).textTheme.bodyText1))
-              ],
-            ),
+          margin: EdgeInsets.only(top: 15),
+          child: Text(
+            'Username',
+            style: Theme.of(context).textTheme.headline6,
           ),
-        )
+        ),
+        Container(
+          margin: EdgeInsets.only(top: 5),
+          child: Text(state.foundUser!.userName!,
+              style: Theme.of(context).textTheme.headline6!.merge(
+                  const TextStyle(
+                      fontWeight: FontWeight.bold, color: Color(0x8004152D)))),
+        ),
+        Container(
+          margin: EdgeInsets.only(top: 15),
+          child: Text(
+            'Email',
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+        Container(
+          margin: EdgeInsets.only(top: 5),
+          child: Text(state.foundUser!.email!,
+              style: Theme.of(context).textTheme.headline6!.merge(
+                  const TextStyle(
+                      fontWeight: FontWeight.bold, color: Color(0x8004152D)))),
+        ),
+        Container(
+            margin: EdgeInsets.only(top: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                LHButton(buttonText: 'Send Invite', onPressed: () => {}),
+                LHButton(
+                    buttonText: 'Go Back',
+                    onPressed: () => {
+                          if (state.addParticipantBy == AddParticipantBy.email)
+                            {
+                              context
+                                  .read<HangEventParticipantsBloc>()
+                                  .add(SearchByEmailPressed())
+                            }
+                          else
+                            {
+                              context
+                                  .read<HangEventParticipantsBloc>()
+                                  .add(SearchByUsernamePressed())
+                            }
+                        },
+                    buttonStyle:
+                        Theme.of(context).buttonTheme.secondaryButtonStyle)
+              ],
+            )),
       ]);
-    });
+    }
+    if (state.addParticipantBy == AddParticipantBy.username) {
+      return _searchParticipantBySection(
+          context,
+          'Search Username',
+          (value) => context
+              .read<HangEventParticipantsBloc>()
+              .add(SearchByUsernameChanged(usernameValue: value)), () {
+        context
+            .read<HangEventParticipantsBloc>()
+            .add(SearchByUsernameSubmitted());
+      });
+    }
+    if (state.addParticipantBy == AddParticipantBy.email) {
+      return _searchParticipantBySection(
+          context,
+          'Search Email',
+          (value) => context
+              .read<HangEventParticipantsBloc>()
+              .add(SearchByEmailChanged(emailValue: value)),
+          () => context
+              .read<HangEventParticipantsBloc>()
+              .add(SearchByEmailSubmitted()));
+    }
+    return Column(children: [
+      InkWell(
+        // on Tap function used and call back function os defined here
+        onTap: () {
+          context
+              .read<HangEventParticipantsBloc>()
+              .add(SearchByUsernamePressed());
+        },
+        child: Row(
+          children: [
+            const Icon(
+              Icons.person_outlined,
+              color: Color(0xFF0286BF),
+            ),
+            Padding(
+                padding: const EdgeInsets.only(left: 20),
+                child: Text('Search By Username',
+                    style: Theme.of(context).textTheme.bodyText1))
+          ],
+        ),
+      ),
+      Container(
+        margin: const EdgeInsets.only(top: 20),
+        child: InkWell(
+          // on Tap function used and call back function os defined here
+          onTap: () {
+            context
+                .read<HangEventParticipantsBloc>()
+                .add(SearchByEmailPressed());
+          },
+          child: Row(
+            children: [
+              const Icon(
+                Icons.email_outlined,
+                color: Color(0xFF0286BF),
+              ),
+              Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  child: Text('Search By Email',
+                      style: Theme.of(context).textTheme.bodyText1))
+            ],
+          ),
+        ),
+      )
+    ]);
   }
 
   Widget _participantsBlock(Function participantsFunc) {
@@ -384,14 +470,13 @@ class _EventParticipantsView extends StatelessWidget {
 
   Widget _searchParticipantBySection(BuildContext context, String searchBy,
       Function onChange, Function onSubmit) {
-    return Column(children: [
+    return Column(mainAxisSize: MainAxisSize.min, children: [
       Container(
-          margin: const EdgeInsets.only(top: 40, bottom: 15),
+          margin: const EdgeInsets.only(bottom: 15),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text('Search Username',
-                  style: Theme.of(context).textTheme.bodyText1),
+              Text(searchBy, style: Theme.of(context).textTheme.bodyText1),
             ],
           )),
       TextFormField(
@@ -413,8 +498,9 @@ class _EventParticipantsView extends StatelessWidget {
           },
           onChanged: (value) => onChange(value)),
       Container(
+        width: double.infinity,
         margin: const EdgeInsets.only(top: 60),
-        child: LHButton(buttonText: 'Search', onPressed: onSubmit()),
+        child: LHButton(buttonText: 'Search', onPressed: () => onSubmit()),
       )
     ]);
   }

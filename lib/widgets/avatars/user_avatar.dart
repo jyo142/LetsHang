@@ -3,18 +3,20 @@ import 'package:letshang/models/hang_user_preview_model.dart';
 
 class UserAvatar extends StatelessWidget {
   final HangUserPreview curUser;
-  const UserAvatar({Key? key, required this.curUser}) : super(key: key);
+  final double radius;
+  const UserAvatar({Key? key, required this.curUser, this.radius = 15})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     if (curUser.photoUrl != null) {
       return CircleAvatar(
-        radius: 15,
+        radius: radius,
         backgroundImage: NetworkImage(curUser.photoUrl!),
       );
     } else {
       return CircleAvatar(
-        radius: 15,
+        radius: radius,
         backgroundColor: Color(0xFF0287BF),
         child: Text(
           _userInitials(curUser!),

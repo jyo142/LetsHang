@@ -69,3 +69,13 @@ class SearchParticipantRetrieved extends HangEventParticipantsState {
   @override
   List<Object?> get props => [foundUser];
 }
+
+class SearchParticipantError extends HangEventParticipantsState {
+  final String errorMessage;
+  SearchParticipantError(HangEventParticipantsState state,
+      {required this.errorMessage})
+      : super.fromState(state);
+
+  @override
+  List<Object?> get props => [errorMessage];
+}

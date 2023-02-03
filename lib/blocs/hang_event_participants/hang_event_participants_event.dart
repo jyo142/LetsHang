@@ -37,3 +37,7 @@ class SearchByEmailChanged extends HangEventParticipantsEvent {
 class SearchByUsernameSubmitted extends HangEventParticipantsEvent {}
 
 class SearchByEmailSubmitted extends HangEventParticipantsEvent {}
+
+class ClearSearchFields extends HangEventParticipantsEvent {}
+
+class GoBackSearch extends HangEventParticipantsEvent {}
