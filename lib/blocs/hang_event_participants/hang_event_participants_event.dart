@@ -41,3 +41,11 @@ class SearchByEmailSubmitted extends HangEventParticipantsEvent {}
 class ClearSearchFields extends HangEventParticipantsEvent {}
 
 class GoBackSearch extends HangEventParticipantsEvent {}
+
+class SendInviteInitiated extends HangEventParticipantsEvent {
+  const SendInviteInitiated({required this.invitedUser});
+  final HangUser invitedUser;
+
+  @override
+  List<Object> get props => [invitedUser];
+}

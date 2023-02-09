@@ -79,3 +79,21 @@ class SearchParticipantError extends HangEventParticipantsState {
   @override
   List<Object?> get props => [errorMessage];
 }
+
+class SendInviteLoading extends HangEventParticipantsState {
+  SendInviteLoading(HangEventParticipantsState state) : super.fromState(state);
+}
+
+class SendInviteSuccess extends HangEventParticipantsState {
+  SendInviteSuccess(HangEventParticipantsState state) : super.fromState(state);
+}
+
+class SendInviteError extends HangEventParticipantsState {
+  final String errorMessage;
+  SendInviteError(HangEventParticipantsState state,
+      {required this.errorMessage})
+      : super.fromState(state);
+
+  @override
+  List<Object?> get props => [errorMessage];
+}

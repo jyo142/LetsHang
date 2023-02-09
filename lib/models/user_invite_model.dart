@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
+import 'package:letshang/models/hang_user_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'hang_user_preview_model.dart';
 
@@ -11,6 +12,11 @@ class UserInvite extends Equatable {
 
   const UserInvite(
       {required this.user, required this.status, required this.type});
+
+  UserInvite.fromInvitedEventUser(HangUser user)
+      : this.user = HangUserPreview.fromUser(user),
+        this.status = InviteStatus.pending,
+        this.type = InviteType.event;
 
   static UserInvite fromSnapshot(DocumentSnapshot snap) {
     return fromMap(snap.data()!);

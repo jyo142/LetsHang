@@ -187,7 +187,7 @@ class _EventDetailsView extends StatelessWidget {
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 EventParticipantsScreen(
-                                              curEventId: curEvent.id,
+                                              curEvent: curEvent,
                                             ),
                                           ),
                                         );

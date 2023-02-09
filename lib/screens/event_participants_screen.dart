@@ -3,15 +3,17 @@ import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/hang_event_participants/hang_event_participants_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/models/event_participants.dart';
+import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/user_invite_model.dart';
+import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/avatars/user_avatar.dart';
 import 'package:letshang/widgets/cards/user_event_card.dart';
 import 'package:letshang/widgets/lh_button.dart';
 
 class EventParticipantsScreen extends StatelessWidget {
-  final String curEventId;
-  const EventParticipantsScreen({Key? key, required this.curEventId})
+  final HangEvent curEvent;
+  const EventParticipantsScreen({Key? key, required this.curEvent})
       : super(key: key);
 
   @override
@@ -22,9 +24,8 @@ class EventParticipantsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFCCCCCC),
       body: BlocProvider(
-          create: (context) =>
-              HangEventParticipantsBloc(hangEventId: curEventId)
-                ..add(LoadHangEventParticipants()),
+          create: (context) => HangEventParticipantsBloc(curEvent: curEvent)
+            ..add(LoadHangEventParticipants()),
           child: _EventParticipantsView()),
     );
   }
@@ -71,9 +72,20 @@ class _EventParticipantsView extends StatelessWidget {
                                                     .viewInsets)
                                           ],
                                         ),
-                                      ))).whenComplete(() => context
-                              .read<HangEventParticipantsBloc>()
-                              .add(ClearSearchFields()));
+                                      ))).whenComplete(() {
+                            context
+                                .read<HangEventParticipantsBloc>()
+                                .add(ClearSearchFields());
+                            // if the send invite is successful then we want to refresh the participants
+                            bool isSuccessInviteState = context
+                                .read<HangEventParticipantsBloc>()
+                                .state is SendInviteSuccess;
+                            if (isSuccessInviteState) {
+                              context
+                                  .read<HangEventParticipantsBloc>()
+                                  .add(LoadHangEventParticipants());
+                            }
+                          });
                         },
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
@@ -233,7 +245,7 @@ class _EventParticipantsView extends StatelessWidget {
                     )),
                 SizedBox(
                     height: 200,
-                    child: _participantsBlock((participantsState) =>
+                    child: _participantsSection((participantsState) =>
                         participantsState.attendingUsers)),
                 Container(
                     margin: const EdgeInsets.only(top: 30),
@@ -251,7 +263,7 @@ class _EventParticipantsView extends StatelessWidget {
                     )),
                 SizedBox(
                     height: 200,
-                    child: _participantsBlock(
+                    child: _participantsSection(
                         (participantsState) => participantsState.invitedUsers)),
                 Container(
                     margin: const EdgeInsets.only(top: 30),
@@ -269,15 +281,22 @@ class _EventParticipantsView extends StatelessWidget {
                     )),
                 SizedBox(
                     height: 200,
-                    child: _participantsBlock((participantsState) =>
+                    child: _participantsSection((participantsState) =>
                         participantsState.rejectedUsers)),
               ],
             )));
   }
 
   Widget _addPeopleBottomModal() {
-    return BlocBuilder<HangEventParticipantsBloc, HangEventParticipantsState>(
-        builder: (context, state) {
+    return BlocConsumer<HangEventParticipantsBloc, HangEventParticipantsState>(
+        listener: (context, state) {
+      if (state is SendInviteSuccess) {
+        // after the invite is sent go back to participants screen
+        Navigator.pop(context, true);
+        MessageService.showSuccessMessage(
+            content: "Event saved successfully", context: context);
+      }
+    }, builder: (context, state) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -298,80 +317,15 @@ class _EventParticipantsView extends StatelessWidget {
 
   Widget _addPeopleBottomModalContent(
       BuildContext context, HangEventParticipantsState state) {
-    if (state is SearchParticipantLoading) {
+    if (state is SearchParticipantLoading || state is SendInviteLoading) {
       return const CircularProgressIndicator();
     }
     if (state is SearchParticipantRetrieved) {
-      if (state.foundUser == null) {
-        return const Text('No user found');
-      }
-      return Column(children: [
-        UserAvatar(
-          curUser: HangUserPreview.fromUser(state.foundUser!),
-          radius: 25,
-        ),
-        Container(
-          margin: EdgeInsets.only(top: 20),
-          child: Text(
-            state.foundUser!.name!,
-            style: Theme.of(context).textTheme.headline5,
-          ),
-        ),
-        Container(
-          margin: EdgeInsets.only(top: 15),
-          child: Text(
-            'Username',
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-        Container(
-          margin: EdgeInsets.only(top: 5),
-          child: Text(state.foundUser!.userName!,
-              style: Theme.of(context).textTheme.headline6!.merge(
-                  const TextStyle(
-                      fontWeight: FontWeight.bold, color: Color(0x8004152D)))),
-        ),
-        Container(
-          margin: EdgeInsets.only(top: 15),
-          child: Text(
-            'Email',
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-        Container(
-          margin: EdgeInsets.only(top: 5),
-          child: Text(state.foundUser!.email!,
-              style: Theme.of(context).textTheme.headline6!.merge(
-                  const TextStyle(
-                      fontWeight: FontWeight.bold, color: Color(0x8004152D)))),
-        ),
-        Container(
-            margin: EdgeInsets.only(top: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                LHButton(buttonText: 'Send Invite', onPressed: () => {}),
-                LHButton(
-                    buttonText: 'Go Back',
-                    onPressed: () => {
-                          if (state.addParticipantBy == AddParticipantBy.email)
-                            {
-                              context
-                                  .read<HangEventParticipantsBloc>()
-                                  .add(SearchByEmailPressed())
-                            }
-                          else
-                            {
-                              context
-                                  .read<HangEventParticipantsBloc>()
-                                  .add(SearchByUsernamePressed())
-                            }
-                        },
-                    buttonStyle:
-                        Theme.of(context).buttonTheme.secondaryButtonStyle)
-              ],
-            )),
-      ]);
+      return _searchResultsSection(context, state);
+    }
+    if (state is SendInviteError) {
+      MessageService.showErrorMessage(
+          content: state.errorMessage, context: context);
     }
     if (state.addParticipantBy == AddParticipantBy.username) {
       return _searchParticipantBySection(
@@ -443,7 +397,7 @@ class _EventParticipantsView extends StatelessWidget {
     ]);
   }
 
-  Widget _participantsBlock(Function participantsFunc) {
+  Widget _participantsSection(Function participantsFunc) {
     return BlocBuilder<HangEventParticipantsBloc, HangEventParticipantsState>(
         builder: (context, state) {
       if (state is HangEventParticipantsLoading) {
@@ -497,11 +451,120 @@ class _EventParticipantsView extends StatelessWidget {
             // return stateErrorMessage?.call(state);
           },
           onChanged: (value) => onChange(value)),
+      BlocBuilder<HangEventParticipantsBloc, HangEventParticipantsState>(
+          builder: (context, state) {
+        if (state is SearchParticipantError) {
+          return Container(
+            margin: EdgeInsets.only(top: 20),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text(state.errorMessage,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyText1!
+                      .merge(const TextStyle(color: Color(0xFFD50000))))
+            ]),
+          );
+        }
+        return const SizedBox.shrink();
+      }),
       Container(
         width: double.infinity,
-        margin: const EdgeInsets.only(top: 60),
+        margin: const EdgeInsets.only(top: 40),
         child: LHButton(buttonText: 'Search', onPressed: () => onSubmit()),
       )
+    ]);
+  }
+
+  Widget _searchResultsSection(
+      BuildContext context, SearchParticipantRetrieved state) {
+    if (state.foundUser == null) {
+      return const Text('No user found');
+    }
+    return Column(children: [
+      UserAvatar(
+        curUser: HangUserPreview.fromUser(state.foundUser!),
+        radius: 25,
+      ),
+      Container(
+        margin: EdgeInsets.only(top: 20),
+        child: Text(
+          state.foundUser!.name!,
+          style: Theme.of(context).textTheme.headline5,
+        ),
+      ),
+      Container(
+        margin: EdgeInsets.only(top: 15),
+        child: Text(
+          'Username',
+          style: Theme.of(context).textTheme.headline6,
+        ),
+      ),
+      Container(
+        margin: EdgeInsets.only(top: 5),
+        child: Text(state.foundUser!.userName!,
+            style: Theme.of(context).textTheme.headline6!.merge(const TextStyle(
+                fontWeight: FontWeight.bold, color: Color(0x8004152D)))),
+      ),
+      Container(
+        margin: EdgeInsets.only(top: 15),
+        child: Text(
+          'Email',
+          style: Theme.of(context).textTheme.headline6,
+        ),
+      ),
+      Container(
+        margin: EdgeInsets.only(top: 5),
+        child: Text(state.foundUser!.email!,
+            style: Theme.of(context).textTheme.headline6!.merge(const TextStyle(
+                fontWeight: FontWeight.bold, color: Color(0x8004152D)))),
+      ),
+      BlocBuilder<HangEventParticipantsBloc, HangEventParticipantsState>(
+          builder: (context, state) {
+        if (state is SendInviteError) {
+          return Container(
+            margin: EdgeInsets.only(top: 20),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text(state.errorMessage,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyText1!
+                      .merge(const TextStyle(color: Color(0xFFD50000))))
+            ]),
+          );
+        }
+        return const SizedBox.shrink();
+      }),
+      Container(
+          margin: EdgeInsets.only(top: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              LHButton(
+                  buttonText: 'Send Invite',
+                  onPressed: () => {
+                        context.read<HangEventParticipantsBloc>().add(
+                            SendInviteInitiated(invitedUser: state.foundUser!))
+                      }),
+              LHButton(
+                  buttonText: 'Go Back',
+                  onPressed: () => {
+                        if (state.addParticipantBy == AddParticipantBy.email)
+                          {
+                            context
+                                .read<HangEventParticipantsBloc>()
+                                .add(SearchByEmailPressed())
+                          }
+                        else
+                          {
+                            context
+                                .read<HangEventParticipantsBloc>()
+                                .add(SearchByUsernamePressed())
+                          }
+                      },
+                  buttonStyle:
+                      Theme.of(context).buttonTheme.secondaryButtonStyle)
+            ],
+          )),
     ]);
   }
 }
