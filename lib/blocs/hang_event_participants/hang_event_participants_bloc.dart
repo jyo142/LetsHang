@@ -2,12 +2,18 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:letshang/models/event_participants.dart';
+import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/hang_user_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:letshang/models/user_invite_model.dart';
+import 'package:letshang/repositories/group/base_group_repository.dart';
+import 'package:letshang/repositories/group/group_repository.dart';
+import 'package:letshang/repositories/hang_event/base_hang_event_repository.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
+import 'package:letshang/repositories/invites/base_invites_repository.dart';
 import 'package:letshang/repositories/invites/invites_repository.dart';
+import 'package:letshang/repositories/user/base_user_repository.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:meta/meta.dart';
 import 'package:equatable/equatable.dart';
@@ -17,15 +23,17 @@ part 'hang_event_participants_state.dart';
 
 class HangEventParticipantsBloc
     extends Bloc<HangEventParticipantsEvent, HangEventParticipantsState> {
-  final HangEventRepository _hangEventRepository;
-  final UserRepository _userRepository;
-  final UserInvitesRepository _userInvitesRepository;
+  final BaseHangEventRepository _hangEventRepository;
+  final BaseUserRepository _userRepository;
+  final BaseUserInvitesRepository _userInvitesRepository;
+  final BaseGroupRepository _groupRepository;
   final HangEvent curEvent;
   // constructor
   HangEventParticipantsBloc({required this.curEvent})
       : _hangEventRepository = HangEventRepository(),
         _userRepository = UserRepository(),
         _userInvitesRepository = UserInvitesRepository(),
+        _groupRepository = GroupRepository(),
         super(HangEventParticipantsLoading());
 
   @override
@@ -71,6 +79,25 @@ class HangEventParticipantsBloc
       yield SendInviteLoading(state);
       yield* _mapSendInviteState(event.invitedUser);
     }
+    if (event is SearchByGroupChanged) {
+      yield state.copyWith(searchByGroupValue: event.groupValue);
+    }
+    if (event is SearchByGroupSubmitted) {
+      yield SearchGroupLoading(state);
+      yield* _mapSearchGroupState();
+    }
+    if (event is SelectMembersInitiated) {
+      yield SelectMembersState(state, allMembers: event.groupMembers);
+    }
+    if (event is SelectMembersSelected) {
+      final selectMembersState = state as SelectMembersState;
+      yield selectMembersState.toggleSelectedMember(
+          state, event.selectedMember);
+    }
+    if (event is SelectMembersInviteInitiated) {
+      yield SelectMembersInviteLoading(state as SelectMembersState);
+      yield* _mapSendGroupInviteState(event.selectedMembers);
+    }
   }
 
   Stream<HangEventParticipantsState> _mapLoadHangEventsToState() async* {
@@ -109,11 +136,43 @@ class HangEventParticipantsBloc
         yield SearchParticipantError(state,
             errorMessage: "Failed to find user.");
       } else {
-        yield SearchParticipantRetrieved(state, foundUser: retValUser);
+        if (state.allUsers.contains(retValUser.email)) {
+          yield SearchParticipantError(state,
+              errorMessage: "User is already part of this event");
+        } else {
+          yield SearchParticipantRetrieved(state, foundUser: retValUser);
+        }
       }
     } catch (e) {
-      yield SearchParticipantError(state,
-          errorMessage: "Failed to find user. ${e.toString()}");
+      yield SearchParticipantError(state, errorMessage: "Failed to find user.");
+    }
+  }
+
+  Stream<HangEventParticipantsState> _mapSearchGroupState() async* {
+    try {
+      Group? retValGroup =
+          await _groupRepository.getGroupByName(state.searchByGroupValue);
+      if (retValGroup == null) {
+        yield SearchGroupError(state, errorMessage: "Failed to find group.");
+      } else {
+        yield SearchGroupRetrieved(state, foundGroup: retValGroup);
+      }
+    } catch (e) {
+      yield SearchGroupError(state, errorMessage: "Failed to find group.");
+    }
+  }
+
+  Stream<HangEventParticipantsState> _mapSendGroupInviteState(
+      Map<String, UserInvite> selectedMembers) async* {
+    try {
+      List<UserInvite> allUserInvites =
+          selectedMembers.entries.map((e) => e.value).toList();
+      await _userInvitesRepository.addUserEventInvites(
+          curEvent, allUserInvites);
+      yield SendInviteSuccess(state);
+    } catch (e) {
+      yield SelectMembersInviteError(state as SelectMembersState,
+          errorMessage: "Failed to send invite to user.");
     }
   }
 
@@ -125,7 +184,7 @@ class HangEventParticipantsBloc
       yield SendInviteSuccess(state);
     } catch (e) {
       yield SendInviteError(state,
-          errorMessage: "Failed to send invite to user. ${e.toString()}");
+          errorMessage: "Failed to send invite to user.");
     }
   }
 }

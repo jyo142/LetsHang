@@ -32,7 +32,7 @@ class UserAvatar extends StatelessWidget {
   String _userInitials(HangUserPreview user) {
     if (user.name != null) {
       String trimmedName = user.name!.trim();
-      List<String> splitName = user.name!.split(' ');
+      List<String> splitName = trimmedName.split(' ');
       final result = splitName.fold<String>(
           '',
           (previousValue, element) =>

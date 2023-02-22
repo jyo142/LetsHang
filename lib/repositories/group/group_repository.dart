@@ -16,7 +16,7 @@ class GroupRepository extends BaseGroupRepository {
         .where('name', isEqualTo: groupName)
         .get();
     if (querySnapshot.size > 0) {
-      return Group.fromSnapshot(querySnapshot.docs.single);
+      return constructGroup(querySnapshot.docs.single);
     }
     return null;
   }

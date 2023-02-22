@@ -54,60 +54,51 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
   @override
   Future<void> addUserEventInvites(
       HangEvent hangEvent, List<UserInvite> userInvites) async {
-    try {
-      await _firebaseFirestore.runTransaction((transaction) async {
-        DocumentReference dbEventsUserInvitesRef = _firebaseFirestore
-            .collection('hangEvents')
-            .doc(hangEvent.id)
-            .collection('invites')
-            .doc("userInvites");
-
-        if (userInvites.isNotEmpty) {
-          await addUserInvites(hangEvent, userInvites, transaction);
-        }
-
-        transaction.set(dbEventsUserInvitesRef, {
-          "userInvites":
-              hangEvent.userInvites.map((ui) => ui.toDocument()).toList()
-        });
-      });
-    } catch (e) {
-      var hello = 2;
-    }
+    await _firebaseFirestore.runTransaction((transaction) async {
+      await Future.wait(userInvites.map((ui) async {
+        await addUserEventInviteTransaction(hangEvent, ui, transaction);
+      }));
+    });
   }
 
   @override
   Future<void> addUserEventInvite(
       HangEvent hangEvent, UserInvite userInvite) async {
     await _firebaseFirestore.runTransaction((transaction) async {
-      DocumentReference dbEventsUserInvitesRef = _firebaseFirestore
-          .collection('hangEvents')
-          .doc(hangEvent.id)
-          .collection('invites')
-          .doc("userInvites");
-
-      final eventsUserInvitesSnap =
-          await transaction.get(dbEventsUserInvitesRef);
-
-      // check if the user is already part of the invites and add if not
-      List<UserInvite> retValInvites = [];
-      if (eventsUserInvitesSnap.exists) {
-        retValInvites = eventsUserInvitesSnap.get("eventInvites");
-        Map<String, UserInvite> userInviteMap = {
-          for (UserInvite ui in retValInvites) ui.user.email!: ui
-        };
-        if (userInviteMap.containsKey(userInvite.user.email)) {
-          throw Exception("User is already invited to this event");
-        }
-      } else {
-        retValInvites.add(userInvite);
-      }
-
-      await addUserInvite(hangEvent, userInvite, transaction);
-
-      transaction.set(dbEventsUserInvitesRef,
-          {"userInvites": retValInvites.map((ui) => ui.toDocument()).toList()});
+      await addUserEventInviteTransaction(hangEvent, userInvite, transaction);
     });
+  }
+
+  Future<void> addUserEventInviteTransaction(HangEvent hangEvent,
+      UserInvite userInvite, Transaction transaction) async {
+    DocumentReference dbEventsUserInvitesRef = _firebaseFirestore
+        .collection('hangEvents')
+        .doc(hangEvent.id)
+        .collection('invites')
+        .doc("userInvites");
+
+    final eventsUserInvitesSnap = await transaction.get(dbEventsUserInvitesRef);
+
+    // check if the user is already part of the invites and add if not
+    List<UserInvite> retValInvites = [];
+    if (eventsUserInvitesSnap.exists) {
+      retValInvites = List.of(eventsUserInvitesSnap["userInvites"])
+          .map((m) => UserInvite.fromMap(m))
+          .toList();
+      Map<String, UserInvite> userInviteMap = {
+        for (UserInvite ui in retValInvites) ui.user.email!: ui
+      };
+      if (userInviteMap.containsKey(userInvite.user.email)) {
+        throw Exception("User is already invited to this event");
+      }
+    } else {
+      retValInvites.add(userInvite);
+    }
+
+    await addUserInvite(hangEvent, userInvite, transaction);
+
+    transaction.set(dbEventsUserInvitesRef,
+        {"userInvites": retValInvites.map((ui) => ui.toDocument()).toList()});
   }
 
   @override

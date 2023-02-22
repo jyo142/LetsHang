@@ -49,3 +49,44 @@ class SendInviteInitiated extends HangEventParticipantsEvent {
   @override
   List<Object> get props => [invitedUser];
 }
+
+class SearchByGroupChanged extends HangEventParticipantsEvent {
+  const SearchByGroupChanged({required this.groupValue});
+
+  final String groupValue;
+
+  @override
+  List<Object> get props => [groupValue];
+}
+
+class SearchByGroupSubmitted extends HangEventParticipantsEvent {}
+
+class SelectMembersInitiated extends HangEventParticipantsEvent {
+  const SelectMembersInitiated(
+      {required this.eventMembers, required this.groupMembers});
+
+  final Set<String> eventMembers;
+  final List<UserInvite> groupMembers;
+
+  @override
+  List<Object> get props => [eventMembers, groupMembers];
+}
+
+class SelectMembersSelected extends HangEventParticipantsEvent {
+  const SelectMembersSelected(
+      {required this.groupMembers, required this.selectedMember});
+  final List<UserInvite> groupMembers;
+
+  final UserInvite selectedMember;
+
+  @override
+  List<Object> get props => [groupMembers, selectedMember];
+}
+
+class SelectMembersInviteInitiated extends HangEventParticipantsEvent {
+  const SelectMembersInviteInitiated({required this.selectedMembers});
+  final Map<String, UserInvite> selectedMembers;
+
+  @override
+  List<Object> get props => [selectedMembers];
+}
