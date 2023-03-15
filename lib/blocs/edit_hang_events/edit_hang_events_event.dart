@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:letshang/models/group_model.dart';
+import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/hang_user_model.dart';
 
 abstract class EditHangEventsEvent extends Equatable {
@@ -30,16 +31,66 @@ class EventDescriptionChanged extends EditHangEventsEvent {
   List<Object> get props => [eventDescription];
 }
 
-class EventStartDateTimeChanged extends EditHangEventsEvent {
-  const EventStartDateTimeChanged(
-      {required this.eventStartDate, required this.eventStartTime});
+class EventStartDateChanged extends EditHangEventsEvent {
+  const EventStartDateChanged({required this.eventStartDate});
 
   final DateTime eventStartDate;
-  final TimeOfDay eventStartTime;
 
   @override
   List<Object> get props => [eventStartDate];
 }
+
+class EventStartTimeChanged extends EditHangEventsEvent {
+  const EventStartTimeChanged({required this.eventStartTime});
+
+  final TimeOfDay eventStartTime;
+
+  @override
+  List<Object> get props => [eventStartTime];
+}
+
+class LimitGuestCountToggled extends EditHangEventsEvent {
+  const LimitGuestCountToggled({required this.limitGuestCountValue});
+
+  final bool limitGuestCountValue;
+
+  @override
+  List<Object> get props => [limitGuestCountValue];
+}
+
+class MaxGuestCountChanged extends EditHangEventsEvent {
+  const MaxGuestCountChanged({required this.maxGuestCount});
+  final int maxGuestCount;
+
+  @override
+  List<Object> get props => [maxGuestCount];
+}
+
+class EventTypeToggled extends EditHangEventsEvent {
+  const EventTypeToggled({required this.eventType});
+  final HangEventType eventType;
+
+  @override
+  List<Object> get props => [eventType];
+}
+
+class EventPictureChanged extends EditHangEventsEvent {
+  const EventPictureChanged({required this.eventPicturePath});
+  final String eventPicturePath;
+
+  @override
+  List<Object> get props => [eventPicturePath];
+}
+
+class EventPictureChangedError extends EditHangEventsEvent {
+  const EventPictureChangedError({required this.eventPictureError});
+  final String eventPictureError;
+
+  @override
+  List<Object> get props => [eventPictureError];
+}
+
+class EventMainDetailsSaved extends EditHangEventsEvent {}
 
 class EventEndDateTimeChanged extends EditHangEventsEvent {
   const EventEndDateTimeChanged(

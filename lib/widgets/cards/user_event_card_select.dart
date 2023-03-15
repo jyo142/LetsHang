@@ -50,36 +50,5 @@ class UserEventCardSelect extends StatelessWidget {
         color: Colors.transparent,
       ),
     );
-    // return InkWell(
-    //     onTap: () {
-    //       print("Tapped on container");
-    //     },
-    //     child: Ink(
-    //         color: Colors.black,
-    //         child: Container(
-    //             width: double.infinity,
-    //             decoration: BoxDecoration(
-    //               color: backgroundColor,
-    //               borderRadius: BorderRadius.circular(10),
-    //             ),
-    //             padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-    //             child: Row(
-    //               children: [
-    //                 Checkbox(
-    //                   checkColor: Colors.white,
-    //                   value: false,
-    //                   onChanged: (bool? value) {},
-    //                 ),
-    //                 UserAvatar(curUser: curUser),
-    //                 Padding(
-    //                   padding: EdgeInsets.only(left: 15, right: 15),
-    //                   child: Text(
-    //                     curUser.name!,
-    //                     style: Theme.of(context).textTheme.bodyText1,
-    //                   ),
-    //                 ),
-    //                 if (label != null) ...[label!]
-    //               ],
-    //             ))));
   }
 }

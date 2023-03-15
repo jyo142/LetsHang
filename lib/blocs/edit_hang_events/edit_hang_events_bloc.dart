@@ -6,6 +6,7 @@ import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/hang_user_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
+import 'package:letshang/models/invite.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/repositories/group/group_repository.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
@@ -57,16 +58,20 @@ class EditHangEventsBloc
       yield state.copyWith(eventName: event.eventName);
     } else if (event is EventDescriptionChanged) {
       yield state.copyWith(eventDescription: event.eventDescription);
-    } else if (event is EventStartDateTimeChanged) {
-      // need to combine both the DateTime and TimeOfDay
-      DateTime newStartDateTime = DateTime(
-          event.eventStartDate.year,
-          event.eventStartDate.month,
-          event.eventStartDate.day,
-          event.eventStartTime.hour,
-          event.eventStartTime.minute);
-
-      yield state.copyWith(eventStartDate: newStartDateTime);
+    } else if (event is EventStartDateChanged) {
+      yield state.copyWith(eventStartDate: event.eventStartDate);
+    } else if (event is EventStartTimeChanged) {
+      yield state.copyWith(eventStartTime: event.eventStartTime);
+    } else if (event is LimitGuestCountToggled) {
+      yield state.copyWith(limitGuestCount: event.limitGuestCountValue);
+    } else if (event is MaxGuestCountChanged) {
+      yield state.copyWith(maxGuestCount: event.maxGuestCount);
+    } else if (event is EventTypeToggled) {
+      yield state.copyWith(hangEventType: event.eventType);
+    } else if (event is EventPictureChanged) {
+      yield state.copyWith(photoUrl: event.eventPicturePath);
+    } else if (event is EventMainDetailsSaved) {
+      yield* _mapMainEventDetailsSavedState(state);
     } else if (event is EventEndDateTimeChanged) {
       // need to combine both the DateTime and TimeOfDay
       DateTime newEventEndDateTime = DateTime(
@@ -113,6 +118,35 @@ class EditHangEventsBloc
     } else {
       yield state;
     }
+  }
+
+  Stream<EditHangEventsState> _mapMainEventDetailsSavedState(
+      EditHangEventsState eventsState) async* {
+    try {
+      HangEvent savingEvent = HangEvent(
+          id: existingHangEvent?.id ?? "",
+          eventOwner: creatingUser,
+          eventName: state.eventName,
+          eventDescription: state.eventDescription,
+          eventStartDate: state.eventStartDate,
+          eventEndDate: state.eventEndDate);
+      HangEvent retvalHangEvent;
+      if (existingHangEvent != null) {
+        // this event is being edited if an id is present
+        retvalHangEvent = await _hangEventRepository.editHangEvent(savingEvent);
+        await _invitesRepository.editUserEventInvites(retvalHangEvent);
+      } else {
+        retvalHangEvent = await _hangEventRepository.addHangEvent(savingEvent);
+        await _invitesRepository.addUserEventInvite(
+            retvalHangEvent,
+            UserInvite(
+                user: creatingUser,
+                status: InviteStatus.incomplete,
+                type: InviteType.event));
+      }
+      yield EventMainDetailsSavedSuccessfully(state,
+          savedEvent: retvalHangEvent);
+    } catch (_) {}
   }
 
   Stream<EditHangEventsState> _mapEventSavedState(

@@ -9,6 +9,8 @@ import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
 import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/widgets/event_card.dart';
+import 'package:letshang/widgets/events/past_events_view.dart';
+import 'package:letshang/widgets/events/upcoming_events_view.dart';
 
 class EventsScreen extends StatelessWidget {
   @override
@@ -47,7 +49,7 @@ class _EventsViewState extends State<EventsView> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFCCCCCC),
+      backgroundColor: const Color(0xFFCCCCCC),
       body: SafeArea(
           child: Padding(
               padding: const EdgeInsets.only(
@@ -58,18 +60,18 @@ class _EventsViewState extends State<EventsView> with TickerProviderStateMixin {
                   Flexible(
                       child: Container(
                     decoration: BoxDecoration(
-                        color: Color(0xFFFFFFFF),
+                        color: const Color(0xFFFFFFFF),
                         borderRadius: BorderRadius.circular(5)),
                     padding: const EdgeInsets.only(
                       top: 6.0,
                       bottom: 6.0,
                     ),
                     child: TabBar(
-                      unselectedLabelColor: Color(0xFF04152D),
+                      unselectedLabelColor: const Color(0xFF04152D),
                       indicatorSize: TabBarIndicatorSize.label,
                       indicator: BoxDecoration(
                           borderRadius: BorderRadius.circular(5),
-                          color: Color(0xFF0287BF)),
+                          color: const Color(0xFF0287BF)),
                       controller: _tabController,
                       tabs: [
                         Tab(
@@ -99,9 +101,10 @@ class _EventsViewState extends State<EventsView> with TickerProviderStateMixin {
                   )),
                   Flexible(
                     flex: 10,
-                    child: TabBarView(controller: _tabController, children: [
-                      Tab(child: _upcomingCardView()),
-                      Tab(child: _pastCardView()),
+                    child:
+                        TabBarView(controller: _tabController, children: const [
+                      Tab(child: UpcomingEventsView()),
+                      Tab(child: PastEventsView()),
                     ]),
                   )
 
@@ -148,61 +151,6 @@ class _EventsViewState extends State<EventsView> with TickerProviderStateMixin {
                 ],
               ))),
     );
-  }
-
-  Widget _upcomingCardView() {
-    return BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
-      builder: (context, state) {
-        if (state is HangEventsLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (state is HangEventsRetrieved) {
-          if (state.currentUpcomingHangEvents.isNotEmpty) {
-            return _eventListView(state.currentUpcomingHangEvents);
-          } else {
-            return Text(
-              'No upcoming events',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyText1,
-            );
-          }
-        } else {
-          return const Text('Error');
-        }
-      },
-    );
-  }
-
-  Widget _pastCardView() {
-    return BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
-      builder: (context, state) {
-        if (state is HangEventsLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (state is HangEventsRetrieved) {
-          if (state.pastHangEvents.isNotEmpty) {
-            return _eventListCardView(state.pastHangEvents);
-          } else {
-            return Text(
-              'No past events',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyText1,
-            );
-          }
-        } else {
-          return const Text('Error');
-        }
-      },
-    );
-  }
-
-  Widget _eventListCardView(List<HangEventInvite> events) {
-    return Expanded(
-        child: ListView.builder(
-            itemCount: events.length,
-            itemBuilder: (BuildContext context, int index) {
-              return EventCard(curEvent: events[index].event);
-            }));
   }
 
   List<Widget> _upcomingEvents(BuildContext context) {

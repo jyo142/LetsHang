@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:letshang/models/group_model.dart';
+import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/hang_user_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/invite.dart';
@@ -10,9 +12,13 @@ class EditHangEventsState extends Equatable {
   final HangUserPreview eventOwner;
   final String eventName;
   final String eventDescription;
-  late final DateTime eventStartDate;
-  late final DateTime eventEndDate;
-
+  final DateTime? eventStartDate;
+  final DateTime? eventEndDate;
+  final TimeOfDay? eventStartTime;
+  final bool limitGuestCount;
+  final int? maxGuestCount;
+  final HangEventType hangEventType;
+  late final String? photoUrl;
   // metadata
   final String searchEventInvitee;
   final SearchUserBy searchEventInviteeBy;
@@ -23,17 +29,17 @@ class EditHangEventsState extends Equatable {
     required this.eventOwner,
     this.eventName = '',
     this.eventDescription = '',
-    DateTime? eventStartDate,
-    DateTime? eventEndDate,
+    this.eventStartDate,
+    this.eventEndDate,
+    this.eventStartTime,
+    this.limitGuestCount = false,
+    this.maxGuestCount = 0,
+    this.hangEventType = HangEventType.private,
+    this.photoUrl = '',
     this.searchEventInvitee = '',
     this.searchEventInviteeBy = SearchUserBy.username,
     Map<String, UserInvite>? eventUserInvitees,
   }) {
-    final dateNow = DateTime.now();
-    this.eventStartDate =
-        eventStartDate ?? DateTime(dateNow.year, dateNow.month, dateNow.day);
-    this.eventEndDate =
-        eventEndDate ?? DateTime(dateNow.year, dateNow.month, dateNow.day);
     this.eventUserInvitees = eventUserInvitees ??
         {
           eventOwner.userName: UserInvite(
@@ -51,6 +57,11 @@ class EditHangEventsState extends Equatable {
             eventDescription: state.eventDescription,
             eventStartDate: state.eventStartDate,
             eventEndDate: state.eventEndDate,
+            eventStartTime: state.eventStartTime,
+            limitGuestCount: state.limitGuestCount,
+            maxGuestCount: state.maxGuestCount,
+            hangEventType: state.hangEventType,
+            photoUrl: state.photoUrl,
             searchEventInvitee: state.searchEventInvitee,
             searchEventInviteeBy: state.searchEventInviteeBy,
             eventUserInvitees: state.eventUserInvitees);
@@ -62,6 +73,11 @@ class EditHangEventsState extends Equatable {
       String? eventDescription,
       DateTime? eventStartDate,
       DateTime? eventEndDate,
+      TimeOfDay? eventStartTime,
+      bool? limitGuestCount,
+      int? maxGuestCount,
+      HangEventType? hangEventType,
+      String? photoUrl,
       String? searchEventInvitee,
       SearchUserBy? searchEventInviteeBy,
       Map<String, UserInvite>? eventUserInvitees}) {
@@ -71,10 +87,19 @@ class EditHangEventsState extends Equatable {
         eventName: eventName ?? this.eventName,
         eventDescription: eventDescription ?? this.eventDescription,
         eventStartDate: eventStartDate ?? this.eventStartDate,
+        eventStartTime: eventStartTime ?? this.eventStartTime,
+        limitGuestCount: limitGuestCount ?? this.limitGuestCount,
+        maxGuestCount: maxGuestCount ?? this.maxGuestCount,
+        hangEventType: hangEventType ?? this.hangEventType,
         eventEndDate: eventEndDate ?? this.eventEndDate,
+        photoUrl: photoUrl ?? this.photoUrl,
         searchEventInvitee: searchEventInvitee ?? this.searchEventInvitee,
         searchEventInviteeBy: searchEventInviteeBy ?? this.searchEventInviteeBy,
         eventUserInvitees: eventUserInvitees ?? this.eventUserInvitees);
+  }
+
+  bool isValidEvent() {
+    return eventName.isNotEmpty;
   }
 
   EditHangEventsState addUserEventInvitee(HangUserPreview newEventInvitee) {
@@ -115,10 +140,34 @@ class EditHangEventsState extends Equatable {
         eventDescription,
         eventStartDate,
         eventEndDate,
+        eventStartTime,
+        limitGuestCount,
+        maxGuestCount,
+        hangEventType,
+        photoUrl,
         searchEventInvitee,
         searchEventInviteeBy,
         eventUserInvitees,
       ];
+}
+
+class EventMainDetailsSavedSuccessfully extends EditHangEventsState {
+  final HangEvent savedEvent;
+  EventMainDetailsSavedSuccessfully(EditHangEventsState state,
+      {required this.savedEvent})
+      : super.fromState(state);
+
+  @override
+  List<Object> get props => [savedEvent];
+}
+
+class EventMainDetailsSavedError extends EditHangEventsState {
+  final String error;
+  EventMainDetailsSavedError(EditHangEventsState state, {required this.error})
+      : super.fromState(state);
+
+  @override
+  List<Object> get props => [error];
 }
 
 class FindEventInviteeLoading extends EditHangEventsState {

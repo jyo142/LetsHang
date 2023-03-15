@@ -4,9 +4,11 @@ final ThemeData mainTheme = ThemeData(
   primarySwatch: Colors.blue,
   outlinedButtonTheme: OutlinedButtonThemeData(
     style: OutlinedButton.styleFrom(
-        primary: Color(0xFFFFFFFF),
-        backgroundColor: Color(0xFF0287BF),
-        textStyle: TextStyle(
+        primary: const Color(0xFFFFFFFF),
+        disabledForegroundColor: Colors.white,
+        disabledBackgroundColor: const Color(0x800287BF),
+        backgroundColor: const Color(0xFF0287BF),
+        textStyle: const TextStyle(
             fontSize: 16.0,
             letterSpacing: .5,
             fontFamily: "Outfit",
@@ -17,6 +19,11 @@ final ThemeData mainTheme = ThemeData(
   // Define the default `TextTheme`. Use this to specify the default
   // text styling for headlines, titles, bodies of text, and more.
   textTheme: const TextTheme(
+    headline4: TextStyle(
+        fontSize: 22.0,
+        fontWeight: FontWeight.w600,
+        letterSpacing: .5,
+        fontFamily: "Outfit"),
     headline5: TextStyle(
         fontSize: 26.0,
         fontWeight: FontWeight.w800,
@@ -36,14 +43,14 @@ final ThemeData mainTheme = ThemeData(
 
 extension CustomStyles on TextTheme {
   TextStyle get linkText {
-    return TextStyle(
+    return const TextStyle(
       fontSize: 14.0,
       color: Color(0xFF0287BF),
     );
   }
 
   TextStyle get tabText {
-    return TextStyle(
+    return const TextStyle(
       fontSize: 14.0,
       fontFamily: "TT Norms",
       letterSpacing: 0.01,
@@ -54,12 +61,12 @@ extension CustomStyles on TextTheme {
 extension CustomButtonStyles on ButtonThemeData {
   ButtonStyle get secondaryButtonStyle {
     return OutlinedButton.styleFrom(
-        primary: Color(0xFFFFFFFF),
-        foregroundColor: Color(0xFFA7BAC2), //adding this would work
+        primary: const Color(0xFFFFFFFF),
+        foregroundColor: const Color(0xFFA7BAC2), //adding this would work
 
-        backgroundColor: Color(0xFFFFFFFF),
-        side: BorderSide(width: 1.0, color: Color(0xFFA7BAC2)),
-        textStyle: TextStyle(
+        backgroundColor: const Color(0xFFFFFFFF),
+        side: const BorderSide(width: 1.0, color: Color(0xFFA7BAC2)),
+        textStyle: const TextStyle(
             fontSize: 16.0,
             letterSpacing: .5,
             fontFamily: "Outfit",
