@@ -90,7 +90,7 @@ class EventPictureChangedError extends EditHangEventsEvent {
   List<Object> get props => [eventPictureError];
 }
 
-class EventMainDetailsSaved extends EditHangEventsEvent {}
+class EventMainDetailsSavedInitiated extends EditHangEventsEvent {}
 
 class EventEndDateTimeChanged extends EditHangEventsEvent {
   const EventEndDateTimeChanged(

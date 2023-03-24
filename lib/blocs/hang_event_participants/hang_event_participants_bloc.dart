@@ -105,7 +105,9 @@ class HangEventParticipantsBloc
         await _hangEventRepository.getUserInvitesForEvent(curEvent.id);
 
     List<UserInvite> attendingUsers = allUserInvites
-        .where((element) => element.status == InviteStatus.accepted)
+        .where((element) =>
+            element.status == InviteStatus.accepted ||
+            element.status == InviteStatus.owner)
         .toList();
 
     List<UserInvite> invitedUsers = allUserInvites
@@ -115,6 +117,7 @@ class HangEventParticipantsBloc
     List<UserInvite> rejectedUsers = allUserInvites
         .where((element) => element.status == InviteStatus.rejected)
         .toList();
+
     yield state.copyWith(
         attendingUsers: attendingUsers,
         invitedUsers: invitedUsers,

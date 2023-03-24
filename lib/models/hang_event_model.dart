@@ -1,32 +1,34 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'hang_user_preview_model.dart';
 
 enum HangEventType { public, private }
+
+enum HangEventStage { started, mainDetails, addingUsers, complete }
 
 class HangEvent extends Equatable {
   final String id;
   final HangUserPreview eventOwner;
   final String eventName;
   final String eventDescription;
-  late final DateTime eventStartDate;
-  late final DateTime eventEndDate;
+  late final DateTime? eventStartDate;
+  late final DateTime? eventEndDate;
   final List<UserInvite> userInvites;
+  final HangEventStage currentStage;
   final String? photoURL;
   HangEvent(
       {this.id = '',
       required this.eventOwner,
       this.eventName = '',
       this.eventDescription = '',
-      DateTime? eventStartDate,
-      DateTime? eventEndDate,
+      this.eventStartDate,
+      this.eventEndDate,
       List<UserInvite>? userInvites,
+      this.currentStage = HangEventStage.started,
       this.photoURL = ''})
-      : this.userInvites = userInvites ?? [] {
-    this.eventStartDate = eventStartDate ?? DateTime.now();
-    this.eventEndDate = eventEndDate ?? DateTime.now();
-  }
+      : this.userInvites = userInvites ?? [];
 
   HangEvent.withId(String id, HangEvent event)
       : this(
@@ -37,6 +39,7 @@ class HangEvent extends Equatable {
             eventEndDate: event.eventEndDate,
             eventStartDate: event.eventStartDate,
             userInvites: event.userInvites,
+            currentStage: event.currentStage,
             photoURL: event.photoURL);
 
   static HangEvent fromSnapshot(DocumentSnapshot snap,
@@ -52,6 +55,7 @@ class HangEvent extends Equatable {
       DateTime? eventStartDate,
       DateTime? eventEndDate,
       List<UserInvite>? userInvites,
+      HangEventStage? currentStage,
       String? photoUrl}) {
     return HangEvent(
         id: id ?? this.id,
@@ -61,33 +65,39 @@ class HangEvent extends Equatable {
         eventStartDate: eventStartDate ?? this.eventStartDate,
         eventEndDate: eventEndDate ?? this.eventEndDate,
         userInvites: userInvites ?? this.userInvites,
+        currentStage: currentStage ?? this.currentStage,
         photoURL: photoURL ?? this.photoURL);
   }
 
   static HangEvent fromMap(Map<String, dynamic> map,
       [List<UserInvite>? userInvites]) {
-    Timestamp startDateTimestamp = map['eventStartDate'];
-    Timestamp endDateTimestamp = map['eventEndDate'];
+    Timestamp? startDateTimestamp = map['eventStartDate'];
+    Timestamp? endDateTimestamp = map['eventEndDate'];
     HangEvent event = HangEvent(
         id: map["id"],
         eventOwner: HangUserPreview.fromMap(map["eventOwner"]),
         eventName: map['eventName'],
         eventDescription: map['eventDescription'],
-        eventStartDate: startDateTimestamp.toDate(),
-        eventEndDate: endDateTimestamp.toDate(),
+        eventStartDate: startDateTimestamp?.toDate(),
+        eventEndDate: endDateTimestamp?.toDate(),
         userInvites: userInvites ?? [],
+        currentStage: HangEventStage.values
+            .firstWhere((e) => describeEnum(e) == map["currentStage"]),
         photoURL: map['photoUrl']);
     return event;
   }
 
-  Map<String, Object> toDocument() {
+  Map<String, Object?> toDocument() {
     return {
       "id": id,
       'eventName': eventName,
       "eventOwner": eventOwner.toDocument(),
       'eventDescription': eventDescription,
-      'eventStartDate': Timestamp.fromDate(eventStartDate),
-      'eventEndDate': Timestamp.fromDate(eventEndDate),
+      'eventStartDate':
+          eventStartDate != null ? Timestamp.fromDate(eventStartDate!) : null,
+      'eventEndDate':
+          eventEndDate != null ? Timestamp.fromDate(eventEndDate!) : null,
+      'currentStage': describeEnum(currentStage),
       'photoUrl': photoURL.toString()
     };
   }
@@ -101,6 +111,7 @@ class HangEvent extends Equatable {
         eventStartDate,
         eventEndDate,
         userInvites,
+        currentStage,
         photoURL
       ];
 }

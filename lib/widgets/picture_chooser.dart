@@ -11,13 +11,15 @@ class PictureChooser extends StatefulWidget {
       required this.chooserImage,
       required this.onImageChoosen,
       required this.onImageError,
-      required this.renderImageContainer})
+      required this.renderImageContainer,
+      this.imageUrl})
       : super(key: key);
 
   final Image chooserImage;
   final Function onImageChoosen;
   final Function onImageError;
   final Function renderImageContainer;
+  final String? imageUrl;
   @override
   State<PictureChooser> createState() => _PictureChooserState();
 }
@@ -27,6 +29,14 @@ class _PictureChooserState extends State<PictureChooser> {
   String? _retrieveDataError;
   File? _imageFile;
   dynamic _pickImageError;
+
+  @override
+  void initState() {
+    if (widget.imageUrl != null) {
+      _setImageFile(widget.imageUrl!);
+    }
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

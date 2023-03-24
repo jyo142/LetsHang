@@ -24,9 +24,9 @@ class EventDetailsScreen extends StatelessWidget {
       body: BlocProvider(
           create: (context) => HangEventOverviewBloc(
               hangEventRepository: HangEventRepository(),
-              userName: (context.read<AppBloc>().state as AppAuthenticated)
+              email: (context.read<AppBloc>().state as AppAuthenticated)
                   .user
-                  .userName)
+                  .email!)
             ..add(LoadHangEvents()),
           child: _EventDetailsView(curEvent: curEvent)),
       bottomNavigationBar: Padding(
@@ -135,8 +135,10 @@ class _EventDetailsView extends StatelessWidget {
                                     Padding(
                                       padding: EdgeInsets.only(left: 15),
                                       child: Text(
-                                          DateFormat('MM/dd/yyyy')
-                                              .format(curEvent.eventStartDate),
+                                          curEvent.eventStartDate != null
+                                              ? DateFormat('MM/dd/yyyy').format(
+                                                  curEvent.eventStartDate!)
+                                              : 'Undecided',
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodyText2),
@@ -152,8 +154,10 @@ class _EventDetailsView extends StatelessWidget {
                                     Padding(
                                       padding: EdgeInsets.only(left: 15),
                                       child: Text(
-                                          DateFormat('hh:mm a')
-                                              .format(curEvent.eventStartDate),
+                                          curEvent.eventEndDate != null
+                                              ? DateFormat('hh:mm a').format(
+                                                  curEvent.eventEndDate!)
+                                              : 'Undecided',
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodyText2),

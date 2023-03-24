@@ -19,9 +19,9 @@ class EventsScreen extends StatelessWidget {
         body: BlocProvider(
             create: (context) => HangEventOverviewBloc(
                 hangEventRepository: HangEventRepository(),
-                userName: (context.read<AppBloc>().state as AppAuthenticated)
+                email: (context.read<AppBloc>().state as AppAuthenticated)
                     .user
-                    .userName)
+                    .email!)
               ..add(LoadHangEvents()),
             child: const EventsView()));
   }
@@ -165,8 +165,8 @@ class _EventsViewState extends State<EventsView> with TickerProviderStateMixin {
             return const Center(child: CircularProgressIndicator());
           }
           if (state is HangEventsRetrieved) {
-            if (state.currentUpcomingHangEvents.isNotEmpty) {
-              return _eventListView(state.currentUpcomingHangEvents);
+            if (state.draftUpcomingHangEvents.isNotEmpty) {
+              return _eventListView(state.draftUpcomingHangEvents);
             } else {
               return Text(
                 'No upcoming events',
@@ -233,8 +233,10 @@ class _EventsViewState extends State<EventsView> with TickerProviderStateMixin {
                   }
                 },
               ),
-              title: Text(DateFormat('MM/dd/yyyy h:mm a')
-                  .format(events[index].event.eventStartDate)),
+              title: Text(events[index].event.eventStartDate != null
+                  ? DateFormat('MM/dd/yyyy h:mm a')
+                      .format(events[index].event.eventStartDate!)
+                  : 'Undecided'),
               subtitle: Text(events[index].event.eventName),
             ));
           }),

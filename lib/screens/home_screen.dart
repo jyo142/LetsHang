@@ -17,9 +17,9 @@ class HomeScreen extends StatelessWidget {
         body: BlocProvider(
             create: (context) => HangEventOverviewBloc(
                 hangEventRepository: HangEventRepository(),
-                userName: (context.read<AppBloc>().state as AppAuthenticated)
+                email: (context.read<AppBloc>().state as AppAuthenticated)
                     .user
-                    .userName)
+                    .email!)
               ..add(LoadHangEvents()),
             child: const HomeView()));
   }
@@ -95,8 +95,8 @@ class HomeView extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (state is HangEventsRetrieved) {
-            if (state.currentUpcomingHangEvents.isNotEmpty) {
-              return _eventListView(state.currentUpcomingHangEvents);
+            if (state.draftUpcomingHangEvents.isNotEmpty) {
+              return _eventListView(state.draftUpcomingHangEvents);
             } else {
               return Text(
                 'No upcoming events',
@@ -163,8 +163,10 @@ class HomeView extends StatelessWidget {
                   }
                 },
               ),
-              title: Text(DateFormat('MM/dd/yyyy h:mm a')
-                  .format(events[index].event.eventStartDate)),
+              title: Text(events[index].event.eventStartDate != null
+                  ? DateFormat('MM/dd/yyyy h:mm a')
+                      .format(events[index].event.eventStartDate!)
+                  : 'Undecided'),
               subtitle: Text(events[index].event.eventName),
             ));
           }),

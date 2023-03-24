@@ -10,6 +10,7 @@ import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
 import 'package:letshang/assets/Constants.dart' as constants;
+import 'package:letshang/screens/add_people_event_screen.dart';
 import 'package:letshang/screens/event_participants_screen.dart';
 import 'package:letshang/screens/events/add_invitee_dialog.dart';
 import 'package:letshang/services/message_service.dart';
@@ -72,24 +73,24 @@ class _EditEventScreenState extends State<_EditEventScreenView> {
   late TimeOfDay selectedEndTime;
   bool isAllDayEvent = false;
 
-  void initState() {
-    if (widget.curEvent != null) {
-      selectedStartDate = widget.curEvent!.eventStartDate;
-      selectedStartTime =
-          TimeOfDay.fromDateTime(widget.curEvent!.eventStartDate);
+  // void initState() {
+  //   if (widget.curEvent != null) {
+  //     selectedStartDate = widget.curEvent!.eventStartDate;
+  //     selectedStartTime =
+  //         TimeOfDay.fromDateTime(widget.curEvent!.eventStartDate);
 
-      selectedEndDate = widget.curEvent!.eventEndDate;
-      selectedEndTime = TimeOfDay.fromDateTime(widget.curEvent!.eventEndDate);
-    } else {
-      // if we are creating a new event, then make sure the dates round up to the next hour
-      selectedStartDate = _roundDateToNextHour(DateTime.now());
-      selectedStartTime = TimeOfDay.fromDateTime(selectedStartDate);
+  //     selectedEndDate = widget.curEvent!.eventEndDate;
+  //     selectedEndTime = TimeOfDay.fromDateTime(widget.curEvent!.eventEndDate);
+  //   } else {
+  //     // if we are creating a new event, then make sure the dates round up to the next hour
+  //     selectedStartDate = _roundDateToNextHour(DateTime.now());
+  //     selectedStartTime = TimeOfDay.fromDateTime(selectedStartDate);
 
-      selectedEndDate = _roundDateToNextHour(DateTime.now());
-      selectedEndTime = TimeOfDay.fromDateTime(selectedEndDate);
-    }
-    super.initState();
-  }
+  //     selectedEndDate = _roundDateToNextHour(DateTime.now());
+  //     selectedEndTime = TimeOfDay.fromDateTime(selectedEndDate);
+  //   }
+  //   super.initState();
+  // }
 
   Future<void> _selectStartDate(BuildContext context) async {
     DateTime todaysDate = DateTime.now();
@@ -98,7 +99,7 @@ class _EditEventScreenState extends State<_EditEventScreenView> {
         initialDate: selectedStartDate,
         firstDate: todaysDate,
         lastDate: DateTime(2101));
-    if (picked != null && picked != selectedStartDate) {
+    if (picked != null) {
       // once a different date is picked, reset the start time.
       setState(() {
         selectedStartDate = picked;
@@ -216,13 +217,18 @@ class _EditEventScreenState extends State<_EditEventScreenView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  LHTextFormField(
-                    labelText: 'Event Name',
-                    backgroundColor: Colors.white,
-                    onChanged: (value) {
-                      context
-                          .read<EditHangEventsBloc>()
-                          .add(EventNameChanged(eventName: value));
+                  BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
+                    builder: (context, state) {
+                      return LHTextFormField(
+                        labelText: 'Event Name',
+                        initialValue: state.eventName,
+                        backgroundColor: Colors.white,
+                        onChanged: (value) {
+                          context
+                              .read<EditHangEventsBloc>()
+                              .add(EventNameChanged(eventName: value));
+                        },
+                      );
                     },
                   ),
                   Container(
@@ -322,9 +328,9 @@ class _EditEventScreenState extends State<_EditEventScreenView> {
                       child: ToggleSwitch(
                         minWidth: 200.0,
                         cornerRadius: 20.0,
-                        activeBgColors: [
-                          [const Color(0xFF0286BF)!],
-                          [const Color(0xFF0286BF)!]
+                        activeBgColors: const [
+                          [Color(0xFF0286BF)],
+                          [Color(0xFF0286BF)]
                         ],
                         inactiveBgColor: Colors.white,
                         initialLabelIndex: 1,
@@ -341,11 +347,11 @@ class _EditEventScreenState extends State<_EditEventScreenView> {
                         },
                       )),
                   Container(
-                    margin: EdgeInsets.only(top: 20),
-                    padding: EdgeInsets.all(10),
+                    margin: const EdgeInsets.only(top: 20),
+                    padding: const EdgeInsets.all(10),
                     width: double.infinity,
                     decoration: BoxDecoration(
-                        color: Color(0xFFFFFFFF),
+                        color: const Color(0xFFFFFFFF),
                         borderRadius: BorderRadius.circular(5)),
                     child: BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
                       builder: (context, state) {
@@ -372,8 +378,7 @@ class _EditEventScreenState extends State<_EditEventScreenView> {
                                   decoration: BoxDecoration(
                                     image: DecorationImage(
                                       fit: BoxFit.fill,
-                                      image:
-                                          FileImage(imageFile) as ImageProvider,
+                                      image: FileImage(imageFile),
                                     ),
                                   ),
                                 );
@@ -566,9 +571,8 @@ class _EditEventScreenState extends State<_EditEventScreenView> {
         if (state is EventMainDetailsSavedSuccessfully) {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => EventParticipantsScreen(
-                curEvent: state.savedEvent,
-              ),
+              builder: (context) =>
+                  AddPeopleEventScreen(curEvent: state.savedEvent),
             ),
           );
         }
@@ -588,17 +592,20 @@ class _EditEventScreenState extends State<_EditEventScreenView> {
         return Container(
           margin: const EdgeInsets.only(top: 30),
           width: double.infinity,
-          child: LHButton(
-              buttonText: 'Continue',
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const EditEventScreen(),
-                  ),
-                );
-              },
-              isDisabled:
-                  context.read<EditHangEventsBloc>().state.eventName.isEmpty),
+          child: state is EventMainDetailsSavedLoading
+              ? const Center(child: CircularProgressIndicator())
+              : LHButton(
+                  buttonText: 'Continue',
+                  onPressed: () {
+                    context
+                        .read<EditHangEventsBloc>()
+                        .add(EventMainDetailsSavedInitiated());
+                  },
+                  isDisabled: context
+                      .read<EditHangEventsBloc>()
+                      .state
+                      .eventName
+                      .isEmpty),
         );
       },
     );

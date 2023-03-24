@@ -70,7 +70,8 @@ class EditHangEventsBloc
       yield state.copyWith(hangEventType: event.eventType);
     } else if (event is EventPictureChanged) {
       yield state.copyWith(photoUrl: event.eventPicturePath);
-    } else if (event is EventMainDetailsSaved) {
+    } else if (event is EventMainDetailsSavedInitiated) {
+      yield EventMainDetailsSavedLoading(state);
       yield* _mapMainEventDetailsSavedState(state);
     } else if (event is EventEndDateTimeChanged) {
       // need to combine both the DateTime and TimeOfDay
@@ -134,6 +135,8 @@ class EditHangEventsBloc
       if (existingHangEvent != null) {
         // this event is being edited if an id is present
         retvalHangEvent = await _hangEventRepository.editHangEvent(savingEvent);
+        retvalHangEvent.copyWith(
+            userInvites: List.of(state.eventUserInvitees.values));
         await _invitesRepository.editUserEventInvites(retvalHangEvent);
       } else {
         retvalHangEvent = await _hangEventRepository.addHangEvent(savingEvent);
@@ -141,12 +144,14 @@ class EditHangEventsBloc
             retvalHangEvent,
             UserInvite(
                 user: creatingUser,
-                status: InviteStatus.incomplete,
+                status: InviteStatus.owner,
                 type: InviteType.event));
       }
       yield EventMainDetailsSavedSuccessfully(state,
           savedEvent: retvalHangEvent);
-    } catch (_) {}
+    } catch (_) {
+      yield EventMainDetailsSavedError(state, error: 'Unable to save event.');
+    }
   }
 
   Stream<EditHangEventsState> _mapEventSavedState(

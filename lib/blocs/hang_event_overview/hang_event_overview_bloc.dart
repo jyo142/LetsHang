@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:letshang/models/event_invite.dart';
 import 'package:letshang/models/hang_event_model.dart';
+import 'package:letshang/models/invite.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
 import 'package:letshang/repositories/invites/base_invites_repository.dart';
 import 'package:letshang/repositories/invites/invites_repository.dart';
@@ -16,11 +17,10 @@ class HangEventOverviewBloc
     extends Bloc<HangEventOverviewEvent, HangEventOverviewState> {
   final HangEventRepository _hangEventRepository;
   final BaseUserInvitesRepository _userInvitesRepository;
-  final String userName;
+  final String email;
   // constructor
   HangEventOverviewBloc(
-      {required HangEventRepository hangEventRepository,
-      required this.userName})
+      {required HangEventRepository hangEventRepository, required this.email})
       : _hangEventRepository = hangEventRepository,
         _userInvitesRepository = UserInvitesRepository(),
         super(HangEventsLoading());
@@ -35,7 +35,7 @@ class HangEventOverviewBloc
 
   Stream<HangEventOverviewState> _mapLoadHangEventsToState() async* {
     final eventsForUser =
-        await _userInvitesRepository.getUserEventInvites(userName);
+        await _userInvitesRepository.getUserEventInvites(email);
     yield HangEventsRetrieved(hangEvents: eventsForUser);
   }
 }

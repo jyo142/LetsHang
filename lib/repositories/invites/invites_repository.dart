@@ -13,10 +13,10 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       : _firebaseFirestore = firebaseFirestore ?? FirebaseFirestore.instance;
 
   @override
-  Future<List<HangEventInvite>> getUserEventInvites(String userName) async {
+  Future<List<HangEventInvite>> getUserEventInvites(String email) async {
     DocumentSnapshot eventInviteSnapshot = await _firebaseFirestore
         .collection("userInvites")
-        .doc(userName)
+        .doc(email)
         .collection("eventInvites")
         .doc("events")
         .get();
@@ -91,9 +91,8 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       if (userInviteMap.containsKey(userInvite.user.email)) {
         throw Exception("User is already invited to this event");
       }
-    } else {
-      retValInvites.add(userInvite);
     }
+    retValInvites.add(userInvite);
 
     await addUserInvite(hangEvent, userInvite, transaction);
 
@@ -148,16 +147,19 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
 
     List<HangEventInvite> retValEvents = [];
     if (eventInviteDocumentSnap.exists) {
-      retValEvents = eventInviteDocumentSnap.get("eventInvites");
+      retValEvents = List.of(eventInviteDocumentSnap["eventInvites"])
+          .map((m) => HangEventInvite.fromMap(m))
+          .toList();
+
       Map<String, HangEventInvite> hangEventInviteMap = {
         for (HangEventInvite hei in retValEvents) hei.event.id: hei
       };
       if (hangEventInviteMap.containsKey(newEventInvite.event.id)) {
         throw Exception("User is already invited to this event");
       }
-    } else {
-      retValEvents.add(newEventInvite);
     }
+    retValEvents.add(newEventInvite);
+
     transaction.set(eventInviteRef,
         {"eventInvites": retValEvents.map((e) => e.toDocument()).toList()});
   }
@@ -177,7 +179,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
 
       List<HangEventInvite> retValEvents = [];
       if (eventInviteDocumentSnap.exists) {
-        retValEvents = eventInviteDocumentSnap.get("eventInvites");
+        retValEvents = List.of(eventInviteDocumentSnap.get("eventInvites"));
         retValEvents.add(newEventInvite);
       } else {
         retValEvents.add(newEventInvite);
@@ -199,7 +201,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
 
       List<HangEventInvite> retValEvents = [];
       if (eventInviteDocumentSnap.exists) {
-        retValEvents = eventInviteDocumentSnap.get("eventInvites");
+        retValEvents = List.of(eventInviteDocumentSnap.get("eventInvites"));
         retValEvents = retValEvents
             .where((element) => element.event.id != event.id)
             .toList();

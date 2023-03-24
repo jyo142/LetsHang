@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 class LHTextFormField extends StatelessWidget {
   final String labelText;
+  final String initialValue;
   final Color backgroundColor;
   final ValueChanged<String>? onChanged;
   final bool? readOnly;
@@ -12,6 +13,7 @@ class LHTextFormField extends StatelessWidget {
       {Key? key,
       required this.labelText,
       required this.backgroundColor,
+      this.initialValue = '',
       this.onChanged,
       this.readOnly = false,
       this.enabled = true,
@@ -37,7 +39,7 @@ class LHTextFormField extends StatelessWidget {
             borderRadius: BorderRadius.circular(10.0),
             borderSide: const BorderSide(color: Colors.white)),
       ),
-      initialValue: "",
+      initialValue: initialValue,
       inputFormatters: <TextInputFormatter>[
         if (keyboardType == TextInputType.number) ...[
           FilteringTextInputFormatter.digitsOnly

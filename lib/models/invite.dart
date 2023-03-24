@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
-enum InviteStatus { incomplete, pending, accepted, rejected }
+enum InviteStatus { incomplete, pending, owner, accepted, rejected }
 
 enum InviteType { group, event }
 

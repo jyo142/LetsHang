@@ -5,8 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/avatars/group_avatar.dart';
-import 'package:letshang/widgets/cards/user_event_card_select.dart';
 import 'package:letshang/widgets/hang_event_participants/search_participants_by.dart';
+import 'package:letshang/widgets/hang_event_participants/select_group_members.dart';
 import 'package:letshang/widgets/lh_button.dart';
 
 class AddGroupBottomModal extends StatelessWidget {
@@ -83,7 +83,7 @@ class AddGroupBottomModal extends StatelessWidget {
     if (state is SelectMembersInviteLoading ||
         state is SelectMembersState ||
         state is SelectMembersInviteError) {
-      return _selectMembersSection(context, state);
+      return SelectGroupMembers(state: state as SelectMembersState);
     }
 
     return SearchParticipantsBy(
@@ -141,7 +141,7 @@ class AddGroupBottomModal extends StatelessWidget {
       Container(
         margin: const EdgeInsets.only(top: 20),
         child: Text(
-          '${state.foundGroup.userInvites.where((element) => element.status == InviteStatus.accepted).length.toString()} Members',
+          '${state.foundGroup.userInvites.where((element) => element.status == InviteStatus.accepted || element.status == InviteStatus.owner).toString()} Members',
           style: Theme.of(context).textTheme.headline6,
         ),
       ),
@@ -174,7 +174,9 @@ class AddGroupBottomModal extends StatelessWidget {
                                 eventMembers: state.allUsers,
                                 groupMembers: state.foundGroup.userInvites
                                     .where((element) =>
-                                        element.status == InviteStatus.accepted)
+                                        element.status ==
+                                            InviteStatus.accepted ||
+                                        element.status == InviteStatus.owner)
                                     .toList()))
                       }),
               LHButton(
@@ -189,93 +191,5 @@ class AddGroupBottomModal extends StatelessWidget {
             ],
           )),
     ]);
-  }
-
-  /// state must be of SelectMembersState
-  Widget _selectMembersSection(BuildContext context,
-      HangEventParticipantsState hangEventParticipantsState) {
-    final state = hangEventParticipantsState as SelectMembersState;
-    return Container(
-      height: 500,
-      margin: const EdgeInsets.only(top: 20),
-      child: Column(children: [
-        if (state is SelectMembersInviteLoading) ...[
-          Container(
-              margin: EdgeInsets.only(top: 10),
-              child: const CircularProgressIndicator())
-        ] else ...[
-          Flexible(
-              flex: 5,
-              child: ListView.builder(
-                  itemCount: state.allMembers.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return Container(
-                      margin: const EdgeInsets.only(top: 10),
-                      child: UserEventCardSelect(
-                        curUser: state.allMembers[index].user,
-                        backgroundColor: const Color(0xFFF4F8FA),
-                        onSelect: () => {
-                          context.read<HangEventParticipantsBloc>().add(
-                              SelectMembersSelected(
-                                  groupMembers: state.allMembers,
-                                  selectedMember: state.allMembers[index]))
-                        },
-                        isSelected: state.selectedMembers
-                            .containsKey(state.allMembers[index].user.email),
-                      ),
-                    );
-                  })),
-          Flexible(
-              flex: 2,
-              child: Container(
-                  margin: EdgeInsets.only(top: 20),
-                  child: Column(
-                    children: [
-                      if (state is SelectMembersInviteError) ...[
-                        Container(
-                          margin: const EdgeInsets.only(top: 20, bottom: 10),
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(state.errorMessage,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyText1!
-                                        .merge(const TextStyle(
-                                            color: Color(0xFFD50000))))
-                              ]),
-                        ),
-                      ],
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          LHButton(
-                              buttonText:
-                                  'Send Invite (${state.selectedMembers.length})',
-                              isDisabled: state.selectedMembers.isEmpty,
-                              onPressed: () => {
-                                    context
-                                        .read<HangEventParticipantsBloc>()
-                                        .add(SelectMembersInviteInitiated(
-                                            selectedMembers:
-                                                state.selectedMembers))
-                                  }),
-                          LHButton(
-                              buttonText: 'Go Back',
-                              onPressed: () => {
-                                    context
-                                        .read<HangEventParticipantsBloc>()
-                                        .add(ClearSearchFields())
-                                  },
-                              buttonStyle: Theme.of(context)
-                                  .buttonTheme
-                                  .secondaryButtonStyle)
-                        ],
-                      )
-                    ],
-                  )))
-        ]
-      ]),
-    );
   }
 }

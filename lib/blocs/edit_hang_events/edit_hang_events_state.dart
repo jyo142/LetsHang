@@ -151,6 +151,11 @@ class EditHangEventsState extends Equatable {
       ];
 }
 
+class EventMainDetailsSavedLoading extends EditHangEventsState {
+  EventMainDetailsSavedLoading(EditHangEventsState state)
+      : super.fromState(state);
+}
+
 class EventMainDetailsSavedSuccessfully extends EditHangEventsState {
   final HangEvent savedEvent;
   EventMainDetailsSavedSuccessfully(EditHangEventsState state,

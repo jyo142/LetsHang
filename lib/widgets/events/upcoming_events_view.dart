@@ -16,8 +16,8 @@ class UpcomingEventsView extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
         if (state is HangEventsRetrieved) {
-          if (state.currentUpcomingHangEvents.isNotEmpty) {
-            return EventListCardView(events: state.currentUpcomingHangEvents);
+          if (state.draftUpcomingHangEvents.isNotEmpty) {
+            return EventListCardView(events: state.draftUpcomingHangEvents);
           } else {
             return Column(children: [
               Container(
