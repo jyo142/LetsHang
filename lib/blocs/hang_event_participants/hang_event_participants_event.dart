@@ -50,6 +50,16 @@ class SendInviteInitiated extends HangEventParticipantsEvent {
   List<Object> get props => [invitedUser];
 }
 
+class AddInviteeInitiated extends HangEventParticipantsEvent {
+  const AddInviteeInitiated({required this.invitedUser});
+  final HangUser invitedUser;
+
+  @override
+  List<Object> get props => [invitedUser];
+}
+
+class SendAllInviteesInitiated extends HangEventParticipantsEvent {}
+
 class SearchByGroupChanged extends HangEventParticipantsEvent {
   const SearchByGroupChanged({required this.groupValue});
 

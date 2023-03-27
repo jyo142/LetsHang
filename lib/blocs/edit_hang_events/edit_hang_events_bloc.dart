@@ -130,12 +130,13 @@ class EditHangEventsBloc
           eventName: state.eventName,
           eventDescription: state.eventDescription,
           eventStartDate: state.eventStartDate,
-          eventEndDate: state.eventEndDate);
+          eventEndDate: state.eventEndDate,
+          currentStage: HangEventStage.addingUsers);
       HangEvent retvalHangEvent;
       if (existingHangEvent != null) {
         // this event is being edited if an id is present
         retvalHangEvent = await _hangEventRepository.editHangEvent(savingEvent);
-        retvalHangEvent.copyWith(
+        retvalHangEvent = retvalHangEvent.copyWith(
             userInvites: List.of(state.eventUserInvitees.values));
         await _invitesRepository.editUserEventInvites(retvalHangEvent);
       } else {

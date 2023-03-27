@@ -54,6 +54,14 @@ class HangEventParticipantsState extends Equatable {
         rejectedUsers: rejectedUsers ?? this.rejectedUsers);
   }
 
+  HangEventParticipantsState addInvitee(HangUserPreview newInvitee) {
+    UserInvite newUserInvitee = UserInvite(
+        user: newInvitee, status: InviteStatus.pending, type: InviteType.event);
+    final newInvitees = List.of(invitedUsers);
+    newInvitees.add(newUserInvitee);
+    return copyWith(invitedUsers: newInvitees);
+  }
+
   @override
   List<Object?> get props => [
         addParticipantBy,
@@ -98,6 +106,26 @@ class SendInviteLoading extends HangEventParticipantsState {
 
 class SendInviteSuccess extends HangEventParticipantsState {
   SendInviteSuccess(HangEventParticipantsState state) : super.fromState(state);
+}
+
+class SendAllInvitesLoading extends HangEventParticipantsState {
+  SendAllInvitesLoading(HangEventParticipantsState state)
+      : super.fromState(state);
+}
+
+class SendAllInvitesError extends HangEventParticipantsState {
+  final String errorMessage;
+  SendAllInvitesError(HangEventParticipantsState state,
+      {required this.errorMessage})
+      : super.fromState(state);
+
+  @override
+  List<Object?> get props => [errorMessage];
+}
+
+class SendAllInvitesSuccess extends HangEventParticipantsState {
+  SendAllInvitesSuccess(HangEventParticipantsState state)
+      : super.fromState(state);
 }
 
 class SendInviteError extends HangEventParticipantsState {

@@ -9,7 +9,7 @@ class UserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (curUser.photoUrl != null) {
+    if (curUser.photoUrl?.isNotEmpty ?? true) {
       return CircleAvatar(
         radius: radius,
         backgroundImage: NetworkImage(curUser.photoUrl!),

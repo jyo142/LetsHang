@@ -5,6 +5,7 @@ import 'package:letshang/models/event_participants.dart';
 import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/hang_user_model.dart';
+import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/repositories/group/base_group_repository.dart';
@@ -78,6 +79,18 @@ class HangEventParticipantsBloc
     if (event is SendInviteInitiated) {
       yield SendInviteLoading(state);
       yield* _mapSendInviteState(event.invitedUser);
+    }
+    if (event is AddInviteeInitiated) {
+      HangEventParticipantsState newState =
+          state.addInvitee(HangUserPreview.fromUser(event.invitedUser));
+      yield newState.copyWith(
+          searchByEmailValue: '',
+          searchByUsernameValue: '',
+          addParticipantBy: AddParticipantBy.none);
+    }
+    if (event is SendAllInviteesInitiated) {
+      yield SendAllInvitesLoading(state);
+      yield* _mapSendAllInviteesState(state.invitedUsers);
     }
     if (event is SearchByGroupChanged) {
       yield state.copyWith(searchByGroupValue: event.groupValue);
@@ -179,11 +192,26 @@ class HangEventParticipantsBloc
     }
   }
 
+  Stream<HangEventParticipantsState> _mapSendAllInviteesState(
+      List<UserInvite> allInvitedUsers) async* {
+    try {
+      await _userInvitesRepository.addUserEventInvites(
+          curEvent, allInvitedUsers);
+      HangEvent savingEvent =
+          curEvent.copyWith(currentStage: HangEventStage.complete);
+      await _hangEventRepository.editHangEvent(savingEvent);
+      yield SendAllInvitesSuccess(state);
+    } catch (e) {
+      yield SendAllInvitesError(state,
+          errorMessage: "Failed to send invites to users.");
+    }
+  }
+
   Stream<HangEventParticipantsState> _mapSendInviteState(
       HangUser invitedUser) async* {
     try {
-      // await _userInvitesRepository.addUserEventInvite(
-      //     curEvent, UserInvite.fromInvitedEventUser(invitedUser));
+      await _userInvitesRepository.addUserEventInvite(
+          curEvent, UserInvite.fromInvitedEventUser(invitedUser));
       yield SendInviteSuccess(state);
     } catch (e) {
       yield SendInviteError(state,

@@ -10,7 +10,15 @@ import 'package:letshang/widgets/hang_event_participants/search_participants_by.
 import 'package:letshang/widgets/lh_button.dart';
 
 class AddPeopleBottomModal extends StatelessWidget {
-  const AddPeopleBottomModal({Key? key}) : super(key: key);
+  // the buttons can be different depending on if you want to send the invite right away
+  // or just add the invitee to a list
+  final Function onInviteeAdded;
+  final String submitPeopleButtonName;
+  const AddPeopleBottomModal(
+      {Key? key,
+      required this.onInviteeAdded,
+      required this.submitPeopleButtonName})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -241,11 +249,11 @@ class AddPeopleBottomModal extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               LHButton(
-                  buttonText: 'Send Invite',
-                  onPressed: () => {
-                        context.read<HangEventParticipantsBloc>().add(
-                            SendInviteInitiated(invitedUser: state.foundUser!))
-                      }),
+                  buttonText: submitPeopleButtonName,
+                  onPressed: () {
+                    onInviteeAdded(state.foundUser!);
+                    Navigator.pop(context);
+                  }),
               LHButton(
                   buttonText: 'Go Back',
                   onPressed: () => {

@@ -15,14 +15,11 @@ part 'hang_event_overview_state.dart';
 
 class HangEventOverviewBloc
     extends Bloc<HangEventOverviewEvent, HangEventOverviewState> {
-  final HangEventRepository _hangEventRepository;
   final BaseUserInvitesRepository _userInvitesRepository;
   final String email;
   // constructor
-  HangEventOverviewBloc(
-      {required HangEventRepository hangEventRepository, required this.email})
-      : _hangEventRepository = hangEventRepository,
-        _userInvitesRepository = UserInvitesRepository(),
+  HangEventOverviewBloc({required this.email})
+      : _userInvitesRepository = UserInvitesRepository(),
         super(HangEventsLoading());
 
   @override

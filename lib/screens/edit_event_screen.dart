@@ -67,10 +67,10 @@ class _EditEventScreenView extends StatefulWidget {
 
 class _EditEventScreenState extends State<_EditEventScreenView> {
   final _formKey = GlobalKey<FormState>();
-  late DateTime selectedStartDate;
-  late DateTime selectedEndDate;
-  late TimeOfDay selectedStartTime;
-  late TimeOfDay selectedEndTime;
+  // late DateTime selectedStartDate;
+  // late DateTime selectedEndDate;
+  // late TimeOfDay selectedStartTime;
+  // late TimeOfDay selectedEndTime;
   bool isAllDayEvent = false;
 
   // void initState() {
@@ -92,106 +92,114 @@ class _EditEventScreenState extends State<_EditEventScreenView> {
   //   super.initState();
   // }
 
-  Future<void> _selectStartDate(BuildContext context) async {
+  Future<void> _selectStartDate(
+      BuildContext context, DateTime? curStartDate) async {
     DateTime todaysDate = DateTime.now();
     final DateTime? picked = await showDatePicker(
         context: context,
-        initialDate: selectedStartDate,
+        initialDate: curStartDate ?? todaysDate,
         firstDate: todaysDate,
         lastDate: DateTime(2101));
     if (picked != null) {
       // once a different date is picked, reset the start time.
-      setState(() {
-        selectedStartDate = picked;
-        selectedStartTime = constants.startOfDay;
-        context.read<EditHangEventsBloc>().add(EventStartDateChanged(
-              eventStartDate: selectedStartDate,
-            ));
-        if (selectedStartDate.isAfter(selectedEndDate)) {
-          // if the start date is after the end date, then we need to adjust the end date to be the start date
-          selectedEndDate = selectedStartDate;
-          selectedEndTime = constants.startOfDay;
-          context.read<EditHangEventsBloc>().add(EventEndDateTimeChanged(
-              eventEndDate: selectedEndDate, eventEndTime: selectedEndTime));
-        }
-      });
+      context.read<EditHangEventsBloc>().add(EventStartDateChanged(
+            eventStartDate: picked,
+          ));
+      // setState(() {
+      //   selectedStartDate = picked;
+      //   selectedStartTime = constants.startOfDay;
+      //   context.read<EditHangEventsBloc>().add(EventStartDateChanged(
+      //         eventStartDate: selectedStartDate,
+      //       ));
+      //   if (selectedStartDate.isAfter(selectedEndDate)) {
+      //     // if the start date is after the end date, then we need to adjust the end date to be the start date
+      //     selectedEndDate = selectedStartDate;
+      //     selectedEndTime = constants.startOfDay;
+      //     context.read<EditHangEventsBloc>().add(EventEndDateTimeChanged(
+      //         eventEndDate: selectedEndDate, eventEndTime: selectedEndTime));
+      //   }
+      // });
     }
   }
 
-  Future<void> _selectEndDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: selectedEndDate,
-        firstDate: selectedStartDate,
-        lastDate: DateTime(2101));
-    if (picked != null && picked != selectedEndDate) {
-      // once a different date is picked, reset the start time.
-      setState(() {
-        selectedEndDate = picked;
-        selectedEndTime = constants.startOfDay;
-        context.read<EditHangEventsBloc>().add(EventEndDateTimeChanged(
-            eventEndDate: selectedEndDate, eventEndTime: selectedEndTime));
-      });
-    }
-  }
+  // Future<void> _selectEndDate(BuildContext context) async {
+  //   final DateTime? picked = await showDatePicker(
+  //       context: context,
+  //       initialDate: selectedEndDate,
+  //       firstDate: selectedStartDate,
+  //       lastDate: DateTime(2101));
+  //   if (picked != null && picked != selectedEndDate) {
+  //     // once a different date is picked, reset the start time.
+  //     setState(() {
+  //       selectedEndDate = picked;
+  //       selectedEndTime = constants.startOfDay;
+  //       context.read<EditHangEventsBloc>().add(EventEndDateTimeChanged(
+  //           eventEndDate: selectedEndDate, eventEndTime: selectedEndTime));
+  //     });
+  //   }
+  // }
 
-  Future<void> _selectStartTime(BuildContext context) async {
+  Future<void> _selectStartTime(
+      BuildContext context, TimeOfDay? curStartTime) async {
     final TimeOfDay? timeOfDay = await showTimePicker(
       context: context,
-      initialTime: selectedStartTime,
+      initialTime: curStartTime ?? constants.startOfDay,
       initialEntryMode: TimePickerEntryMode.dial,
     );
-    if (timeOfDay != null && timeOfDay != selectedStartTime) {
-      setState(() {
-        selectedStartTime = timeOfDay;
-        context
-            .read<EditHangEventsBloc>()
-            .add(EventStartTimeChanged(eventStartTime: selectedStartTime));
+    if (timeOfDay != null && timeOfDay != curStartTime) {
+      context
+          .read<EditHangEventsBloc>()
+          .add(EventStartTimeChanged(eventStartTime: timeOfDay));
+      // setState(() {
+      //   selectedStartTime = timeOfDay;
+      //   context
+      //       .read<EditHangEventsBloc>()
+      //       .add(EventStartTimeChanged(eventStartTime: selectedStartTime));
 
-        DateTime curStartDateTime = DateTimeUtils.getCurrentDateTime(
-            date: selectedStartDate, timeOfDay: selectedStartTime);
-        DateTime curEndDateTime = DateTimeUtils.getCurrentDateTime(
-            date: selectedEndDate, timeOfDay: selectedEndTime);
-        if (curStartDateTime.compareTo(curEndDateTime) >= 0) {
-          // if the start date is after the end date, then we need to adjust the end date to be the start date
-          selectedEndDate = selectedStartDate;
-          selectedEndTime = selectedStartTime;
-          context.read<EditHangEventsBloc>().add(EventEndDateTimeChanged(
-              eventEndDate: selectedEndDate, eventEndTime: selectedEndTime));
-        }
-      });
+      //   DateTime curStartDateTime = DateTimeUtils.getCurrentDateTime(
+      //       date: selectedStartDate, timeOfDay: selectedStartTime);
+      //   DateTime curEndDateTime = DateTimeUtils.getCurrentDateTime(
+      //       date: selectedEndDate, timeOfDay: selectedEndTime);
+      //   if (curStartDateTime.compareTo(curEndDateTime) >= 0) {
+      //     // if the start date is after the end date, then we need to adjust the end date to be the start date
+      //     selectedEndDate = selectedStartDate;
+      //     selectedEndTime = selectedStartTime;
+      //     context.read<EditHangEventsBloc>().add(EventEndDateTimeChanged(
+      //         eventEndDate: selectedEndDate, eventEndTime: selectedEndTime));
+      //   }
+      // });
     }
   }
 
-  Future<void> _selectEndTime(BuildContext context) async {
-    final TimeOfDay? timeOfDay = await showTimePicker(
-      context: context,
-      initialTime: selectedEndTime,
-      initialEntryMode: TimePickerEntryMode.dial,
-    );
-    if (timeOfDay != null && timeOfDay != selectedEndTime) {
-      setState(() {
-        selectedEndTime = timeOfDay;
-        context.read<EditHangEventsBloc>().add(EventEndDateTimeChanged(
-            eventEndDate: selectedEndDate, eventEndTime: selectedEndTime));
+  // Future<void> _selectEndTime(BuildContext context) async {
+  //   final TimeOfDay? timeOfDay = await showTimePicker(
+  //     context: context,
+  //     initialTime: selectedEndTime,
+  //     initialEntryMode: TimePickerEntryMode.dial,
+  //   );
+  //   if (timeOfDay != null && timeOfDay != selectedEndTime) {
+  //     setState(() {
+  //       selectedEndTime = timeOfDay;
+  //       context.read<EditHangEventsBloc>().add(EventEndDateTimeChanged(
+  //           eventEndDate: selectedEndDate, eventEndTime: selectedEndTime));
 
-        DateTime curStartDateTime = DateTimeUtils.getCurrentDateTime(
-            date: selectedStartDate, timeOfDay: selectedStartTime);
-        DateTime curEndDateTime = DateTimeUtils.getCurrentDateTime(
-            date: selectedEndDate, timeOfDay: selectedEndTime);
-        if (curStartDateTime.isAfter(curEndDateTime)) {
-          selectedEndDate = selectedStartDate;
-          selectedEndTime = selectedStartTime;
-          // context.read<EditHangEventsBloc>().add(EventStartDateTimeChanged(
-          //     eventStartDate: selectedStartDate,
-          //     eventStartTime: selectedStartTime));
-          MessageService.showErrorMessage(
-              content: 'End date cannot be before the start date',
-              context: context);
-        }
-      });
-    }
-  }
+  //       DateTime curStartDateTime = DateTimeUtils.getCurrentDateTime(
+  //           date: selectedStartDate, timeOfDay: selectedStartTime);
+  //       DateTime curEndDateTime = DateTimeUtils.getCurrentDateTime(
+  //           date: selectedEndDate, timeOfDay: selectedEndTime);
+  //       if (curStartDateTime.isAfter(curEndDateTime)) {
+  //         selectedEndDate = selectedStartDate;
+  //         selectedEndTime = selectedStartTime;
+  //         // context.read<EditHangEventsBloc>().add(EventStartDateTimeChanged(
+  //         //     eventStartDate: selectedStartDate,
+  //         //     eventStartTime: selectedStartTime));
+  //         MessageService.showErrorMessage(
+  //             content: 'End date cannot be before the start date',
+  //             context: context);
+  //       }
+  //     });
+  //   }
+  // }
 
   DateTime _roundDateToNextHour(DateTime curDate) {
     DateTime newDate = curDate.add(const Duration(hours: 1));
@@ -241,43 +249,50 @@ class _EditEventScreenState extends State<_EditEventScreenView> {
                     child: Row(children: [
                       Flexible(
                           flex: 1,
-                          child: InkWell(
-                            onTap: () {
-                              _selectStartDate(context);
+                          child: BlocBuilder<EditHangEventsBloc,
+                              EditHangEventsState>(
+                            builder: (context, state) {
+                              return InkWell(
+                                  onTap: () {
+                                    _selectStartDate(
+                                        context, state.eventStartDate);
+                                  },
+                                  child: LHTextFormField(
+                                    labelText: state.eventStartDate != null
+                                        ? DateFormat('MM/dd/yyyy')
+                                            .format(state.eventStartDate!)
+                                        : 'Date',
+                                    backgroundColor: Colors.white,
+                                    enabled: false,
+                                    readOnly: true,
+                                  ));
                             },
-                            child: BlocBuilder<EditHangEventsBloc,
-                                EditHangEventsState>(
-                              builder: (context, state) {
-                                return LHTextFormField(
-                                  labelText: state.eventStartDate != null
-                                      ? DateFormat('MM/dd/yyyy')
-                                          .format(state.eventStartDate!)
-                                      : 'Date',
-                                  backgroundColor: Colors.white,
-                                  enabled: false,
-                                  readOnly: true,
-                                );
-                              },
-                            ),
                           )),
                       const SizedBox(
                         width: 10,
                       ),
                       Flexible(
                           flex: 1,
-                          child: InkWell(onTap: () {
-                            _selectStartTime(context);
-                          }, child: BlocBuilder<EditHangEventsBloc,
-                              EditHangEventsState>(builder: (context, state) {
-                            return LHTextFormField(
-                              labelText: state.eventStartTime != null
-                                  ? _changeTimeToString(state.eventStartTime!)
-                                  : 'Time',
-                              backgroundColor: Colors.white,
-                              enabled: false,
-                              readOnly: true,
-                            );
-                          })))
+                          child: BlocBuilder<EditHangEventsBloc,
+                              EditHangEventsState>(
+                            builder: (context, state) {
+                              return InkWell(onTap: () {
+                                _selectStartTime(context, state.eventStartTime);
+                              }, child: BlocBuilder<EditHangEventsBloc,
+                                      EditHangEventsState>(
+                                  builder: (context, state) {
+                                return LHTextFormField(
+                                  labelText: state.eventStartTime != null
+                                      ? _changeTimeToString(
+                                          state.eventStartTime!)
+                                      : 'Time',
+                                  backgroundColor: Colors.white,
+                                  enabled: false,
+                                  readOnly: true,
+                                );
+                              }));
+                            },
+                          ))
                     ]),
                   ),
                   Container(
@@ -401,55 +416,55 @@ class _EditEventScreenState extends State<_EditEventScreenView> {
             )));
   }
 
-  List<Widget> _startDateTimeFields() {
-    return [
-      Text(DateFormat('MM/dd/yyyy').format(selectedStartDate)),
-      BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
-        builder: (context, state) {
-          return IconButton(
-            icon: const Icon(Icons.calendar_today_rounded),
-            highlightColor: Colors.pink,
-            onPressed: () => _selectStartDate(context),
-          );
-        },
-      ),
-      Text(_changeTimeToString(selectedStartTime)),
-      BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
-        builder: (context, state) {
-          return IconButton(
-            icon: const Icon(Icons.access_time),
-            highlightColor: Colors.pink,
-            onPressed: () => _selectStartTime(context),
-          );
-        },
-      ),
-    ];
-  }
+  // List<Widget> _startDateTimeFields() {
+  //   return [
+  //     Text(DateFormat('MM/dd/yyyy').format(selectedStartDate)),
+  //     BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
+  //       builder: (context, state) {
+  //         return IconButton(
+  //           icon: const Icon(Icons.calendar_today_rounded),
+  //           highlightColor: Colors.pink,
+  //           onPressed: () => _selectStartDate(context),
+  //         );
+  //       },
+  //     ),
+  //     Text(_changeTimeToString(selectedStartTime)),
+  //     BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
+  //       builder: (context, state) {
+  //         return IconButton(
+  //           icon: const Icon(Icons.access_time),
+  //           highlightColor: Colors.pink,
+  //           onPressed: () => _selectStartTime(context),
+  //         );
+  //       },
+  //     ),
+  //   ];
+  // }
 
-  List<Widget> _endDateTimeFields() {
-    return [
-      Text(DateFormat('MM/dd/yyyy').format(selectedEndDate)),
-      BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
-        builder: (context, state) {
-          return IconButton(
-            icon: const Icon(Icons.calendar_today_rounded),
-            highlightColor: Colors.pink,
-            onPressed: () => _selectEndDate(context),
-          );
-        },
-      ),
-      Text(_changeTimeToString(selectedEndTime)),
-      BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
-        builder: (context, state) {
-          return IconButton(
-            icon: const Icon(Icons.access_time),
-            highlightColor: Colors.pink,
-            onPressed: () => _selectEndTime(context),
-          );
-        },
-      ),
-    ];
-  }
+  // List<Widget> _endDateTimeFields() {
+  //   return [
+  //     Text(DateFormat('MM/dd/yyyy').format(selectedEndDate)),
+  //     BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
+  //       builder: (context, state) {
+  //         return IconButton(
+  //           icon: const Icon(Icons.calendar_today_rounded),
+  //           highlightColor: Colors.pink,
+  //           onPressed: () => _selectEndDate(context),
+  //         );
+  //       },
+  //     ),
+  //     Text(_changeTimeToString(selectedEndTime)),
+  //     BlocBuilder<EditHangEventsBloc, EditHangEventsState>(
+  //       builder: (context, state) {
+  //         return IconButton(
+  //           icon: const Icon(Icons.access_time),
+  //           highlightColor: Colors.pink,
+  //           onPressed: () => _selectEndTime(context),
+  //         );
+  //       },
+  //     ),
+  //   ];
+  // }
 
   List<Widget> _nameFields() {
     return [

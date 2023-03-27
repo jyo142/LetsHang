@@ -23,7 +23,6 @@ class EventDetailsScreen extends StatelessWidget {
     return Scaffold(
       body: BlocProvider(
           create: (context) => HangEventOverviewBloc(
-              hangEventRepository: HangEventRepository(),
               email: (context.read<AppBloc>().state as AppAuthenticated)
                   .user
                   .email!)

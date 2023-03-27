@@ -65,7 +65,13 @@ class _EventParticipantsView extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const AddPeopleBottomModal(),
+                          AddPeopleBottomModal(
+                            submitPeopleButtonName: 'Send Invite',
+                            onInviteeAdded: (foundUser) {
+                              context.read<HangEventParticipantsBloc>().add(
+                                  SendInviteInitiated(invitedUser: foundUser));
+                            },
+                          ),
                           Container(
                             margin: const EdgeInsets.only(left: 20),
                             child: const AddGroupBottomModal(),

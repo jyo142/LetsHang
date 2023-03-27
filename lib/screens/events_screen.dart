@@ -5,20 +5,19 @@ import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:letshang/models/event_invite.dart';
-import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
 import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:letshang/widgets/event_card.dart';
 import 'package:letshang/widgets/events/past_events_view.dart';
 import 'package:letshang/widgets/events/upcoming_events_view.dart';
 
 class EventsScreen extends StatelessWidget {
+  const EventsScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         body: BlocProvider(
             create: (context) => HangEventOverviewBloc(
-                hangEventRepository: HangEventRepository(),
                 email: (context.read<AppBloc>().state as AppAuthenticated)
                     .user
                     .email!)

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:letshang/utils/firebase_utils.dart';
 
 enum SearchUserBy { email, username, group }
 
@@ -37,13 +38,13 @@ class HangUser extends Equatable {
 
   static HangUser fromSnapshot(DocumentSnapshot snap) {
     HangUser userPreview = HangUser(
-        name: snap["name"],
-        userName: snap["userName"],
-        email: snap["email"],
-        phoneNumber: snap["phoneNumber"],
-        photoUrl: snap["photoUrl"],
-        fcmToken: snap["fcmToken"],
-        profilePicDownloadUrl: snap["profilePicDownloadUrl"]);
+        name: snap.getFromSnap("name"),
+        userName: snap.getFromSnap("userName")!,
+        email: snap.getFromSnap("email"),
+        phoneNumber: snap.getFromSnap("phoneNumber"),
+        photoUrl: snap.getFromSnap("photoUrl"),
+        fcmToken: snap.getFromSnap("fcmToken"),
+        profilePicDownloadUrl: snap.getFromSnap("profilePicDownloadUrl"));
     return userPreview;
   }
 

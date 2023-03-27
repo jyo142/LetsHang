@@ -23,16 +23,38 @@ class UserEventCard extends StatelessWidget {
         ),
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            UserAvatar(curUser: curUser),
-            Padding(
-              padding: EdgeInsets.only(left: 15, right: 15),
-              child: Text(
-                curUser.name!,
-                style: Theme.of(context).textTheme.bodyText1,
-              ),
+            Row(
+              children: [
+                UserAvatar(curUser: curUser),
+                Padding(
+                  padding: EdgeInsets.only(left: 15, right: 15),
+                  child: Text(
+                    curUser.name!,
+                    style: Theme.of(context).textTheme.bodyText1,
+                  ),
+                ),
+                if (label != null) ...[label!],
+              ],
             ),
-            if (label != null) ...[label!]
+            PopupMenuButton(
+              itemBuilder: (context) {
+                return [
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Text('Edit'),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Text('Delete'),
+                  )
+                ];
+              },
+              onSelected: (String value) {
+                print('You Click on po up menu item');
+              },
+            ),
           ],
         ));
   }
