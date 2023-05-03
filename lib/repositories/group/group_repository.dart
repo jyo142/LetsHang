@@ -49,30 +49,40 @@ class GroupRepository extends BaseGroupRepository {
   }
 
   @override
-  Future<void> addGroup(Group newGroup) async {
-    DocumentReference docRef = await _firebaseFirestore
+  Future<Group> addGroup(Group newGroup) async {
+    Group savingGroup = Group.withId(
+        FirebaseFirestore.instance.collection('groups').doc().id, newGroup);
+    await _firebaseFirestore
         .collection('groups')
-        .add(newGroup.toDocument());
-    await addGroupUserInvites(docRef.id, newGroup.userInvites);
+        .doc(savingGroup.id)
+        .set(savingGroup.toDocument());
+    return savingGroup;
   }
 
   @override
-  Future<void> editGroup(Group editGroup) async {
+  Future<Group> editGroup(Group editGroup) async {
     await _firebaseFirestore
         .collection('groups')
         .doc(editGroup.id)
         .set(editGroup.toDocument());
-    await addGroupUserInvites(editGroup.id, editGroup.userInvites);
+    return editGroup;
   }
 
-  Future<void> addGroupUserInvites(
-      String groupId, List<UserInvite> userInvites) async {
-    final allUserInviteDocs = userInvites.map((ui) => ui.toDocument()).toList();
-    await _firebaseFirestore
+  @override
+  Future<List<UserInvite>> getUserInvitesForGroup(String groupId) async {
+    DocumentSnapshot groupsUserInvitesSnap = await _firebaseFirestore
         .collection('groups')
         .doc(groupId)
         .collection('invites')
         .doc("userInvites")
-        .set({"userInvites": allUserInviteDocs});
+        .get();
+
+    List<UserInvite> invites = [];
+    if (groupsUserInvitesSnap.exists) {
+      invites = List.of(groupsUserInvitesSnap["userInvites"])
+          .map((m) => UserInvite.fromMap(m))
+          .toList();
+    }
+    return invites;
   }
 }

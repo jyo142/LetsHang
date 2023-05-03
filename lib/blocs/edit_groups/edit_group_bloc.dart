@@ -6,6 +6,8 @@ import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/repositories/group/group_repository.dart';
+import 'package:letshang/repositories/invites/base_invites_repository.dart';
+import 'package:letshang/repositories/invites/invites_repository.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:meta/meta.dart';
 import 'package:equatable/equatable.dart';
@@ -15,8 +17,8 @@ part 'edit_group_event.dart';
 
 class EditGroupBloc extends Bloc<EditGroupEvent, EditGroupState> {
   final GroupRepository _groupRepository;
-  final UserRepository _userRepository;
   final HangUserPreview creatingUser;
+  final BaseUserInvitesRepository _invitesRepository;
   final Group? existingGroup;
   // constructor
   EditGroupBloc(
@@ -25,7 +27,7 @@ class EditGroupBloc extends Bloc<EditGroupEvent, EditGroupState> {
       required this.creatingUser,
       this.existingGroup})
       : _groupRepository = groupRepository,
-        _userRepository = userRepository,
+        _invitesRepository = UserInvitesRepository(),
         super(EditGroupState(
             groupName: existingGroup?.groupName ?? '',
             groupOwner: existingGroup?.groupOwner ?? creatingUser,
@@ -38,51 +40,43 @@ class EditGroupBloc extends Bloc<EditGroupEvent, EditGroupState> {
 
   @override
   Stream<EditGroupState> mapEventToState(EditGroupEvent event) async* {
-    // events to do with finding members related to the group
-    if (event is FindGroupMemberChanged) {
-      yield state.copyWith(findGroupMember: event.findGroupMember);
-    }
-    if (event is FindGroupMemberInitiated) {
-      yield FindGroupMemberLoading(state);
-      try {
-        HangUser? retValUser;
-        if (state.searchGroupMemberBy == SearchUserBy.username) {
-          retValUser = await _userRepository.getUserByUserName(event.userValue);
-        } else if (state.searchGroupMemberBy == SearchUserBy.email) {
-          retValUser = await _userRepository.getUserByEmail(event.userValue);
-        }
-        yield FindGroupMemberRetrieved(state, groupMember: retValUser);
-      } catch (e) {
-        yield FindGroupMemberError(state, errorMessage: "Failed to find user");
-      }
-    }
-    if (event is SearchByGroupMemberChanged) {
-      yield state.copyWith(searchGroupMemberBy: event.searchGroupMemberBy);
-    }
-
     // events to do with the group metadata
     if (event is GroupNameChanged) {
       yield state.copyWith(groupName: event.groupName);
-    }
-    if (event is AddGroupMemberInitialized) {
-      yield state.addGroupMember(HangUserPreview.fromUser(event.groupMember));
     }
     if (event is DeleteGroupMemberInitialized) {
       yield state.deleteGroupMember(event.groupMemberUserName);
     }
 
     if (event is SaveGroupInitiated) {
-      final resultGroupMembers = List.of(state.groupUserInvitees.values);
-      Group resultGroup = Group(
+      yield SaveGroupLoading(state);
+      yield* _mapGroupSavedState(event);
+    }
+  }
+
+  Stream<EditGroupState> _mapGroupSavedState(SaveGroupInitiated event) async* {
+    try {
+      Group savingGroup = Group(
           id: existingGroup?.id ?? "",
           groupName: state.groupName,
-          userInvites: resultGroupMembers,
+          userInvites: event.allInvitedMembers,
           groupOwner: creatingUser);
+
+      Group retvalGroup;
       if (existingGroup != null) {
-        await _groupRepository.editGroup(resultGroup);
+        // this event is being edited if an id is present
+        retvalGroup = await _groupRepository.editGroup(savingGroup);
+        retvalGroup =
+            retvalGroup.copyWith(userInvites: List.of(event.allInvitedMembers));
+        await _invitesRepository.editUserGroupInvites(retvalGroup);
       } else {
-        await _groupRepository.addGroup(resultGroup);
+        retvalGroup = await _groupRepository.addGroup(savingGroup);
+        await _invitesRepository.addUserGroupInvites(
+            retvalGroup, event.allInvitedMembers);
       }
+      yield SavedGroupSuccessfully(state);
+    } catch (_) {
+      yield SaveGroupError(state, errorMessage: 'Unable to save group.');
     }
   }
 }

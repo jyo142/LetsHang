@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
+import 'package:letshang/models/invite.dart';
 import 'package:letshang/widgets/avatars/user_avatar.dart';
 
-class UserEventCard extends StatelessWidget {
+class UserParticipantCard extends StatelessWidget {
   final HangUserPreview curUser;
   final Color backgroundColor;
   final Widget? label;
-  const UserEventCard(
+  final InviteTitle? inviteTitle;
+  final Function? onRemove;
+  const UserParticipantCard(
       {Key? key,
       required this.curUser,
       required this.backgroundColor,
-      this.label})
+      this.label,
+      this.inviteTitle,
+      this.onRemove})
       : super(key: key);
 
   @override
@@ -29,33 +34,62 @@ class UserEventCard extends StatelessWidget {
               children: [
                 UserAvatar(curUser: curUser),
                 Padding(
-                  padding: EdgeInsets.only(left: 15, right: 15),
+                  padding: const EdgeInsets.only(left: 15, right: 15),
                   child: Text(
                     curUser.name!,
                     style: Theme.of(context).textTheme.bodyText1,
                   ),
                 ),
+                if (inviteTitle != null) ...[_renderTitle()],
                 if (label != null) ...[label!],
               ],
             ),
-            PopupMenuButton(
-              itemBuilder: (context) {
-                return [
-                  PopupMenuItem(
-                    value: 'edit',
-                    child: Text('Edit'),
-                  ),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Text('Delete'),
-                  )
-                ];
-              },
-              onSelected: (String value) {
-                print('You Click on po up menu item');
-              },
-            ),
+            if (inviteTitle != InviteTitle.organizer) ...[
+              PopupMenuButton(
+                itemBuilder: (context) {
+                  return [
+                    const PopupMenuItem(
+                      value: 'edit',
+                      child: Text('Edit'),
+                    ),
+                    PopupMenuItem(
+                        value: 'delete',
+                        child: const Text('Delete'),
+                        onTap: () => onRemove!(curUser))
+                  ];
+                },
+                onSelected: (String value) {
+                  print('You Click on po up menu item');
+                },
+              ),
+            ]
           ],
         ));
+  }
+
+  Widget _renderTitle() {
+    if (inviteTitle != null) {
+      if (inviteTitle == InviteTitle.organizer) {
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5.0),
+            color: const Color(0xFFDEEFE8),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+          child: const Text("Organizer"),
+        );
+      }
+      if (inviteTitle == InviteTitle.admin) {
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5.0),
+            color: const Color(0xFF891F8F),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+          child: const Text("Admin"),
+        );
+      }
+    }
+    return const SizedBox();
   }
 }

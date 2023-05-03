@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/group_overview/group_overview_bloc.dart';
+import 'package:letshang/models/group_invite.dart';
 import 'package:letshang/repositories/group/group_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:letshang/screens/edit_groups_screen.dart';
+import 'package:letshang/widgets/cards/group_card.dart';
+import 'package:letshang/widgets/appbar/lh_main_app_bar.dart';
+import 'package:letshang/widgets/lh_button.dart';
 
 class GroupsScreen extends StatelessWidget {
   const GroupsScreen({Key? key}) : super(key: key);
@@ -13,10 +18,8 @@ class GroupsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
         create: (context) => GroupOverviewBloc(
-            userName: (context.read<AppBloc>().state as AppAuthenticated)
-                .user
-                .userName,
-            groupRepository: GroupRepository())
+            email:
+                (context.read<AppBloc>().state as AppAuthenticated).user.email!)
           ..add(LoadGroups()),
         child: const GroupsView());
   }
@@ -28,103 +31,87 @@ class GroupsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: const Color(0xFFCCCCCC),
+        appBar: const LHMainAppBar(screenName: 'Groups'),
         body: SafeArea(
             child: Padding(
                 padding: const EdgeInsets.only(
                     left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'My Groups',
-                      style: Theme.of(context).textTheme.headline5,
-                    ),
-                    _groupListView(),
-                    ElevatedButton(
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(
-                          Colors.redAccent,
-                        ),
-                        shape: MaterialStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                      onPressed: () async {
-                        final bool shouldRefresh =
-                            await Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const EditGroupsScreen(),
-                          ),
-                        );
-                        if (shouldRefresh) {
-                          context.read<GroupOverviewBloc>().add(LoadGroups());
-                        }
-                      },
-                      child: const Padding(
-                        padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
-                        child: Text(
-                          'Create New Group',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                child: BlocBuilder<GroupOverviewBloc, GroupOverviewState>(
+                  builder: (context, state) {
+                    if (state is GroupsLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (state is GroupsRetrieved) {
+                      if (state.groupsForUser.isEmpty) {
+                        return Center(child: _noGroupsView(context));
+                      } else {
+                        return _groupListView(state.groupsForUser);
+                      }
+                    }
+                    return const Text('Unable to load Group');
+                  },
                 ))));
   }
 
-  Widget _groupListView() {
+  Widget _noGroupsView(BuildContext context) {
+    return Column(children: [
+      Container(
+        margin: const EdgeInsets.only(top: 50),
+        child: const Image(
+          image: AssetImage("assets/images/no_events_image.png"),
+        ),
+      ),
+      Container(
+        margin: const EdgeInsets.only(top: 80),
+        child: Text(
+          "You are not a part of any groups yet!",
+          style: Theme.of(context).textTheme.headline6,
+        ),
+      ),
+      Container(
+          margin: const EdgeInsets.only(top: 50),
+          child: LHButton(
+              buttonText: 'Create Group',
+              onPressed: () async {
+                final shouldRefresh = await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const EditGroupsScreen(),
+                  ),
+                );
+                if (shouldRefresh != null && shouldRefresh) {
+                  context.read<GroupOverviewBloc>().add(LoadGroups());
+                }
+              }))
+    ]);
+  }
+
+  Widget _groupListView(List<GroupInvite> groupInvites) {
     return BlocBuilder<GroupOverviewBloc, GroupOverviewState>(
-      builder: (context, state) {
-        if (state is GroupsLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (state is GroupsRetrieved) {
-          if (state.groupsForUser.isNotEmpty) {
-            return Expanded(
-              child: ListView.builder(
-                  itemCount: state.groupsForUser.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return Card(
-                        child: ListTile(
-                      leading: IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () async {
-                          final bool? shouldRefresh =
-                              await Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => EditGroupsScreen(
-                                curGroup: state.groupsForUser[index],
-                              ),
-                            ),
-                          );
-                          if (shouldRefresh != null && shouldRefresh) {
-                            context.read<GroupOverviewBloc>().add(LoadGroups());
-                          }
-                        },
+        builder: (context, state) {
+      return ListView.builder(
+        itemCount: groupInvites.length,
+        itemBuilder: (BuildContext context, int index) {
+          return Container(
+            margin: const EdgeInsets.only(top: 10),
+            child: GroupCard(
+                onEdit: () async {
+                  final bool? shouldRefresh = await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => EditGroupsScreen(
+                        curGroup: groupInvites[index].group,
                       ),
-                      title: Text(state.groupsForUser[index].groupName),
-                      // subtitle: Text(events[index].eventName),
-                    ));
-                  }),
-            );
-          } else {
-            return Text(
-              'You are not a part of any groups yet',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyText1,
-            );
-          }
-        } else {
-          return const Text('Error');
-        }
-      },
-    );
+                    ),
+                  );
+                  if (shouldRefresh != null && shouldRefresh) {
+                    context.read<GroupOverviewBloc>().add(LoadGroups());
+                  }
+                },
+                group: groupInvites[index].group,
+                inviteTitle: groupInvites[index].title),
+          );
+        },
+      );
+    });
   }
 }

@@ -106,3 +106,21 @@ class FindGroupMemberError extends EditGroupState {
 class GroupMemberDeleted extends EditGroupState {
   GroupMemberDeleted(EditGroupState state) : super.fromState(state);
 }
+
+class SaveGroupLoading extends EditGroupState {
+  SaveGroupLoading(EditGroupState state) : super.fromState(state);
+}
+
+class SaveGroupError extends EditGroupState {
+  final String errorMessage;
+
+  SaveGroupError(EditGroupState state, {required this.errorMessage})
+      : super.fromState(state);
+
+  @override
+  List<Object> get props => [errorMessage];
+}
+
+class SavedGroupSuccessfully extends EditGroupState {
+  SavedGroupSuccessfully(EditGroupState state) : super.fromState(state);
+}

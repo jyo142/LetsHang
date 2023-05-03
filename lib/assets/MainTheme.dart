@@ -73,4 +73,19 @@ extension CustomButtonStyles on ButtonThemeData {
             fontWeight: FontWeight.w600,
             color: Colors.black));
   }
+
+  ButtonStyle get errorButtonStyle {
+    return OutlinedButton.styleFrom(
+        primary: const Color(0xFFFFFFFF),
+        foregroundColor: Color(0xFFFF4D53), //adding this would work
+
+        backgroundColor: const Color(0xFFFEDCDD),
+        side: const BorderSide(width: 1.0, color: Color(0xFFA7BAC2)),
+        textStyle: const TextStyle(
+            fontSize: 16.0,
+            letterSpacing: .5,
+            fontFamily: "Outfit",
+            fontWeight: FontWeight.w600,
+            color: Color(0xFFFF4D53)));
+  }
 }

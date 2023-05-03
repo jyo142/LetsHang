@@ -11,9 +11,9 @@ abstract class GroupOverviewState extends Equatable {
 class GroupsLoading extends GroupOverviewState {}
 
 class GroupsRetrieved extends GroupOverviewState {
-  final List<Group> groupsForUser;
+  final List<GroupInvite> groupsForUser;
 
-  GroupsRetrieved({this.groupsForUser = const <Group>[]});
+  const GroupsRetrieved({this.groupsForUser = const <GroupInvite>[]});
 
   @override
   List<Object> get props => [groupsForUser];

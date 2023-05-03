@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:letshang/assets/MainTheme.dart';
-import 'package:letshang/blocs/hang_event_participants/hang_event_participants_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/blocs/participants/participants_bloc.dart';
 import 'package:letshang/models/event_participants.dart';
-import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/services/message_service.dart';
-import 'package:letshang/widgets/avatars/user_avatar.dart';
+import 'package:letshang/widgets/hang_event_participants/people_search_results.dart';
 import 'package:letshang/widgets/hang_event_participants/search_participants_by.dart';
-import 'package:letshang/widgets/lh_button.dart';
 
 class AddPeopleBottomModal extends StatelessWidget {
   // the buttons can be different depending on if you want to send the invite right away
@@ -24,6 +21,7 @@ class AddPeopleBottomModal extends StatelessWidget {
   Widget build(BuildContext context) {
     return OutlinedButton(
         onPressed: () async {
+          context.read<ParticipantsBloc>().add(ClearSearchFields());
           showModalBottomSheet(
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
@@ -32,8 +30,8 @@ class AddPeopleBottomModal extends StatelessWidget {
               ),
               context: context,
               isScrollControlled: true,
-              builder: (ctx) => BlocProvider<HangEventParticipantsBloc>.value(
-                  value: context.read<HangEventParticipantsBloc>(),
+              builder: (ctx) => BlocProvider<ParticipantsBloc>.value(
+                  value: context.read<ParticipantsBloc>(),
                   child: Container(
                     padding: const EdgeInsets.only(
                         left: 40.0, right: 40.0, bottom: 40.0, top: 40.0),
@@ -45,15 +43,11 @@ class AddPeopleBottomModal extends StatelessWidget {
                       ],
                     ),
                   ))).whenComplete(() {
-            context.read<HangEventParticipantsBloc>().add(ClearSearchFields());
             // if the send invite is successful then we want to refresh the participants
-            bool isSuccessInviteState = context
-                .read<HangEventParticipantsBloc>()
-                .state is SendInviteSuccess;
+            bool isSuccessInviteState =
+                context.read<ParticipantsBloc>().state is SendInviteSuccess;
             if (isSuccessInviteState) {
-              context
-                  .read<HangEventParticipantsBloc>()
-                  .add(LoadHangEventParticipants());
+              context.read<ParticipantsBloc>().add(LoadHangEventParticipants());
             }
           });
         },
@@ -80,42 +74,47 @@ class AddPeopleBottomModal extends StatelessWidget {
   }
 
   Widget _addPeopleBottomModalContent(
-      BuildContext context, HangEventParticipantsState state) {
+      BuildContext context, ParticipantsState state) {
     if (state is SearchParticipantLoading || state is SendInviteLoading) {
       return const CircularProgressIndicator();
     }
     if (state is SearchParticipantRetrieved) {
-      return _searchResultsSection(context, state);
+      return PeopleSearchResults(
+        foundUser: state.foundUser,
+        onInviteeAdded: onInviteeAdded,
+        submitPeopleButtonName: submitPeopleButtonName,
+        goBackFunction: () => {
+          if (state.addParticipantBy == AddParticipantBy.email)
+            {context.read<ParticipantsBloc>().add(SearchByEmailPressed())}
+          else
+            {context.read<ParticipantsBloc>().add(SearchByUsernamePressed())}
+        },
+      );
     }
     if (state.addParticipantBy == AddParticipantBy.username) {
       return SearchParticipantsBy(
           searchBy: 'Search Username',
           onChange: (value) => context
-              .read<HangEventParticipantsBloc>()
+              .read<ParticipantsBloc>()
               .add(SearchByUsernameChanged(usernameValue: value)),
           onSubmit: () {
-            context
-                .read<HangEventParticipantsBloc>()
-                .add(SearchByUsernameSubmitted());
+            context.read<ParticipantsBloc>().add(SearchByUsernameSubmitted());
           });
     }
     if (state.addParticipantBy == AddParticipantBy.email) {
       return SearchParticipantsBy(
           searchBy: 'Search Email',
           onChange: (value) => context
-              .read<HangEventParticipantsBloc>()
+              .read<ParticipantsBloc>()
               .add(SearchByEmailChanged(emailValue: value)),
-          onSubmit: () => context
-              .read<HangEventParticipantsBloc>()
-              .add(SearchByEmailSubmitted()));
+          onSubmit: () =>
+              context.read<ParticipantsBloc>().add(SearchByEmailSubmitted()));
     }
     return Column(children: [
       InkWell(
         // on Tap function used and call back function os defined here
         onTap: () {
-          context
-              .read<HangEventParticipantsBloc>()
-              .add(SearchByUsernamePressed());
+          context.read<ParticipantsBloc>().add(SearchByUsernamePressed());
         },
         child: Row(
           children: [
@@ -135,9 +134,7 @@ class AddPeopleBottomModal extends StatelessWidget {
         child: InkWell(
           // on Tap function used and call back function os defined here
           onTap: () {
-            context
-                .read<HangEventParticipantsBloc>()
-                .add(SearchByEmailPressed());
+            context.read<ParticipantsBloc>().add(SearchByEmailPressed());
           },
           child: Row(
             children: [
@@ -157,7 +154,7 @@ class AddPeopleBottomModal extends StatelessWidget {
   }
 
   Widget _bottomModalContent() {
-    return BlocConsumer<HangEventParticipantsBloc, HangEventParticipantsState>(
+    return BlocConsumer<ParticipantsBloc, ParticipantsState>(
         listener: (context, state) {
       if (state is SendInviteSuccess) {
         // after the invite is sent go back to participants screen
@@ -182,98 +179,5 @@ class AddPeopleBottomModal extends StatelessWidget {
         ],
       );
     });
-  }
-
-  Widget _searchResultsSection(
-      BuildContext context, SearchParticipantRetrieved state) {
-    if (state.foundUser == null) {
-      return const Text('No user found');
-    }
-    return Column(children: [
-      UserAvatar(
-        curUser: HangUserPreview.fromUser(state.foundUser!),
-        radius: 25,
-      ),
-      Container(
-        margin: const EdgeInsets.only(top: 20),
-        child: Text(
-          state.foundUser!.name!,
-          style: Theme.of(context).textTheme.headline5,
-        ),
-      ),
-      Container(
-        margin: const EdgeInsets.only(top: 15),
-        child: Text(
-          'Username',
-          style: Theme.of(context).textTheme.headline6,
-        ),
-      ),
-      Container(
-        margin: const EdgeInsets.only(top: 5),
-        child: Text(state.foundUser!.userName!,
-            style: Theme.of(context).textTheme.headline6!.merge(const TextStyle(
-                fontWeight: FontWeight.bold, color: Color(0x8004152D)))),
-      ),
-      Container(
-        margin: const EdgeInsets.only(top: 15),
-        child: Text(
-          'Email',
-          style: Theme.of(context).textTheme.headline6,
-        ),
-      ),
-      Container(
-        margin: const EdgeInsets.only(top: 5),
-        child: Text(state.foundUser!.email!,
-            style: Theme.of(context).textTheme.headline6!.merge(const TextStyle(
-                fontWeight: FontWeight.bold, color: Color(0x8004152D)))),
-      ),
-      BlocBuilder<HangEventParticipantsBloc, HangEventParticipantsState>(
-          builder: (context, state) {
-        if (state is SendInviteError) {
-          return Container(
-            margin: const EdgeInsets.only(top: 20),
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Text(state.errorMessage,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyText1!
-                      .merge(const TextStyle(color: Color(0xFFD50000))))
-            ]),
-          );
-        }
-        return const SizedBox.shrink();
-      }),
-      Container(
-          margin: const EdgeInsets.only(top: 20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              LHButton(
-                  buttonText: submitPeopleButtonName,
-                  onPressed: () {
-                    onInviteeAdded(state.foundUser!);
-                    Navigator.pop(context);
-                  }),
-              LHButton(
-                  buttonText: 'Go Back',
-                  onPressed: () => {
-                        if (state.addParticipantBy == AddParticipantBy.email)
-                          {
-                            context
-                                .read<HangEventParticipantsBloc>()
-                                .add(SearchByEmailPressed())
-                          }
-                        else
-                          {
-                            context
-                                .read<HangEventParticipantsBloc>()
-                                .add(SearchByUsernamePressed())
-                          }
-                      },
-                  buttonStyle:
-                      Theme.of(context).buttonTheme.secondaryButtonStyle)
-            ],
-          )),
-    ]);
   }
 }

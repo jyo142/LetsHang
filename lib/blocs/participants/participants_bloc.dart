@@ -19,18 +19,18 @@ import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:meta/meta.dart';
 import 'package:equatable/equatable.dart';
 
-part 'hang_event_participants_event.dart';
-part 'hang_event_participants_state.dart';
+part 'participants_event.dart';
+part 'participants_state.dart';
 
-class HangEventParticipantsBloc
-    extends Bloc<HangEventParticipantsEvent, HangEventParticipantsState> {
+class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
   final BaseHangEventRepository _hangEventRepository;
   final BaseUserRepository _userRepository;
   final BaseUserInvitesRepository _userInvitesRepository;
   final BaseGroupRepository _groupRepository;
-  final HangEvent curEvent;
+  final HangEvent? curEvent;
+  final Group? curGroup;
   // constructor
-  HangEventParticipantsBloc({required this.curEvent})
+  ParticipantsBloc({this.curEvent, this.curGroup})
       : _hangEventRepository = HangEventRepository(),
         _userRepository = UserRepository(),
         _userInvitesRepository = UserInvitesRepository(),
@@ -38,10 +38,14 @@ class HangEventParticipantsBloc
         super(HangEventParticipantsLoading());
 
   @override
-  Stream<HangEventParticipantsState> mapEventToState(
-      HangEventParticipantsEvent event) async* {
+  Stream<ParticipantsState> mapEventToState(ParticipantsEvent event) async* {
     if (event is LoadHangEventParticipants) {
-      yield* _mapLoadHangEventsToState();
+      yield* _mapLoadEventInvitesToState();
+    }
+    if (event is LoadGroupParticipants) {
+      if (curGroup != null) {
+        yield* _mapLoadGroupInvitesToState();
+      }
     }
     if (event is AddPeoplePressed) {
       yield state.copyWith(addParticipantBy: AddParticipantBy.none);
@@ -80,13 +84,22 @@ class HangEventParticipantsBloc
       yield SendInviteLoading(state);
       yield* _mapSendInviteState(event.invitedUser);
     }
+    if (event is SendRemoveInviteInitiated) {
+      yield SendInviteLoading(state);
+      yield* _mapSendRemoveInviteState(event.toRemoveUser);
+    }
     if (event is AddInviteeInitiated) {
-      HangEventParticipantsState newState =
-          state.addInvitee(HangUserPreview.fromUser(event.invitedUser));
+      ParticipantsState newState = state.addInvitee(
+          HangUserPreview.fromUser(event.invitedUser), event.inviteTitle);
       yield newState.copyWith(
           searchByEmailValue: '',
           searchByUsernameValue: '',
           addParticipantBy: AddParticipantBy.none);
+    }
+    if (event is RemoveInviteeInitiated) {
+      ParticipantsState newState =
+          state.removeInvitee(event.toRemoveUserPreview);
+      yield newState;
     }
     if (event is SendAllInviteesInitiated) {
       yield SendAllInvitesLoading(state);
@@ -113,9 +126,9 @@ class HangEventParticipantsBloc
     }
   }
 
-  Stream<HangEventParticipantsState> _mapLoadHangEventsToState() async* {
+  Stream<ParticipantsState> _mapLoadGroupInvitesToState() async* {
     List<UserInvite> allUserInvites =
-        await _hangEventRepository.getUserInvitesForEvent(curEvent.id);
+        await _groupRepository.getUserInvitesForGroup(curGroup!.id);
 
     List<UserInvite> attendingUsers = allUserInvites
         .where((element) =>
@@ -137,7 +150,31 @@ class HangEventParticipantsBloc
         rejectedUsers: rejectedUsers);
   }
 
-  Stream<HangEventParticipantsState> _mapSearchParticipantsState() async* {
+  Stream<ParticipantsState> _mapLoadEventInvitesToState() async* {
+    List<UserInvite> allUserInvites =
+        await _hangEventRepository.getUserInvitesForEvent(curEvent!.id);
+
+    List<UserInvite> attendingUsers = allUserInvites
+        .where((element) =>
+            element.status == InviteStatus.accepted ||
+            element.status == InviteStatus.owner)
+        .toList();
+
+    List<UserInvite> invitedUsers = allUserInvites
+        .where((element) => element.status == InviteStatus.pending)
+        .toList();
+
+    List<UserInvite> rejectedUsers = allUserInvites
+        .where((element) => element.status == InviteStatus.rejected)
+        .toList();
+
+    yield state.copyWith(
+        attendingUsers: attendingUsers,
+        invitedUsers: invitedUsers,
+        rejectedUsers: rejectedUsers);
+  }
+
+  Stream<ParticipantsState> _mapSearchParticipantsState() async* {
     try {
       HangUser? retValUser;
       if (state.addParticipantBy == AddParticipantBy.username) {
@@ -164,7 +201,7 @@ class HangEventParticipantsBloc
     }
   }
 
-  Stream<HangEventParticipantsState> _mapSearchGroupState() async* {
+  Stream<ParticipantsState> _mapSearchGroupState() async* {
     try {
       Group? retValGroup =
           await _groupRepository.getGroupByName(state.searchByGroupValue);
@@ -178,13 +215,13 @@ class HangEventParticipantsBloc
     }
   }
 
-  Stream<HangEventParticipantsState> _mapSendGroupInviteState(
+  Stream<ParticipantsState> _mapSendGroupInviteState(
       Map<String, UserInvite> selectedMembers) async* {
     try {
       List<UserInvite> allUserInvites =
           selectedMembers.entries.map((e) => e.value).toList();
       await _userInvitesRepository.addUserEventInvites(
-          curEvent, allUserInvites);
+          curEvent!, allUserInvites);
       yield SendInviteSuccess(state);
     } catch (e) {
       yield SelectMembersInviteError(state as SelectMembersState,
@@ -192,13 +229,13 @@ class HangEventParticipantsBloc
     }
   }
 
-  Stream<HangEventParticipantsState> _mapSendAllInviteesState(
+  Stream<ParticipantsState> _mapSendAllInviteesState(
       List<UserInvite> allInvitedUsers) async* {
     try {
       await _userInvitesRepository.addUserEventInvites(
-          curEvent, allInvitedUsers);
+          curEvent!, allInvitedUsers);
       HangEvent savingEvent =
-          curEvent.copyWith(currentStage: HangEventStage.complete);
+          curEvent!.copyWith(currentStage: HangEventStage.complete);
       await _hangEventRepository.editHangEvent(savingEvent);
       yield SendAllInvitesSuccess(state);
     } catch (e) {
@@ -207,12 +244,37 @@ class HangEventParticipantsBloc
     }
   }
 
-  Stream<HangEventParticipantsState> _mapSendInviteState(
-      HangUser invitedUser) async* {
+  Stream<ParticipantsState> _mapSendInviteState(HangUser invitedUser) async* {
     try {
-      await _userInvitesRepository.addUserEventInvite(
-          curEvent, UserInvite.fromInvitedEventUser(invitedUser));
-      yield SendInviteSuccess(state);
+      if (curEvent != null) {
+        await _userInvitesRepository.addUserEventInvite(
+            curEvent!, UserInvite.fromInvitedEventUser(invitedUser));
+        yield SendInviteSuccess(state);
+      }
+      if (curGroup != null) {
+        await _userInvitesRepository.addUserGroupInvite(
+            curGroup!, UserInvite.fromInvitedGroupUser(invitedUser));
+        yield SendInviteSuccess(state);
+      }
+    } catch (e) {
+      yield SendInviteError(state,
+          errorMessage: "Failed to send invite to user.");
+    }
+  }
+
+  Stream<ParticipantsState> _mapSendRemoveInviteState(
+      HangUserPreview toRemoveUser) async* {
+    try {
+      if (curEvent != null) {
+        await _userInvitesRepository.removeUserEventInvite(
+            curEvent!, UserInvite.fromInvitedEventUserPreview(toRemoveUser));
+        yield SendInviteSuccess(state);
+      }
+      if (curGroup != null) {
+        await _userInvitesRepository.removeUserGroupInvite(
+            curGroup!, UserInvite.fromInvitedGroupUserPreview(toRemoveUser));
+        yield SendInviteSuccess(state);
+      }
     } catch (e) {
       yield SendInviteError(state,
           errorMessage: "Failed to send invite to user.");

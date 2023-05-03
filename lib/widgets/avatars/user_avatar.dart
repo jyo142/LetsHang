@@ -17,13 +17,13 @@ class UserAvatar extends StatelessWidget {
     } else {
       return CircleAvatar(
         radius: radius,
-        backgroundColor: Color(0xFF0287BF),
+        backgroundColor: const Color(0xFF0287BF),
         child: Text(
           _userInitials(curUser!),
           style: Theme.of(context)
               .textTheme
               .bodyText2!
-              .merge(TextStyle(fontSize: 9, color: Color(0xFFFFFFFF))),
+              .merge(const TextStyle(fontSize: 9, color: Color(0xFFFFFFFF))),
         ),
       );
     }

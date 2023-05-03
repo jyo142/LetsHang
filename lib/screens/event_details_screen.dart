@@ -29,7 +29,7 @@ class EventDetailsScreen extends StatelessWidget {
             ..add(LoadHangEvents()),
           child: _EventDetailsView(curEvent: curEvent)),
       bottomNavigationBar: Padding(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         child: LHButton(buttonText: 'Discussions', onPressed: () {}),
       ),
     );
@@ -47,7 +47,7 @@ class _EventDetailsView extends StatelessWidget {
     double width = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: Color(0xFFCCCCCC),
+      backgroundColor: const Color(0xFFCCCCCC),
       body: SafeArea(
           child: Container(
         height: fullHeight,
@@ -69,7 +69,7 @@ class _EventDetailsView extends StatelessWidget {
                 child: Container(
                     height: fullHeight * .7,
                     width: width,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                         color: Color(0xFFFFFFFF),
                         borderRadius: BorderRadius.only(
                             topLeft: Radius.elliptical(300, 50),
@@ -81,7 +81,7 @@ class _EventDetailsView extends StatelessWidget {
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Container(
-                                  margin: EdgeInsets.only(top: 40),
+                                  margin: const EdgeInsets.only(top: 40),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -94,7 +94,7 @@ class _EventDetailsView extends StatelessWidget {
                                     ],
                                   )),
                               Container(
-                                margin: EdgeInsets.only(top: 40),
+                                margin: const EdgeInsets.only(top: 40),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -127,12 +127,12 @@ class _EventDetailsView extends StatelessWidget {
                                 ),
                               ),
                               Container(
-                                margin: EdgeInsets.only(top: 30),
+                                margin: const EdgeInsets.only(top: 30),
                                 child: Row(
                                   children: [
                                     const Icon(Icons.calendar_month),
                                     Padding(
-                                      padding: EdgeInsets.only(left: 15),
+                                      padding: const EdgeInsets.only(left: 15),
                                       child: Text(
                                           curEvent.eventStartDate != null
                                               ? DateFormat('MM/dd/yyyy').format(
@@ -146,12 +146,12 @@ class _EventDetailsView extends StatelessWidget {
                                 ),
                               ),
                               Container(
-                                margin: EdgeInsets.only(top: 20),
+                                margin: const EdgeInsets.only(top: 20),
                                 child: Row(
                                   children: [
                                     const Icon(Icons.access_time),
                                     Padding(
-                                      padding: EdgeInsets.only(left: 15),
+                                      padding: const EdgeInsets.only(left: 15),
                                       child: Text(
                                           curEvent.eventEndDate != null
                                               ? DateFormat('hh:mm a').format(
@@ -165,15 +165,15 @@ class _EventDetailsView extends StatelessWidget {
                                 ),
                               ),
                               Container(
-                                margin: EdgeInsets.only(top: 20),
+                                margin: const EdgeInsets.only(top: 20),
                                 child: Row(
-                                  children: [
-                                    const Icon(Icons.location_on_outlined),
+                                  children: const [
+                                    Icon(Icons.location_on_outlined),
                                   ],
                                 ),
                               ),
                               Container(
-                                margin: EdgeInsets.only(top: 20),
+                                margin: const EdgeInsets.only(top: 20),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -206,29 +206,29 @@ class _EventDetailsView extends StatelessWidget {
                                 ),
                               ),
                               Container(
-                                  margin: EdgeInsets.only(top: 30),
-                                  child: UserEventCard(
+                                  margin: const EdgeInsets.only(top: 30),
+                                  child: UserParticipantCard(
                                     curUser: curEvent.eventOwner,
-                                    backgroundColor: Color(0xFFF4F8FA),
+                                    backgroundColor: const Color(0xFFF4F8FA),
                                     label: Container(
                                       decoration: BoxDecoration(
                                         borderRadius:
                                             BorderRadius.circular(5.0),
-                                        color: Color(0xFFDEEFE8),
+                                        color: const Color(0xFFDEEFE8),
                                       ),
                                       padding: const EdgeInsets.fromLTRB(
                                           20, 10, 20, 10),
-                                      child: Text("Organizer"),
+                                      child: const Text("Organizer"),
                                     ),
                                   )),
                               Container(
-                                  margin: EdgeInsets.only(top: 20),
+                                  margin: const EdgeInsets.only(top: 20),
                                   child: Row(children: [
                                     AttendeesAvatars(
                                         userInvites: curEvent.userInvites),
                                   ])),
                               Container(
-                                  margin: EdgeInsets.only(top: 30),
+                                  margin: const EdgeInsets.only(top: 30),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
@@ -241,10 +241,10 @@ class _EventDetailsView extends StatelessWidget {
                                     ],
                                   )),
                               Container(
-                                  margin: EdgeInsets.only(top: 30),
+                                  margin: const EdgeInsets.only(top: 30),
                                   width: double.infinity,
                                   decoration: BoxDecoration(
-                                    color: Color(0xFFF4F8FA),
+                                    color: const Color(0xFFF4F8FA),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   padding:

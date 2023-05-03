@@ -7,6 +7,8 @@ import 'package:letshang/screens/add_people_event_screen.dart';
 import 'package:letshang/screens/event_details_screen.dart';
 import 'package:letshang/widgets/avatars/user_avatar.dart';
 
+import 'avatars/attendees_avatar.dart';
+
 class EventCard extends StatelessWidget {
   final HangEvent curEvent;
   const EventCard({Key? key, required this.curEvent}) : super(key: key);
@@ -67,41 +69,49 @@ class EventCard extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _attendeesIcons(curEvent.userInvites),
+              Flexible(
+                flex: 1,
+                child: AttendeesAvatars(userInvites: curEvent.userInvites),
+              ),
               if (curEvent.currentStage == HangEventStage.addingUsers) ...[
-                InkWell(
-                  // on Tap function used and call back function os defined here
-                  onTap: () async {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => AddPeopleEventScreen(
-                          curEvent: curEvent,
+                Flexible(
+                  child: InkWell(
+                    // on Tap function used and call back function os defined here
+                    onTap: () async {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => AddPeopleEventScreen(
+                            curEvent: curEvent,
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                  child: Text(
-                    'Invite Users',
-                    style: Theme.of(context).textTheme.linkText,
+                      );
+                    },
+                    child: Text(
+                      'Invite Users',
+                      style: Theme.of(context).textTheme.linkText,
+                    ),
                   ),
-                ),
+                )
               ] else ...[
-                InkWell(
-                  // on Tap function used and call back function os defined here
-                  onTap: () async {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => EventDetailsScreen(
-                          curEvent: curEvent,
+                Flexible(
+                  flex: 1,
+                  child: InkWell(
+                    // on Tap function used and call back function os defined here
+                    onTap: () async {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => EventDetailsScreen(
+                            curEvent: curEvent,
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                  child: Text(
-                    'View Details',
-                    style: Theme.of(context).textTheme.linkText,
+                      );
+                    },
+                    child: Text(
+                      'View Details',
+                      style: Theme.of(context).textTheme.linkText,
+                    ),
                   ),
-                ),
+                )
               ]
             ],
           ),
@@ -112,7 +122,6 @@ class EventCard extends StatelessWidget {
 
   Widget _attendeesIcons(List<UserInvite> userInvites) {
     return Container(
-        width: 100,
         height: 50,
         child: ListView.builder(
             scrollDirection: Axis.horizontal,

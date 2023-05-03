@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:letshang/screens/events_screen.dart';
-import 'package:letshang/screens/groups_screen.dart';
-import 'package:letshang/screens/home_screen.dart';
-import 'package:letshang/screens/profile_screen.dart';
+import 'package:letshang/blocs/app_metadata/app_metadata_bloc.dart';
+import 'package:letshang/blocs/app_metadata/app_metadata_state.dart';
+import 'package:letshang/models/bottom_nav_bar.dart';
+import 'package:letshang/widgets/lh_bottom_nav_bar.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AppScreen extends StatefulWidget {
   const AppScreen({Key? key}) : super(key: key);
@@ -14,43 +15,19 @@ class AppScreen extends StatefulWidget {
 }
 
 class _AppScreenState extends State {
-  int _currentIndex = 0;
-  final List _children = [
-    const HomeScreen(),
-    EventsScreen(),
-    const GroupsScreen(),
-    const ProfileScreen()
-  ];
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: Scaffold(
-        body: _children[_currentIndex],
-        bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          onTap: onTabTapped,
-          currentIndex: _currentIndex,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_month),
-              label: 'Events',
-            ),
-            BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Groups'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile')
-          ],
-        ),
-      ),
-    );
-  }
-
-  void onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+    return BlocProvider(
+        create: (context) => AppMetadataBloc(),
+        child: WillPopScope(
+            onWillPop: () async => false,
+            child: BlocBuilder<AppMetadataBloc, AppMetadataState>(
+              builder: (context, state) {
+                return Scaffold(
+                    body: BottomNavigationBarHelper
+                        .bottomNavBarScreens[state.pageIndex].screen,
+                    bottomNavigationBar: const LHBottomNavBar());
+              },
+            )));
   }
 }

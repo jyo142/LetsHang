@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:letshang/assets/MainTheme.dart';
-import 'package:letshang/blocs/hang_event_participants/hang_event_participants_bloc.dart';
+import 'package:letshang/blocs/participants/participants_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/user_invite_model.dart';
@@ -38,7 +38,7 @@ class AddPeopleEventScreen extends StatelessWidget {
       ),
       backgroundColor: const Color(0xFFCCCCCC),
       body: BlocProvider(
-          create: (context) => HangEventParticipantsBloc(curEvent: curEvent)
+          create: (context) => ParticipantsBloc(curEvent: curEvent)
             ..add(LoadHangEventParticipants()),
           child: _AddPeopleEventScreenView(
             curEvent: curEvent,
@@ -59,7 +59,7 @@ class _AddPeopleEventScreenView extends StatelessWidget {
         child: Padding(
       padding: const EdgeInsets.only(
           left: 20.0, right: 20.0, bottom: 20.0, top: 20.0),
-      child: BlocBuilder<HangEventParticipantsBloc, HangEventParticipantsState>(
+      child: BlocBuilder<ParticipantsBloc, ParticipantsState>(
         builder: (context, state) {
           return state.invitedUsers.isEmpty
               ? _noPeopleSection(context)
@@ -81,7 +81,7 @@ class _AddPeopleEventScreenView extends StatelessWidget {
                 submitPeopleButtonName: 'Add to Event',
                 onInviteeAdded: (foundUser) {
                   context
-                      .read<HangEventParticipantsBloc>()
+                      .read<ParticipantsBloc>()
                       .add(AddInviteeInitiated(invitedUser: foundUser));
                 },
               ),
@@ -99,7 +99,7 @@ class _AddPeopleEventScreenView extends StatelessWidget {
                 decoration: InputDecoration(
               fillColor: Colors.white,
               filled: true,
-              labelText: 'Seaerch',
+              labelText: 'Search',
               focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
                   borderSide: const BorderSide(color: Colors.white)),
@@ -115,7 +115,7 @@ class _AddPeopleEventScreenView extends StatelessWidget {
               itemBuilder: (BuildContext context, int index) {
                 return Container(
                   margin: const EdgeInsets.only(top: 10),
-                  child: UserEventCard(
+                  child: UserParticipantCard(
                       curUser: invitedUsers[index].user,
                       backgroundColor: Colors.white),
                 );
@@ -124,8 +124,7 @@ class _AddPeopleEventScreenView extends StatelessWidget {
         flex: 2,
         child: Container(
             margin: const EdgeInsets.only(top: 10),
-            child: BlocConsumer<HangEventParticipantsBloc,
-                HangEventParticipantsState>(
+            child: BlocConsumer<ParticipantsBloc, ParticipantsState>(
               listener: (context, state) {
                 if (state is SendAllInvitesSuccess) {
                   // after the invite is sent go back to participants screen
@@ -153,7 +152,7 @@ class _AddPeopleEventScreenView extends StatelessWidget {
                       buttonText: 'Complete Event',
                       onPressed: () {
                         context
-                            .read<HangEventParticipantsBloc>()
+                            .read<ParticipantsBloc>()
                             .add(SendAllInviteesInitiated());
                       },
                       isDisabled: false,
@@ -217,7 +216,7 @@ class _AddPeopleEventScreenView extends StatelessWidget {
                         AddPeopleBottomModal(
                           submitPeopleButtonName: 'Add to Event',
                           onInviteeAdded: (foundUser) {
-                            context.read<HangEventParticipantsBloc>().add(
+                            context.read<ParticipantsBloc>().add(
                                 AddInviteeInitiated(invitedUser: foundUser));
                           },
                         ),

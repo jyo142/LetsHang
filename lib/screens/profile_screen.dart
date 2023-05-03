@@ -9,6 +9,8 @@ import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:letshang/screens/unauthorized_screen.dart';
 import 'package:letshang/services/authentication_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/widgets/appbar/lh_main_app_bar.dart';
+import 'package:letshang/widgets/lh_bottom_nav_bar.dart';
 import 'package:letshang/widgets/profile_pic.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -44,6 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: const LHMainAppBar(screenName: 'Profile'),
         body: BlocProvider(
             create: (context) => ProfileBloc(
                 userRepository: UserRepository(),

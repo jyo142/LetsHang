@@ -6,11 +6,14 @@ enum InviteStatus { incomplete, pending, owner, accepted, rejected }
 
 enum InviteType { group, event }
 
+enum InviteTitle { organizer, admin, user }
+
 class Invite extends Equatable {
   final InviteStatus status;
   final InviteType type;
+  final InviteTitle? title;
 
-  const Invite({required this.status, required this.type});
+  const Invite({required this.status, required this.type, this.title});
 
   static Invite fromSnapshot(DocumentSnapshot snap) {
     return fromMap(snap.data()!);
@@ -20,8 +23,12 @@ class Invite extends Equatable {
     Invite group = Invite(
         status: InviteStatus.values
             .firstWhere((e) => describeEnum(e) == map["status"]),
-        type: InviteType.values
-            .firstWhere((e) => describeEnum(e) == map["type"]));
+        type:
+            InviteType.values.firstWhere((e) => describeEnum(e) == map["type"]),
+        title: map.containsKey("title")
+            ? InviteTitle.values
+                .firstWhere((e) => describeEnum(e) == map["title"])
+            : null);
 
     return group;
   }
@@ -30,9 +37,10 @@ class Invite extends Equatable {
     return {
       "status": status.toString(),
       "type": type.toString(),
+      "title": title.toString()
     };
   }
 
   @override
-  List<Object> get props => [status, type];
+  List<Object?> get props => [status, type, title];
 }

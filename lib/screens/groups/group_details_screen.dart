@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/edit_groups/edit_group_bloc.dart';
@@ -19,37 +18,32 @@ import 'package:letshang/widgets/lh_button.dart';
 import 'package:letshang/widgets/lh_text_form_field.dart';
 import 'package:letshang/widgets/member_card.dart';
 
-class EditGroupsScreen extends StatelessWidget {
+class GroupDetailsScreen extends StatelessWidget {
   final Group? curGroup;
-  const EditGroupsScreen({Key? key, this.curGroup}) : super(key: key);
+  const GroupDetailsScreen({Key? key, this.curGroup}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (context) => EditGroupBloc(
-                groupRepository: GroupRepository(),
-                userRepository: UserRepository(),
-                creatingUser: HangUserPreview.fromUser(
-                  (context.read<AppBloc>().state as AppAuthenticated).user,
-                ),
-                existingGroup: curGroup),
-          ),
-          BlocProvider(
-            create: (context) => ParticipantsBloc(curGroup: curGroup)
-              ..add(curGroup == null
-                  ? AddInviteeInitiated(
-                      invitedUser:
-                          (context.read<AppBloc>().state as AppAuthenticated)
-                              .user,
-                      inviteTitle: InviteTitle.organizer)
-                  : LoadGroupParticipants()),
-          )
-        ],
-        child: EditGroupsView(
-          curGroup: curGroup,
-        ));
+    return MultiBlocProvider(providers: [
+      BlocProvider(
+        create: (context) => EditGroupBloc(
+            groupRepository: GroupRepository(),
+            userRepository: UserRepository(),
+            creatingUser: HangUserPreview.fromUser(
+              (context.read<AppBloc>().state as AppAuthenticated).user,
+            ),
+            existingGroup: curGroup),
+      ),
+      BlocProvider(
+        create: (context) => ParticipantsBloc(curGroup: curGroup)
+          ..add(curGroup == null
+              ? AddInviteeInitiated(
+                  invitedUser:
+                      (context.read<AppBloc>().state as AppAuthenticated).user,
+                  inviteTitle: InviteTitle.organizer)
+              : LoadGroupParticipants()),
+      )
+    ], child: EditGroupsView());
   }
 }
 
@@ -149,7 +143,7 @@ class EditGroupsView extends StatelessWidget {
                     BlocBuilder<ParticipantsBloc, ParticipantsState>(
                       builder: (context, participantsState) {
                         return Flexible(
-                          flex: curGroup != null ? 2 : 1,
+                          flex: 1,
                           child: BlocConsumer<EditGroupBloc, EditGroupState>(
                             listener: (context, state) {
                               if (state is SavedGroupSuccessfully) {
@@ -166,59 +160,27 @@ class EditGroupsView extends StatelessWidget {
                                 return const Center(
                                     child: CircularProgressIndicator());
                               }
-                              return Column(children: [
-                                if (curGroup != null) ...[
-                                  LHButton(
-                                      buttonStyle: Theme.of(context)
-                                          .buttonTheme
-                                          .errorButtonStyle,
-                                      buttonText: 'Leave Group',
-                                      onPressed: () {
-                                        // Validate returns true if the form is valid, or false otherwise.
-                                        context.read<EditGroupBloc>().add(
-                                            SaveGroupInitiated(
-                                                allInvitedMembers:
-                                                    participantsState
-                                                        .invitedUsers));
+                              return LHButton(
+                                  buttonText: 'Complete Event',
+                                  onPressed: () {
+                                    // Validate returns true if the form is valid, or false otherwise.
+                                    context.read<EditGroupBloc>().add(
+                                        SaveGroupInitiated(
+                                            allInvitedMembers: participantsState
+                                                .invitedUsers));
 
-                                        MessageService.showSuccessMessage(
-                                            content: "Group saved successfully",
-                                            context: context);
+                                    MessageService.showSuccessMessage(
+                                        content: "Group saved successfully",
+                                        context: context);
 
-                                        // after the event is saved go back to home screen
-                                        Navigator.pop(context, true);
-                                      },
-                                      isDisabled: context
-                                          .read<EditGroupBloc>()
-                                          .state
-                                          .groupName
-                                          .isEmpty)
-                                ],
-                                LHButton(
-                                    buttonText: curGroup != null
-                                        ? 'Save Event'
-                                        : 'Complete Event',
-                                    onPressed: () {
-                                      // Validate returns true if the form is valid, or false otherwise.
-                                      context.read<EditGroupBloc>().add(
-                                          SaveGroupInitiated(
-                                              allInvitedMembers:
-                                                  participantsState
-                                                      .invitedUsers));
-
-                                      MessageService.showSuccessMessage(
-                                          content: "Group saved successfully",
-                                          context: context);
-
-                                      // after the event is saved go back to home screen
-                                      Navigator.pop(context, true);
-                                    },
-                                    isDisabled: context
-                                        .read<EditGroupBloc>()
-                                        .state
-                                        .groupName
-                                        .isEmpty)
-                              ]);
+                                    // after the event is saved go back to home screen
+                                    Navigator.pop(context, true);
+                                  },
+                                  isDisabled: context
+                                      .read<EditGroupBloc>()
+                                      .state
+                                      .groupName
+                                      .isEmpty);
                             },
                           ),
                         );

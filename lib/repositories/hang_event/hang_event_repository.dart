@@ -40,10 +40,14 @@ class HangEventRepository extends BaseHangEventRepository {
 
   @override
   Future<HangEvent> addHangEvent(HangEvent hangEvent) async {
-    DocumentReference docRef = await _firebaseFirestore
+    HangEvent savingEvent = HangEvent.withId(
+        FirebaseFirestore.instance.collection('hangEvents').doc().id,
+        hangEvent);
+    await _firebaseFirestore
         .collection('hangEvents')
-        .add(hangEvent.toDocument());
-    return HangEvent.withId(docRef.id, hangEvent);
+        .doc(savingEvent.id)
+        .set(savingEvent.toDocument());
+    return savingEvent;
   }
 
   @override

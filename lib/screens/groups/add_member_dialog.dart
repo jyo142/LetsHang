@@ -106,8 +106,8 @@ class AddMemberDialog extends StatelessWidget {
 
         return ElevatedButton(
           onPressed: () {
-            context.read<EditGroupBloc>().add(
-                FindGroupMemberInitiated(userValue: state.findGroupMember));
+            // context.read<EditGroupBloc>().add(
+            //     FindGroupMemberInitiated(userValue: state.findGroupMember));
           },
           child: const Text('Search'),
         );

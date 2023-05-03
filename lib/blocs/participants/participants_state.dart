@@ -1,7 +1,7 @@
-part of 'hang_event_participants_bloc.dart';
+part of 'participants_bloc.dart';
 
 @immutable
-class HangEventParticipantsState extends Equatable {
+class ParticipantsState extends Equatable {
   final AddParticipantBy addParticipantBy;
   final String searchByUsernameValue;
   final String searchByEmailValue;
@@ -12,7 +12,7 @@ class HangEventParticipantsState extends Equatable {
   final List<UserInvite> rejectedUsers;
   late final Set<String> allUsers;
 
-  HangEventParticipantsState(
+  ParticipantsState(
       {this.addParticipantBy = AddParticipantBy.none,
       this.searchByUsernameValue = '',
       this.searchByEmailValue = '',
@@ -25,7 +25,7 @@ class HangEventParticipantsState extends Equatable {
     allUsers.addAll(rejectedUsers.map((e) => e.user.email!));
   }
 
-  HangEventParticipantsState.fromState(HangEventParticipantsState state)
+  ParticipantsState.fromState(ParticipantsState state)
       : this(
             addParticipantBy: state.addParticipantBy,
             searchByUsernameValue: state.searchByUsernameValue,
@@ -35,7 +35,7 @@ class HangEventParticipantsState extends Equatable {
             invitedUsers: state.invitedUsers,
             rejectedUsers: state.rejectedUsers);
 
-  HangEventParticipantsState copyWith(
+  ParticipantsState copyWith(
       {AddParticipantBy? addParticipantBy,
       String? searchByUsernameValue,
       String? searchByEmailValue,
@@ -43,7 +43,7 @@ class HangEventParticipantsState extends Equatable {
       List<UserInvite>? attendingUsers,
       List<UserInvite>? invitedUsers,
       List<UserInvite>? rejectedUsers}) {
-    return HangEventParticipantsState(
+    return ParticipantsState(
         addParticipantBy: addParticipantBy ?? this.addParticipantBy,
         searchByUsernameValue:
             searchByUsernameValue ?? this.searchByUsernameValue,
@@ -54,11 +54,25 @@ class HangEventParticipantsState extends Equatable {
         rejectedUsers: rejectedUsers ?? this.rejectedUsers);
   }
 
-  HangEventParticipantsState addInvitee(HangUserPreview newInvitee) {
+  ParticipantsState addInvitee(HangUserPreview newInvitee, InviteTitle? title) {
+    UserInvite newUserInvitee = UserInvite(
+        user: newInvitee,
+        status: InviteStatus.pending,
+        type: InviteType.event,
+        title: title);
+    final newInvitees = List.of(invitedUsers);
+    newInvitees.add(newUserInvitee);
+    allUsers.add(newUserInvitee.user.email!);
+    return copyWith(invitedUsers: newInvitees);
+  }
+
+  ParticipantsState removeInvitee(HangUserPreview newInvitee) {
     UserInvite newUserInvitee = UserInvite(
         user: newInvitee, status: InviteStatus.pending, type: InviteType.event);
     final newInvitees = List.of(invitedUsers);
-    newInvitees.add(newUserInvitee);
+    newInvitees
+        .removeWhere((element) => element.user.email == newInvitee.email);
+    allUsers.remove(newUserInvitee.user.email!);
     return copyWith(invitedUsers: newInvitees);
   }
 
@@ -74,99 +88,91 @@ class HangEventParticipantsState extends Equatable {
       ];
 }
 
-class HangEventParticipantsLoading extends HangEventParticipantsState {}
+class HangEventParticipantsLoading extends ParticipantsState {}
 
-class SearchParticipantLoading extends HangEventParticipantsState {
-  SearchParticipantLoading(HangEventParticipantsState state)
-      : super.fromState(state);
+class SearchParticipantLoading extends ParticipantsState {
+  SearchParticipantLoading(ParticipantsState state) : super.fromState(state);
 }
 
-class SearchParticipantRetrieved extends HangEventParticipantsState {
+class SearchParticipantRetrieved extends ParticipantsState {
   final HangUser? foundUser;
-  SearchParticipantRetrieved(HangEventParticipantsState state, {this.foundUser})
+  SearchParticipantRetrieved(ParticipantsState state, {this.foundUser})
       : super.fromState(state);
 
   @override
   List<Object?> get props => [foundUser];
 }
 
-class SearchParticipantError extends HangEventParticipantsState {
+class SearchParticipantError extends ParticipantsState {
   final String errorMessage;
-  SearchParticipantError(HangEventParticipantsState state,
-      {required this.errorMessage})
+  SearchParticipantError(ParticipantsState state, {required this.errorMessage})
       : super.fromState(state);
 
   @override
   List<Object?> get props => [errorMessage];
 }
 
-class SendInviteLoading extends HangEventParticipantsState {
-  SendInviteLoading(HangEventParticipantsState state) : super.fromState(state);
+class SendInviteLoading extends ParticipantsState {
+  SendInviteLoading(ParticipantsState state) : super.fromState(state);
 }
 
-class SendInviteSuccess extends HangEventParticipantsState {
-  SendInviteSuccess(HangEventParticipantsState state) : super.fromState(state);
+class SendInviteSuccess extends ParticipantsState {
+  SendInviteSuccess(ParticipantsState state) : super.fromState(state);
 }
 
-class SendAllInvitesLoading extends HangEventParticipantsState {
-  SendAllInvitesLoading(HangEventParticipantsState state)
-      : super.fromState(state);
+class SendAllInvitesLoading extends ParticipantsState {
+  SendAllInvitesLoading(ParticipantsState state) : super.fromState(state);
 }
 
-class SendAllInvitesError extends HangEventParticipantsState {
+class SendAllInvitesError extends ParticipantsState {
   final String errorMessage;
-  SendAllInvitesError(HangEventParticipantsState state,
-      {required this.errorMessage})
+  SendAllInvitesError(ParticipantsState state, {required this.errorMessage})
       : super.fromState(state);
 
   @override
   List<Object?> get props => [errorMessage];
 }
 
-class SendAllInvitesSuccess extends HangEventParticipantsState {
-  SendAllInvitesSuccess(HangEventParticipantsState state)
-      : super.fromState(state);
+class SendAllInvitesSuccess extends ParticipantsState {
+  SendAllInvitesSuccess(ParticipantsState state) : super.fromState(state);
 }
 
-class SendInviteError extends HangEventParticipantsState {
+class SendInviteError extends ParticipantsState {
   final String errorMessage;
-  SendInviteError(HangEventParticipantsState state,
-      {required this.errorMessage})
+  SendInviteError(ParticipantsState state, {required this.errorMessage})
       : super.fromState(state);
 
   @override
   List<Object?> get props => [errorMessage];
 }
 
-class SearchGroupLoading extends HangEventParticipantsState {
-  SearchGroupLoading(HangEventParticipantsState state) : super.fromState(state);
+class SearchGroupLoading extends ParticipantsState {
+  SearchGroupLoading(ParticipantsState state) : super.fromState(state);
 }
 
-class SearchGroupRetrieved extends HangEventParticipantsState {
+class SearchGroupRetrieved extends ParticipantsState {
   final Group foundGroup;
-  SearchGroupRetrieved(HangEventParticipantsState state,
-      {required this.foundGroup})
+  SearchGroupRetrieved(ParticipantsState state, {required this.foundGroup})
       : super.fromState(state);
 
   @override
   List<Object> get props => [foundGroup];
 }
 
-class SearchGroupError extends HangEventParticipantsState {
+class SearchGroupError extends ParticipantsState {
   final String errorMessage;
-  SearchGroupError(HangEventParticipantsState state,
-      {required this.errorMessage})
+  SearchGroupError(ParticipantsState state, {required this.errorMessage})
       : super.fromState(state);
 
   @override
   List<Object?> get props => [errorMessage];
 }
 
-class SelectMembersState extends HangEventParticipantsState {
+class SelectMembersState extends ParticipantsState {
   final List<UserInvite> allMembers;
   late final Map<String, UserInvite> selectedMembers;
   SelectMembersState(
-    HangEventParticipantsState state, {
+    ParticipantsState state, {
     required this.allMembers,
     Map<String, UserInvite>? selectedMembers,
   }) : super.fromState(state) {
@@ -179,7 +185,7 @@ class SelectMembersState extends HangEventParticipantsState {
             selectedMembers: state.selectedMembers);
 
   SelectMembersState toggleSelectedMember(
-      HangEventParticipantsState state, UserInvite newSelectedMember) {
+      ParticipantsState state, UserInvite newSelectedMember) {
     final newSelectedMembers = Map.of(selectedMembers);
 
     if (!newSelectedMembers.containsKey(newSelectedMember.user.email)) {

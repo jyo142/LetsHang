@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:letshang/assets/MainTheme.dart';
-import 'package:letshang/blocs/hang_event_participants/hang_event_participants_bloc.dart';
+import 'package:letshang/blocs/participants/participants_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/user_invite_model.dart';
@@ -19,7 +19,7 @@ class EventParticipantsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFCCCCCC),
       body: BlocProvider(
-          create: (context) => HangEventParticipantsBloc(curEvent: curEvent)
+          create: (context) => ParticipantsBloc(curEvent: curEvent)
             ..add(LoadHangEventParticipants()),
           child: _EventParticipantsView()),
       // bottomNavigationBar: Padding(
@@ -68,7 +68,7 @@ class _EventParticipantsView extends StatelessWidget {
                           AddPeopleBottomModal(
                             submitPeopleButtonName: 'Send Invite',
                             onInviteeAdded: (foundUser) {
-                              context.read<HangEventParticipantsBloc>().add(
+                              context.read<ParticipantsBloc>().add(
                                   SendInviteInitiated(invitedUser: foundUser));
                             },
                           ),
@@ -85,14 +85,17 @@ class _EventParticipantsView extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Text(
-                                'ATTENDING',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyText1!
-                                    .merge(const TextStyle(
-                                        color: Color(0x8004152D))),
-                              ),
+                              BlocBuilder<ParticipantsBloc, ParticipantsState>(
+                                  builder: (context, state) {
+                                return Text(
+                                  'ATTENDING (${state.attendingUsers.length})',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyText1!
+                                      .merge(const TextStyle(
+                                          color: Color(0x8004152D))),
+                                );
+                              })
                             ],
                           )),
                     ),
@@ -106,14 +109,17 @@ class _EventParticipantsView extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Text(
-                                'INVITED',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyText1!
-                                    .merge(const TextStyle(
-                                        color: Color(0x8004152D))),
-                              ),
+                              BlocBuilder<ParticipantsBloc, ParticipantsState>(
+                                  builder: (context, state) {
+                                return Text(
+                                  'INVITED (${state.invitedUsers.length})',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyText1!
+                                      .merge(const TextStyle(
+                                          color: Color(0x8004152D))),
+                                );
+                              })
                             ],
                           )),
                     ),
@@ -127,14 +133,17 @@ class _EventParticipantsView extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Text(
-                                'DECLINED',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyText1!
-                                    .merge(const TextStyle(
-                                        color: Color(0x8004152D))),
-                              ),
+                              BlocBuilder<ParticipantsBloc, ParticipantsState>(
+                                  builder: (context, state) {
+                                return Text(
+                                  'DECLINED (${state.rejectedUsers.length})',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyText1!
+                                      .merge(const TextStyle(
+                                          color: Color(0x8004152D))),
+                                );
+                              })
                             ],
                           )),
                     ),
@@ -170,7 +179,7 @@ class _EventParticipantsView extends StatelessWidget {
   }
 
   Widget _participantsSection(Function participantsFunc) {
-    return BlocBuilder<HangEventParticipantsBloc, HangEventParticipantsState>(
+    return BlocBuilder<ParticipantsBloc, ParticipantsState>(
         builder: (context, state) {
       if (state is HangEventParticipantsLoading) {
         return const Center(child: CircularProgressIndicator());
@@ -187,7 +196,7 @@ class _EventParticipantsView extends StatelessWidget {
             itemBuilder: (BuildContext context, int index) {
               return Container(
                 margin: const EdgeInsets.only(top: 10),
-                child: UserEventCard(
+                child: UserParticipantCard(
                     curUser: participants[0].user,
                     backgroundColor: Colors.white),
               );

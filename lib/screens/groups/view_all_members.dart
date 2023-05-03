@@ -1,40 +1,126 @@
 import 'package:flutter/material.dart';
-import 'package:letshang/blocs/edit_groups/edit_group_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:letshang/widgets/member_card.dart';
+import 'package:letshang/blocs/participants/participants_bloc.dart';
+import 'package:letshang/models/group_model.dart';
+import 'package:letshang/models/user_invite_model.dart';
+import 'package:letshang/services/message_service.dart';
+import 'package:letshang/widgets/appbar/lh_app_bar.dart';
+import 'package:letshang/widgets/cards/user_event_card.dart';
+import 'package:letshang/widgets/hang_event_participants/add_people_bottom_modal.dart';
 
-class ViewAllMembers extends StatelessWidget {
-  const ViewAllMembers({Key? key}) : super(key: key);
+class ViewAllGroupMembers extends StatelessWidget {
+  final Group curGroup;
+
+  const ViewAllGroupMembers({Key? key, required this.curGroup})
+      : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('View all members'),
-      ),
-      body: SafeArea(
-          child: Padding(
-        padding: const EdgeInsets.only(
-            left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
-        child: Expanded(child: BlocBuilder<EditGroupBloc, EditGroupState>(
-          builder: (context, state) {
-            return ListView.builder(
-                itemCount: state.groupUserInvitees.length,
-                itemBuilder: (BuildContext context, int index) {
-                  String key = state.groupUserInvitees.keys.elementAt(index);
-                  return MemberCard(
-                      userName: state.groupUserInvitees[key]!.user.userName,
-                      name: state.groupUserInvitees[key]!.user.name!,
-                      canDelete: state.groupUserInvitees[key]!.user.userName !=
-                          state.groupOwner.userName,
-                      onDelete: () {
-                        context.read<EditGroupBloc>().add(
-                            DeleteGroupMemberInitialized(
-                                groupMemberUserName: key));
-                      });
-                });
-          },
+      appBar: const LHAppBar(screenName: 'View Group Members'),
+      backgroundColor: const Color(0xFFCCCCCC),
+      body: BlocProvider(
+        create: (context) =>
+            ParticipantsBloc(curGroup: curGroup)..add(LoadGroupParticipants()),
+        child: SafeArea(
+            child: Padding(
+          padding: const EdgeInsets.only(
+              left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
+          child: _ViewAllGroupMembersView(curGroup: curGroup),
         )),
-      )),
+      ),
     );
+  }
+}
+
+class _ViewAllGroupMembersView extends StatelessWidget {
+  final Group curGroup;
+
+  const _ViewAllGroupMembersView({Key? key, required this.curGroup})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ParticipantsBloc, ParticipantsState>(
+      builder: (context, state) {
+        return _invitedPeopleSection(context, state.invitedUsers);
+      },
+    );
+  }
+
+  Widget _invitedPeopleSection(
+      BuildContext context, List<UserInvite> invitedUsers) {
+    return Column(children: [
+      BlocConsumer<ParticipantsBloc, ParticipantsState>(
+        listener: (context, state) {
+          if (state is SendInviteSuccess) {
+            MessageService.showSuccessMessage(
+                content: "Event saved successfully", context: context);
+            context.read<ParticipantsBloc>().add(LoadGroupParticipants());
+          }
+        },
+        builder: (context, state) {
+          if (state is SendInviteLoading) {
+            return const CircularProgressIndicator();
+          }
+          if (state is SendInviteError) {
+            MessageService.showErrorMessage(
+                content: "Unable to send invites to users", context: context);
+          }
+          return Flexible(
+              flex: 1,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AddPeopleBottomModal(
+                    submitPeopleButtonName: 'Add to Group',
+                    onInviteeAdded: (foundUser) {
+                      context
+                          .read<ParticipantsBloc>()
+                          .add(SendInviteInitiated(invitedUser: foundUser));
+                    },
+                  ),
+                  // Container(
+                  //   margin: const EdgeInsets.only(left: 20),
+                  //   child: const AddGroupBottomModal(),
+                  // )
+                ],
+              ));
+        },
+      ),
+      Flexible(
+          flex: 2,
+          child: Container(
+            margin: const EdgeInsets.only(top: 20, bottom: 20),
+            child: TextField(
+                decoration: InputDecoration(
+              fillColor: Colors.white,
+              filled: true,
+              labelText: 'Search',
+              focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  borderSide: const BorderSide(color: Colors.white)),
+              enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  borderSide: const BorderSide(color: Colors.white)),
+            )),
+          )),
+      Flexible(
+          flex: 9,
+          child: ListView.builder(
+              itemCount: invitedUsers.length,
+              itemBuilder: (BuildContext context, int index) {
+                return Container(
+                  margin: const EdgeInsets.only(top: 10),
+                  child: UserParticipantCard(
+                    curUser: invitedUsers[index].user,
+                    backgroundColor: Colors.white,
+                    onRemove: (curUser) {
+                      context.read<ParticipantsBloc>().add(
+                          SendRemoveInviteInitiated(toRemoveUser: curUser));
+                    },
+                  ),
+                );
+              })),
+    ]);
   }
 }

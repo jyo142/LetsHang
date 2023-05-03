@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:letshang/assets/MainTheme.dart';
-import 'package:letshang/blocs/hang_event_participants/hang_event_participants_bloc.dart';
+import 'package:letshang/blocs/participants/participants_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:letshang/services/message_service.dart';
@@ -24,8 +24,8 @@ class AddGroupBottomModal extends StatelessWidget {
               ),
               context: context,
               isScrollControlled: true,
-              builder: (ctx) => BlocProvider<HangEventParticipantsBloc>.value(
-                  value: context.read<HangEventParticipantsBloc>(),
+              builder: (ctx) => BlocProvider<ParticipantsBloc>.value(
+                  value: context.read<ParticipantsBloc>(),
                   child: Container(
                     padding: const EdgeInsets.only(
                         left: 40.0, right: 40.0, bottom: 40.0, top: 40.0),
@@ -37,15 +37,12 @@ class AddGroupBottomModal extends StatelessWidget {
                       ],
                     ),
                   ))).whenComplete(() {
-            context.read<HangEventParticipantsBloc>().add(ClearSearchFields());
+            // context.read<ParticipantsBloc>().add(ClearSearchFields());
             // if the send invite is successful then we want to refresh the participants
-            bool isSuccessInviteState = context
-                .read<HangEventParticipantsBloc>()
-                .state is SendInviteSuccess;
+            bool isSuccessInviteState =
+                context.read<ParticipantsBloc>().state is SendInviteSuccess;
             if (isSuccessInviteState) {
-              context
-                  .read<HangEventParticipantsBloc>()
-                  .add(LoadHangEventParticipants());
+              context.read<ParticipantsBloc>().add(LoadHangEventParticipants());
             }
           });
         },
@@ -72,7 +69,7 @@ class AddGroupBottomModal extends StatelessWidget {
   }
 
   Widget _addGroupBottomModalContent(
-      BuildContext context, HangEventParticipantsState state) {
+      BuildContext context, ParticipantsState state) {
     if (state is SearchGroupLoading) {
       return const CircularProgressIndicator();
     }
@@ -89,15 +86,14 @@ class AddGroupBottomModal extends StatelessWidget {
     return SearchParticipantsBy(
         searchBy: 'Search Group',
         onChange: (value) => context
-            .read<HangEventParticipantsBloc>()
+            .read<ParticipantsBloc>()
             .add(SearchByGroupChanged(groupValue: value)),
-        onSubmit: () => context
-            .read<HangEventParticipantsBloc>()
-            .add(SearchByGroupSubmitted()));
+        onSubmit: () =>
+            context.read<ParticipantsBloc>().add(SearchByGroupSubmitted()));
   }
 
   Widget _bottomModalContent() {
-    return BlocConsumer<HangEventParticipantsBloc, HangEventParticipantsState>(
+    return BlocConsumer<ParticipantsBloc, ParticipantsState>(
         listener: (context, state) {
       if (state is SendInviteSuccess) {
         // after the invite is sent go back to participants screen
@@ -145,7 +141,7 @@ class AddGroupBottomModal extends StatelessWidget {
           style: Theme.of(context).textTheme.headline6,
         ),
       ),
-      BlocBuilder<HangEventParticipantsBloc, HangEventParticipantsState>(
+      BlocBuilder<ParticipantsBloc, ParticipantsState>(
           builder: (context, state) {
         if (state is SendInviteError) {
           return Container(
@@ -169,10 +165,11 @@ class AddGroupBottomModal extends StatelessWidget {
               LHButton(
                   buttonText: 'Select Members',
                   onPressed: () => {
-                        context.read<HangEventParticipantsBloc>().add(
+                        context.read<ParticipantsBloc>().add(
                             SelectMembersInitiated(
                                 eventMembers: state.allUsers,
-                                groupMembers: state.foundGroup.userInvites
+                                groupMembers: state
+                                    .foundGroup.userInvites
                                     .where((element) =>
                                         element.status ==
                                             InviteStatus.accepted ||
@@ -183,7 +180,7 @@ class AddGroupBottomModal extends StatelessWidget {
                   buttonText: 'Go Back',
                   onPressed: () => {
                         context
-                            .read<HangEventParticipantsBloc>()
+                            .read<ParticipantsBloc>()
                             .add(SearchByUsernamePressed())
                       },
                   buttonStyle:

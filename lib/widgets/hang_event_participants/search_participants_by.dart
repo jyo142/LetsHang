@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:letshang/blocs/hang_event_participants/hang_event_participants_bloc.dart';
+import 'package:letshang/blocs/participants/participants_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/widgets/lh_button.dart';
 
@@ -44,7 +44,7 @@ class SearchParticipantsBy extends StatelessWidget {
             // return stateErrorMessage?.call(state);
           },
           onChanged: (value) => onChange(value)),
-      BlocBuilder<HangEventParticipantsBloc, HangEventParticipantsState>(
+      BlocBuilder<ParticipantsBloc, ParticipantsState>(
           builder: (context, state) {
         if (state is SearchParticipantError) {
           return Container(

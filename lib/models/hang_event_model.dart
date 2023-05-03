@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
+import 'package:letshang/models/has_user_invites.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'hang_user_preview_model.dart';
 
@@ -8,18 +8,16 @@ enum HangEventType { public, private }
 
 enum HangEventStage { started, mainDetails, addingUsers, complete }
 
-class HangEvent extends Equatable {
-  final String id;
+class HangEvent extends HasUserInvites {
   final HangUserPreview eventOwner;
   final String eventName;
   final String eventDescription;
   late final DateTime? eventStartDate;
   late final DateTime? eventEndDate;
-  final List<UserInvite> userInvites;
   final HangEventStage currentStage;
   final String? photoURL;
   HangEvent(
-      {this.id = '',
+      {id,
       required this.eventOwner,
       this.eventName = '',
       this.eventDescription = '',
@@ -28,7 +26,7 @@ class HangEvent extends Equatable {
       List<UserInvite>? userInvites,
       this.currentStage = HangEventStage.started,
       this.photoURL = ''})
-      : this.userInvites = userInvites ?? [];
+      : super(id, userInvites);
 
   HangEvent.withId(String id, HangEvent event)
       : this(

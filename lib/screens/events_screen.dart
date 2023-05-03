@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
-import 'package:letshang/models/event_invite.dart';
-import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/widgets/events/past_events_view.dart';
 import 'package:letshang/widgets/events/upcoming_events_view.dart';
+import 'package:letshang/widgets/appbar/lh_main_app_bar.dart';
 
 class EventsScreen extends StatelessWidget {
   const EventsScreen({Key? key}) : super(key: key);
@@ -16,6 +14,7 @@ class EventsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: const LHMainAppBar(screenName: 'Events'),
         body: BlocProvider(
             create: (context) => HangEventOverviewBloc(
                 email: (context.read<AppBloc>().state as AppAuthenticated)
@@ -58,6 +57,7 @@ class _EventsViewState extends State<EventsView> with TickerProviderStateMixin {
                 children: [
                   Flexible(
                       child: Container(
+                    margin: const EdgeInsets.only(left: 4, right: 4),
                     decoration: BoxDecoration(
                         color: const Color(0xFFFFFFFF),
                         borderRadius: BorderRadius.circular(5)),
@@ -149,96 +149,6 @@ class _EventsViewState extends State<EventsView> with TickerProviderStateMixin {
                   // ..._pastEvents(context),
                 ],
               ))),
-    );
-  }
-
-  List<Widget> _upcomingEvents(BuildContext context) {
-    return [
-      Text(
-        'My Upcoming Events',
-        style: Theme.of(context).textTheme.headline5,
-      ),
-      BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
-        builder: (context, state) {
-          if (state is HangEventsLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is HangEventsRetrieved) {
-            if (state.draftUpcomingHangEvents.isNotEmpty) {
-              return _eventListView(state.draftUpcomingHangEvents);
-            } else {
-              return Text(
-                'No upcoming events',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyText1,
-              );
-            }
-          } else {
-            return const Text('Error');
-          }
-        },
-      )
-    ];
-  }
-
-  List<Widget> _pastEvents(BuildContext context) {
-    return [
-      Text(
-        'My Past Events',
-        style: Theme.of(context).textTheme.headline5,
-      ),
-      BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
-        builder: (context, state) {
-          if (state is HangEventsLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is HangEventsRetrieved) {
-            if (state.pastHangEvents.isNotEmpty) {
-              return _eventListView(state.pastHangEvents);
-            } else {
-              return Text(
-                'No past events',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyText1,
-              );
-            }
-          } else {
-            return const Text('Error');
-          }
-        },
-      )
-    ];
-  }
-
-  Widget _eventListView(List<HangEventInvite> events) {
-    return Expanded(
-      child: ListView.builder(
-          itemCount: events.length,
-          itemBuilder: (BuildContext context, int index) {
-            return Card(
-                child: ListTile(
-              leading: IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () async {
-                  final bool? shouldRefresh = await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => EditEventScreen(
-                        curEvent: events[index].event,
-                      ),
-                    ),
-                  );
-                  if (shouldRefresh != null && shouldRefresh) {
-                    context.read<HangEventOverviewBloc>().add(LoadHangEvents());
-                  }
-                },
-              ),
-              title: Text(events[index].event.eventStartDate != null
-                  ? DateFormat('MM/dd/yyyy h:mm a')
-                      .format(events[index].event.eventStartDate!)
-                  : 'Undecided'),
-              subtitle: Text(events[index].event.eventName),
-            ));
-          }),
     );
   }
 }

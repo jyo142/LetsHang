@@ -6,6 +6,7 @@ import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart
 import 'package:letshang/models/event_invite.dart';
 import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/widgets/appbar/lh_main_app_bar.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -29,6 +30,7 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: const LHMainAppBar(screenName: 'Home'),
       body: SafeArea(
           child: Padding(
               padding: const EdgeInsets.only(
