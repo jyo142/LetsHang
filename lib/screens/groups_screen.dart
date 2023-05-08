@@ -46,7 +46,17 @@ class GroupsView extends StatelessWidget {
                       if (state.groupsForUser.isEmpty) {
                         return Center(child: _noGroupsView(context));
                       } else {
-                        return _groupListView(state.groupsForUser);
+                        return Column(children: [
+                          Flexible(
+                              flex: 10,
+                              child: _groupListView(state.groupsForUser)),
+                          Flexible(
+                              flex: 1,
+                              child: Container(
+                                margin: EdgeInsets.only(top: 10),
+                                child: _createGroupButton(context),
+                              ))
+                        ]);
                       }
                     }
                     return const Text('Unable to load Group');
@@ -71,19 +81,23 @@ class GroupsView extends StatelessWidget {
       ),
       Container(
           margin: const EdgeInsets.only(top: 50),
-          child: LHButton(
-              buttonText: 'Create Group',
-              onPressed: () async {
-                final shouldRefresh = await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const EditGroupsScreen(),
-                  ),
-                );
-                if (shouldRefresh != null && shouldRefresh) {
-                  context.read<GroupOverviewBloc>().add(LoadGroups());
-                }
-              }))
+          child: _createGroupButton(context))
     ]);
+  }
+
+  Widget _createGroupButton(BuildContext context) {
+    return LHButton(
+        buttonText: 'Create Group',
+        onPressed: () async {
+          final shouldRefresh = await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const EditGroupsScreen(),
+            ),
+          );
+          if (shouldRefresh != null && shouldRefresh) {
+            context.read<GroupOverviewBloc>().add(LoadGroups());
+          }
+        });
   }
 
   Widget _groupListView(List<GroupInvite> groupInvites) {

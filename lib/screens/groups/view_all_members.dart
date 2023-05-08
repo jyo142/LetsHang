@@ -113,6 +113,7 @@ class _ViewAllGroupMembersView extends StatelessWidget {
                   margin: const EdgeInsets.only(top: 10),
                   child: UserParticipantCard(
                     curUser: invitedUsers[index].user,
+                    inviteTitle: invitedUsers[index].title,
                     backgroundColor: Colors.white,
                     onRemove: (curUser) {
                       context.read<ParticipantsBloc>().add(

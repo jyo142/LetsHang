@@ -11,29 +11,28 @@ class AttendeesAvatars extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Flexible(
-        child: SizedBox(
-            height: 50,
-            child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: userInvites.length < MaxAvatars
-                    ? userInvites.length
-                    : MaxAvatars,
-                itemBuilder: (BuildContext context, int index) {
-                  if (index == (MaxAvatars - 1)) {
-                    // show the avatar with how many people are left in the group after the max
-                    return CircleAvatar(
-                      radius: 15,
-                      backgroundColor: const Color(0xFFEBF1F3),
-                      child: Text(
-                        '+${userInvites.length - (MaxAvatars - 1)}',
-                        style: Theme.of(context).textTheme.bodyText2!.merge(
-                            const TextStyle(
-                                fontSize: 9, color: Color(0xFFAFBDC6))),
-                      ),
-                    );
-                  }
-                  return UserAvatar(curUser: userInvites[index].user);
-                })));
+    return SizedBox(
+        height: 50,
+        width: 150,
+        child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: userInvites.length < MaxAvatars
+                ? userInvites.length
+                : MaxAvatars,
+            itemBuilder: (BuildContext context, int index) {
+              if (index == (MaxAvatars - 1)) {
+                // show the avatar with how many people are left in the group after the max
+                return CircleAvatar(
+                  radius: 15,
+                  backgroundColor: const Color(0xFFEBF1F3),
+                  child: Text(
+                    '+${userInvites.length - (MaxAvatars - 1)}',
+                    style: Theme.of(context).textTheme.bodyText2!.merge(
+                        const TextStyle(fontSize: 9, color: Color(0xFFAFBDC6))),
+                  ),
+                );
+              }
+              return UserAvatar(curUser: userInvites[index].user);
+            }));
   }
 }

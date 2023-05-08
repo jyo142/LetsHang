@@ -5,6 +5,8 @@ import 'package:letshang/models/invite.dart';
 import 'package:letshang/screens/edit_groups_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/screens/groups/view_all_members.dart';
+import 'package:letshang/widgets/tags/admin_tag.dart';
+import 'package:letshang/widgets/tags/organizer_tag.dart';
 
 class GroupCard extends StatelessWidget {
   final Group group;
@@ -104,24 +106,10 @@ class GroupCard extends StatelessWidget {
   Widget _renderTitle() {
     if (inviteTitle != null) {
       if (inviteTitle == InviteTitle.organizer) {
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5.0),
-            color: const Color(0xFFDEEFE8),
-          ),
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-          child: const Text("Organizer"),
-        );
+        return const OrganizerTag();
       }
       if (inviteTitle == InviteTitle.admin) {
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5.0),
-            color: const Color(0xFF891F8F),
-          ),
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-          child: const Text("Admin"),
-        );
+        return const AdminTag();
       }
     }
     return const SizedBox();

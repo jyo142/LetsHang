@@ -197,8 +197,9 @@ class _EventParticipantsView extends StatelessWidget {
               return Container(
                 margin: const EdgeInsets.only(top: 10),
                 child: UserParticipantCard(
-                    curUser: participants[0].user,
-                    backgroundColor: Colors.white),
+                    curUser: participants[index].user,
+                    backgroundColor: Colors.white,
+                    inviteTitle: participants[index].title,),
               );
             }));
   }
