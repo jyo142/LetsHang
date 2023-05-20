@@ -6,28 +6,35 @@ import 'package:letshang/models/invite.dart';
 class HangEventInvite extends Invite {
   final HangEvent event;
 
-  const HangEventInvite({required this.event, required status, required type})
-      : super(status: status, type: type);
+  const HangEventInvite(
+      {required this.event, required status, required type, title})
+      : super(status: status, type: type, title: title);
 
   static HangEventInvite fromSnapshot(DocumentSnapshot snap) {
     return fromMap(snap.data()!);
   }
 
   HangEventInvite copyWith(
-      {HangEvent? event, InviteStatus? status, InviteType? type}) {
+      {HangEvent? event,
+      InviteStatus? status,
+      InviteType? type,
+      InviteTitle? title}) {
     return HangEventInvite(
         event: event ?? this.event,
         status: status ?? this.status,
-        type: type ?? this.type);
+        type: type ?? this.type,
+        title: title ?? this.title);
   }
 
   static HangEventInvite fromMap(Map<String, dynamic> map) {
     HangEventInvite group = HangEventInvite(
-        event: HangEvent.fromMap(map["event"]),
-        status: InviteStatus.values
-            .firstWhere((e) => describeEnum(e) == map["status"]),
-        type: InviteType.values
-            .firstWhere((e) => describeEnum(e) == map["type"]));
+      event: HangEvent.fromMap(map["event"]),
+      status: InviteStatus.values
+          .firstWhere((e) => describeEnum(e) == map["status"]),
+      type: InviteType.values.firstWhere((e) => describeEnum(e) == map["type"]),
+      title:
+          InviteTitle.values.firstWhere((e) => describeEnum(e) == map["title"]),
+    );
 
     return group;
   }
@@ -38,9 +45,11 @@ class HangEventInvite extends Invite {
       "event": event.toDocument(),
       "status": describeEnum(status),
       "type": describeEnum(type),
+      "title":
+          title != null ? describeEnum(title!) : describeEnum(InviteTitle.user)
     };
   }
 
   @override
-  List<Object> get props => [event, status, type];
+  List<Object?> get props => [event, status, type, title];
 }

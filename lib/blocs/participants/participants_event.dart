@@ -78,6 +78,22 @@ class RemoveInviteeInitiated extends ParticipantsEvent {
 
 class SendAllInviteesInitiated extends ParticipantsEvent {}
 
+class SendPromoteInviteeInitiated extends ParticipantsEvent {
+  const SendPromoteInviteeInitiated({required this.toPromoteUserPreview});
+  final HangUserPreview toPromoteUserPreview;
+
+  @override
+  List<Object> get props => [toPromoteUserPreview];
+}
+
+class PromoteInviteeInitiated extends ParticipantsEvent {
+  const PromoteInviteeInitiated({required this.toPromoteUserPreview});
+  final HangUserPreview toPromoteUserPreview;
+
+  @override
+  List<Object> get props => [toPromoteUserPreview];
+}
+
 class SearchByGroupChanged extends ParticipantsEvent {
   const SearchByGroupChanged({required this.groupValue});
 

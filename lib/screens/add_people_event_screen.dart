@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:letshang/assets/MainTheme.dart';
+import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/participants/participants_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
+import 'package:letshang/models/invite.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:letshang/screens/events_screen.dart';
@@ -11,6 +13,8 @@ import 'package:letshang/widgets/cards/user_event_card.dart';
 import 'package:letshang/widgets/hang_event_participants/add_group_bottom_modal.dart';
 import 'package:letshang/widgets/hang_event_participants/add_people_bottom_modal.dart';
 import 'package:letshang/widgets/lh_button.dart';
+
+import '../blocs/app/app_bloc.dart';
 
 class AddPeopleEventScreen extends StatelessWidget {
   const AddPeopleEventScreen({Key? key, required this.curEvent})
@@ -39,7 +43,10 @@ class AddPeopleEventScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFCCCCCC),
       body: BlocProvider(
           create: (context) => ParticipantsBloc(curEvent: curEvent)
-            ..add(LoadHangEventParticipants()),
+            ..add(AddInviteeInitiated(
+                invitedUser:
+                    (context.read<AppBloc>().state as AppAuthenticated).user,
+                inviteTitle: InviteTitle.organizer)),
           child: _AddPeopleEventScreenView(
             curEvent: curEvent,
           )),
@@ -117,7 +124,17 @@ class _AddPeopleEventScreenView extends StatelessWidget {
                   margin: const EdgeInsets.only(top: 10),
                   child: UserParticipantCard(
                       curUser: invitedUsers[index].user,
-                      backgroundColor: Colors.white),
+                      backgroundColor: Colors.white,
+                      onRemove: (removingUser) {
+                        context.read<ParticipantsBloc>().add(
+                            RemoveInviteeInitiated(
+                                toRemoveUserPreview: removingUser));
+                      },
+                      onPromote: (promotingUser) {
+                        context.read<ParticipantsBloc>().add(
+                            PromoteInviteeInitiated(
+                                toPromoteUserPreview: promotingUser));
+                      }),
                 );
               })),
       Flexible(

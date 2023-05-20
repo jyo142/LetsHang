@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:letshang/models/group_invite.dart';
 import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/hang_event_model.dart';
+import 'package:letshang/models/invite.dart';
+import 'package:letshang/models/user_event_metadata.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/repositories/invites/base_invites_repository.dart';
 
@@ -286,6 +288,79 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         .toList();
   }
 
+  Future<void> promoteUserInviteForEvent(
+      HangEvent event, UserInvite toPromote, Transaction transaction) async {
+    DocumentReference eventInviteRef = _firebaseFirestore
+        .collection("userInvites")
+        .doc(toPromote.user.email)
+        .collection("eventInvites")
+        .doc("events");
+    final eventInviteDocumentSnap = await transaction.get(eventInviteRef);
+
+    List<HangEventInvite> retValEvents = [];
+    if (eventInviteDocumentSnap.exists) {
+      retValEvents = List.of(eventInviteDocumentSnap.get("eventInvites"))
+          .map((m) => HangEventInvite.fromMap(m))
+          .toList();
+    }
+    final indexOfEventInvite =
+        retValEvents.indexWhere((element) => element.event.id == event.id);
+    if (indexOfEventInvite < 0) {
+      throw Exception(
+          "User is not part of the group. User cannot be promoted.");
+    }
+    HangEventInvite foundEventInvite = retValEvents[indexOfEventInvite];
+    retValEvents[indexOfEventInvite] = HangEventInvite(
+        event: foundEventInvite.event,
+        status: foundEventInvite.status,
+        type: foundEventInvite.type,
+        title: InviteTitle.admin);
+
+    transaction.update(eventInviteRef,
+        {"groupInvites": List.of(retValEvents.map((e) => e.toDocument()))});
+  }
+
+  @override
+  Future<void> promoteUserEventInvite(
+      HangEvent hangEvent, UserInvite toPromote) async {
+    await _firebaseFirestore.runTransaction((transaction) async {
+      DocumentReference dbEventsRef =
+          _firebaseFirestore.collection('events').doc(hangEvent.id);
+
+      final eventSnap = await transaction.get(dbEventsRef);
+      if (!eventSnap.exists) {
+        throw Exception(
+            "Unable to promote user in event. Event cannot be retrieved.");
+      }
+      DocumentReference dbEventUserInvitesRef =
+          dbEventsRef.collection('invites').doc("userInvites");
+
+      // before promoting the user, make sure that they are part of the event
+      final eventUserInvitesSnap = await transaction.get(dbEventUserInvitesRef);
+      List<UserInvite> retValInvites = [];
+      if (eventUserInvitesSnap.exists) {
+        retValInvites = List.of(eventUserInvitesSnap["userInvites"])
+            .map((m) => UserInvite.fromMap(m))
+            .toList();
+      }
+      final indexOfUserInvite = retValInvites
+          .indexWhere((element) => element.user.email == toPromote.user.email);
+      if (indexOfUserInvite < 0) {
+        throw Exception(
+            "User is not part of the group. User cannot be promoted.");
+      }
+      retValInvites[indexOfUserInvite] = UserInvite(
+          user: toPromote.user,
+          status: toPromote.status,
+          type: toPromote.type,
+          title: InviteTitle.admin);
+
+      await promoteUserInviteForEvent(hangEvent, toPromote, transaction);
+      transaction.set(dbEventUserInvitesRef,
+          {"userInvites": retValInvites.map((ui) => ui.toDocument()).toList()});
+    });
+  }
+
   @override
   Future<List<GroupInvite>> getUserGroupInvites(String email) async {
     DocumentSnapshot groupInviteSnapshot = await _firebaseFirestore
@@ -407,6 +482,38 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         {"groupInvites": List.of(retValGroups.map((e) => e.toDocument()))});
   }
 
+  Future<void> promoteUserInviteForGroup(
+      Group group, UserInvite toPromote, Transaction transaction) async {
+    DocumentReference groupInviteRef = _firebaseFirestore
+        .collection("userInvites")
+        .doc(toPromote.user.email)
+        .collection("groupInvites")
+        .doc("groups");
+    final groupInviteDocumentSnap = await transaction.get(groupInviteRef);
+
+    List<GroupInvite> retValGroups = [];
+    if (groupInviteDocumentSnap.exists) {
+      retValGroups = List.of(groupInviteDocumentSnap.get("groupInvites"))
+          .map((m) => GroupInvite.fromMap(m))
+          .toList();
+    }
+    final indexOfGroupInvite =
+        retValGroups.indexWhere((element) => element.group.id == group.id);
+    if (indexOfGroupInvite < 0) {
+      throw Exception(
+          "User is not part of the group. User cannot be promoted.");
+    }
+    GroupInvite foundGroupInvite = retValGroups[indexOfGroupInvite];
+    retValGroups[indexOfGroupInvite] = GroupInvite(
+        group: foundGroupInvite.group,
+        status: foundGroupInvite.status,
+        type: foundGroupInvite.type,
+        title: InviteTitle.admin);
+
+    transaction.update(groupInviteRef,
+        {"groupInvites": List.of(retValGroups.map((e) => e.toDocument()))});
+  }
+
   Future<void> removeUserInvitesForGroup(
       Group group, List<UserInvite> toRemove, Transaction transaction) async {
     await Future.wait(toRemove.map((ui) async {
@@ -508,6 +615,46 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       await Future.wait(userInvites.map((ui) async {
         await addUserInviteForGroup(group, ui, transaction);
       }));
+      transaction.set(dbGroupUserInvitesRef,
+          {"userInvites": retValInvites.map((ui) => ui.toDocument()).toList()});
+    });
+  }
+
+  @override
+  Future<void> promoteUserGroupInvite(Group group, UserInvite toPromote) async {
+    await _firebaseFirestore.runTransaction((transaction) async {
+      DocumentReference dbGroupRef =
+          _firebaseFirestore.collection('groups').doc(group.id);
+
+      final groupSnap = await transaction.get(dbGroupRef);
+      if (!groupSnap.exists) {
+        throw Exception(
+            "Unable to add users to group. Group cannot be retrieved.");
+      }
+      DocumentReference dbGroupUserInvitesRef =
+          dbGroupRef.collection('invites').doc("userInvites");
+
+      // before promoting the user, make sure that they are part of the event
+      final groupUserInvitesSnap = await transaction.get(dbGroupUserInvitesRef);
+      List<UserInvite> retValInvites = [];
+      if (groupUserInvitesSnap.exists) {
+        retValInvites = List.of(groupUserInvitesSnap["userInvites"])
+            .map((m) => UserInvite.fromMap(m))
+            .toList();
+      }
+      final indexOfUserInvite = retValInvites
+          .indexWhere((element) => element.user.email == toPromote.user.email);
+      if (indexOfUserInvite < 0) {
+        throw Exception(
+            "User is not part of the group. User cannot be promoted.");
+      }
+      retValInvites[indexOfUserInvite] = UserInvite(
+          user: toPromote.user,
+          status: toPromote.status,
+          type: toPromote.type,
+          title: InviteTitle.admin);
+
+      await promoteUserInviteForGroup(group, toPromote, transaction);
       transaction.set(dbGroupUserInvitesRef,
           {"userInvites": retValInvites.map((ui) => ui.toDocument()).toList()});
     });
@@ -649,5 +796,29 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       HangEvent hangEvent, List<UserInvite> toRemoveUserInvites) {
     // TODO: implement removeUserEventInvites
     throw UnimplementedError();
+  }
+
+  @override
+  Future<UserEventMetadata> getUserEventMetadata(String email) async {
+    DocumentSnapshot eventInviteSnapshot = await _firebaseFirestore
+        .collection("userInvites")
+        .doc(email)
+        .collection("eventInvites")
+        .doc("events")
+        .get();
+
+    List<HangEventInvite> eventInvites = [];
+    if (eventInviteSnapshot.exists) {
+      eventInvites = List.of(eventInviteSnapshot["eventInvites"])
+          .map((m) => HangEventInvite.fromMap(m))
+          .toList();
+    }
+
+    return UserEventMetadata(
+        userEmail: email,
+        numEventsOrganized: eventInvites
+            .where((element) => element.title == InviteTitle.organizer)
+            .length,
+        numEvents: eventInvites.length);
   }
 }

@@ -76,6 +76,20 @@ class ParticipantsState extends Equatable {
     return copyWith(invitedUsers: newInvitees);
   }
 
+  ParticipantsState promoteInvitee(HangUserPreview toPromoteUser) {
+    final newInvitees = List.of(invitedUsers);
+    
+    final indexOfUserInvite =
+        newInvitees.indexWhere((element) => element.user.email == toPromoteUser.email);
+    UserInvite foundUserInvite = newInvitees[indexOfUserInvite];
+    newInvitees[indexOfUserInvite] = UserInvite(
+        user: foundUserInvite.user,
+        status: foundUserInvite.status,
+        type: foundUserInvite.type,
+        title: InviteTitle.admin);
+
+    return copyWith(invitedUsers: newInvitees);
+  }
   @override
   List<Object?> get props => [
         addParticipantBy,

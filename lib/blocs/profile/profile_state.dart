@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:equatable/equatable.dart';
 import 'package:letshang/models/hang_user_model.dart';
+import 'package:letshang/models/user_event_metadata.dart';
 
 class ProfileState extends Equatable {
   const ProfileState();
@@ -10,12 +11,12 @@ class ProfileState extends Equatable {
 }
 
 class ProfileInfoLoading extends ProfileState {
-  final String userName;
+  final String email;
 
-  ProfileInfoLoading({required this.userName}) {}
+  ProfileInfoLoading({required this.email}) {}
 
   @override
-  List<Object> get props => [userName];
+  List<Object> get props => [email];
 }
 
 class ProfileInfoError extends ProfileState {
@@ -29,9 +30,10 @@ class ProfileInfoError extends ProfileState {
 
 class ProfileInfoRetrieved extends ProfileState {
   final HangUser hangUser;
-
-  ProfileInfoRetrieved({required this.hangUser}) {}
+  final UserEventMetadata userEventMetadata;
+  ProfileInfoRetrieved(
+      {required this.hangUser, required this.userEventMetadata}) {}
 
   @override
-  List<Object> get props => [hangUser];
+  List<Object> get props => [hangUser, userEventMetadata];
 }

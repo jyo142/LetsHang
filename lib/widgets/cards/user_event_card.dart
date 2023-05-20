@@ -11,13 +11,15 @@ class UserParticipantCard extends StatelessWidget {
   final Widget? label;
   final InviteTitle? inviteTitle;
   final Function? onRemove;
+  final Function? onPromote;
   const UserParticipantCard(
       {Key? key,
       required this.curUser,
       required this.backgroundColor,
       this.label,
       this.inviteTitle,
-      this.onRemove})
+      this.onRemove,
+      this.onPromote})
       : super(key: key);
 
   @override
@@ -50,13 +52,16 @@ class UserParticipantCard extends StatelessWidget {
               PopupMenuButton(
                 itemBuilder: (context) {
                   return [
-                    const PopupMenuItem(
-                      value: 'edit',
-                      child: Text('Edit'),
-                    ),
+                    if (inviteTitle == InviteTitle.user) ...[
+                      PopupMenuItem(
+                        value: 'promote',
+                        child: const Text('Promote To Admin'),
+                        onTap: () => onPromote!(curUser),
+                      ),
+                    ],
                     PopupMenuItem(
-                        value: 'delete',
-                        child: const Text('Delete'),
+                        value: 'remove',
+                        child: const Text('Remove'),
                         onTap: () => onRemove!(curUser))
                   ];
                 },

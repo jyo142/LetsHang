@@ -78,7 +78,10 @@ extension CustomButtonStyles on ButtonThemeData {
     return OutlinedButton.styleFrom(
         primary: const Color(0xFFFFFFFF),
         foregroundColor: Color(0xFFFF4D53), //adding this would work
-
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28.0),
+        ),
+        padding: EdgeInsets.fromLTRB(100.0, 15.0, 100.0, 15.0),
         backgroundColor: const Color(0xFFFEDCDD),
         side: const BorderSide(width: 1.0, color: Color(0xFFA7BAC2)),
         textStyle: const TextStyle(

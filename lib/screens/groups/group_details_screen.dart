@@ -135,6 +135,12 @@ class EditGroupsView extends StatelessWidget {
                                               RemoveInviteeInitiated(
                                                   toRemoveUserPreview:
                                                       removingUser));
+                                        },
+                                        onPromote: (toPromoteUser) {
+                                          context.read<ParticipantsBloc>().add(
+                                              PromoteInviteeInitiated(
+                                                  toPromoteUserPreview:
+                                                      toPromoteUser));
                                         }),
                                   );
                                 });

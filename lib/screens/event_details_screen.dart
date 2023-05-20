@@ -5,6 +5,7 @@ import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
+import 'package:letshang/models/invite.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/screens/event_participants_screen.dart';
@@ -209,17 +210,8 @@ class _EventDetailsView extends StatelessWidget {
                                   margin: const EdgeInsets.only(top: 30),
                                   child: UserParticipantCard(
                                     curUser: curEvent.eventOwner,
+                                    inviteTitle: InviteTitle.organizer,
                                     backgroundColor: const Color(0xFFF4F8FA),
-                                    label: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius:
-                                            BorderRadius.circular(5.0),
-                                        color: const Color(0xFFDEEFE8),
-                                      ),
-                                      padding: const EdgeInsets.fromLTRB(
-                                          20, 10, 20, 10),
-                                      child: const Text("Organizer"),
-                                    ),
                                   )),
                               Container(
                                   margin: const EdgeInsets.only(top: 20),

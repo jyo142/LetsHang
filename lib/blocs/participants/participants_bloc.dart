@@ -124,6 +124,15 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
       yield SelectMembersInviteLoading(state as SelectMembersState);
       yield* _mapSendGroupInviteState(event.selectedMembers);
     }
+    if (event is PromoteInviteeInitiated) {
+      ParticipantsState newState =
+          state.promoteInvitee(event.toPromoteUserPreview);
+      yield newState;
+    }
+    if (event is SendPromoteInviteeInitiated) {
+      yield SendInviteLoading(state);
+      yield* _mapSendPromoteInviteState(event.toPromoteUserPreview);
+    }
   }
 
   Stream<ParticipantsState> _mapLoadGroupInvitesToState() async* {
@@ -278,6 +287,24 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
     } catch (e) {
       yield SendInviteError(state,
           errorMessage: "Failed to send invite to user.");
+    }
+  }
+
+  Stream<ParticipantsState> _mapSendPromoteInviteState(
+      HangUserPreview toRemoveUser) async* {
+    try {
+      if (curEvent != null) {
+        await _userInvitesRepository.promoteUserEventInvite(
+            curEvent!, UserInvite.fromInvitedEventUserPreview(toRemoveUser));
+        yield SendInviteSuccess(state);
+      }
+      if (curGroup != null) {
+        await _userInvitesRepository.promoteUserGroupInvite(
+            curGroup!, UserInvite.fromInvitedGroupUserPreview(toRemoveUser));
+        yield SendInviteSuccess(state);
+      }
+    } catch (e) {
+      yield SendInviteError(state, errorMessage: "Failed to promote user.");
     }
   }
 }

@@ -50,6 +50,13 @@ class _ViewAllGroupMembersView extends StatelessWidget {
   Widget _invitedPeopleSection(
       BuildContext context, List<UserInvite> invitedUsers) {
     return Column(children: [
+      Text(
+        curGroup.groupName,
+        style: Theme.of(context).textTheme.headline4,
+      ),
+      const SizedBox(
+        height: 20,
+      ),
       BlocConsumer<ParticipantsBloc, ParticipantsState>(
         listener: (context, state) {
           if (state is SendInviteSuccess) {
@@ -112,14 +119,18 @@ class _ViewAllGroupMembersView extends StatelessWidget {
                 return Container(
                   margin: const EdgeInsets.only(top: 10),
                   child: UserParticipantCard(
-                    curUser: invitedUsers[index].user,
-                    inviteTitle: invitedUsers[index].title,
-                    backgroundColor: Colors.white,
-                    onRemove: (curUser) {
-                      context.read<ParticipantsBloc>().add(
-                          SendRemoveInviteInitiated(toRemoveUser: curUser));
-                    },
-                  ),
+                      curUser: invitedUsers[index].user,
+                      inviteTitle: invitedUsers[index].title,
+                      backgroundColor: Colors.white,
+                      onRemove: (curUser) {
+                        context.read<ParticipantsBloc>().add(
+                            SendRemoveInviteInitiated(toRemoveUser: curUser));
+                      },
+                      onPromote: (toPromoteUser) {
+                        context.read<ParticipantsBloc>().add(
+                            SendPromoteInviteeInitiated(
+                                toPromoteUserPreview: toPromoteUser));
+                      }),
                 );
               })),
     ]);

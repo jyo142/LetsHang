@@ -11,13 +11,11 @@ import 'package:letshang/models/invite.dart';
 import 'package:letshang/repositories/group/group_repository.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:letshang/screens/groups/add_member_dialog.dart';
-import 'package:letshang/screens/groups/view_all_members.dart';
 import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/cards/user_event_card.dart';
 import 'package:letshang/widgets/hang_event_participants/add_people_bottom_modal.dart';
 import 'package:letshang/widgets/lh_button.dart';
 import 'package:letshang/widgets/lh_text_form_field.dart';
-import 'package:letshang/widgets/member_card.dart';
 
 class EditGroupsScreen extends StatelessWidget {
   final Group? curGroup;
@@ -141,6 +139,12 @@ class EditGroupsView extends StatelessWidget {
                                               RemoveInviteeInitiated(
                                                   toRemoveUserPreview:
                                                       removingUser));
+                                        },
+                                        onPromote: (toPromoteUser) {
+                                          context.read<ParticipantsBloc>().add(
+                                              PromoteInviteeInitiated(
+                                                  toPromoteUserPreview:
+                                                      toPromoteUser));
                                         }),
                                   );
                                 });

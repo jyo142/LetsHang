@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_event.dart';
 import 'package:letshang/blocs/app/app_state.dart';
@@ -11,6 +12,7 @@ import 'package:letshang/services/authentication_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/widgets/appbar/lh_main_app_bar.dart';
 import 'package:letshang/widgets/lh_bottom_nav_bar.dart';
+import 'package:letshang/widgets/lh_button.dart';
 import 'package:letshang/widgets/profile_pic.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -26,7 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Route _routeToSignInScreen() {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) =>
-          UnAuthorizedScreen(),
+          const UnAuthorizedScreen(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         var begin = const Offset(-1.0, 0.0);
         var end = Offset.zero;
@@ -46,21 +48,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: const Color(0xFFCCCCCC),
         appBar: const LHMainAppBar(screenName: 'Profile'),
         body: BlocProvider(
-            create: (context) => ProfileBloc(
-                userRepository: UserRepository(),
-                userName: (context.read<AppBloc>().state as AppAuthenticated)
-                    .user
-                    .userName)
-              ..add(LoadProfile()),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                    left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
-                child: _profileInformation(),
-              ),
-            )));
+          create: (context) => ProfileBloc(
+              userRepository: UserRepository(),
+              email: (context.read<AppBloc>().state as AppAuthenticated)
+                  .user
+                  .email!)
+            ..add(LoadProfile()),
+          child: SafeArea(
+            child: _profileInformation(),
+          ),
+        ));
   }
 
   Widget _profileInformation() {
@@ -70,9 +70,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
       if (state is ProfileInfoRetrieved) {
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             ProfilePic(photoUrl: state.hangUser.photoUrl),
+            const SizedBox(
+              height: 15,
+            ),
+            Text(
+              state.hangUser.name!,
+              style: Theme.of(context).textTheme.headline4,
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            Text(
+              '@${state.hangUser.userName}',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyText1!
+                  .merge(const TextStyle(color: Color(0xFF04152D))),
+            ),
+            const SizedBox(
+              height: 25,
+            ),
+            Container(
+                padding: const EdgeInsets.all(15),
+                decoration: const BoxDecoration(color: Color(0xFFFFFFFF)),
+                child: IntrinsicHeight(
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Text(
+                          state.userEventMetadata.numEventsOrganized.toString(),
+                          style: Theme.of(context).textTheme.headline6!,
+                        ),
+                        Text(
+                          'Events Organized',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyText1!
+                              .merge(const TextStyle(
+                                fontWeight: FontWeight.w300,
+                              )),
+                        ),
+                        const VerticalDivider(
+                          color: Color(0xFFD7E1DC),
+                          thickness: 2,
+                        ),
+                        Text(
+                          state.userEventMetadata.numEvents.toString(),
+                          style: Theme.of(context).textTheme.headline6!,
+                        ),
+                        Text(
+                          'Events Attended',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyText1!
+                              .merge(const TextStyle(
+                                fontWeight: FontWeight.w300,
+                              )),
+                        )
+                      ]),
+                )),
             const SizedBox(height: 8.0),
             const Text(
               'UserName',
@@ -159,17 +218,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ? const CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
           )
-        : ElevatedButton(
-            style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(
-                Colors.redAccent,
-              ),
-              shape: MaterialStateProperty.all(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
+        : LHButton(
+            buttonStyle: Theme.of(context).buttonTheme.errorButtonStyle,
+            buttonText: 'Log Out',
             onPressed: () async {
               setState(() {
                 _isLoggingOut = true;
@@ -181,18 +232,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               context.read<AppBloc>().add(AppLogoutRequested());
               Navigator.of(context).pushReplacement(_routeToSignInScreen());
             },
-            child: const Padding(
-              padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
-              child: Text(
-                'Log Out',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 2,
-                ),
-              ),
-            ),
           );
   }
 }
