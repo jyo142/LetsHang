@@ -9,6 +9,7 @@ import 'package:letshang/repositories/invites/base_invites_repository.dart';
 import 'package:letshang/repositories/invites/invites_repository.dart';
 import 'package:meta/meta.dart';
 import 'package:equatable/equatable.dart';
+import 'package:intl/intl.dart';
 
 part 'hang_event_overview_event.dart';
 part 'hang_event_overview_state.dart';
@@ -28,11 +29,23 @@ class HangEventOverviewBloc
     if (event is LoadHangEvents) {
       yield* _mapLoadHangEventsToState();
     }
+    if (event is LoadHangEventsForDates) {
+      yield* _mapLoadHangEventsToState(
+          startDateTime: event.startDateTime, endDateTime: event.endDateTime);
+    }
   }
 
-  Stream<HangEventOverviewState> _mapLoadHangEventsToState() async* {
-    final eventsForUser =
-        await _userInvitesRepository.getUserEventInvites(email);
+  Stream<HangEventOverviewState> _mapLoadHangEventsToState(
+      {DateTime? startDateTime, DateTime? endDateTime}) async* {
+    List<HangEventInvite> eventsForUser = [];
+    if (startDateTime == null && endDateTime == null) {
+      eventsForUser =
+          await _userInvitesRepository.getAllUserEventInvites(email);
+    } else {
+      eventsForUser = await _userInvitesRepository.getUserEventInvitesByRange(
+          email, startDateTime!, endDateTime!);
+    }
+
     yield HangEventsRetrieved(hangEvents: eventsForUser);
   }
 }

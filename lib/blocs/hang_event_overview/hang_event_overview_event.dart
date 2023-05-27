@@ -10,6 +10,17 @@ abstract class HangEventOverviewEvent extends Equatable {
 
 class LoadHangEvents extends HangEventOverviewEvent {}
 
+class LoadHangEventsForDates extends HangEventOverviewEvent {
+  final DateTime startDateTime;
+  final DateTime endDateTime;
+
+  const LoadHangEventsForDates(
+      {required this.startDateTime, required this.endDateTime});
+
+  @override
+  List<Object> get props => [endDateTime, endDateTime];
+}
+
 class UpdateHangEvents extends HangEventOverviewEvent {
   final List<HangEvent> hangEvents;
 

@@ -17,20 +17,18 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       : _firebaseFirestore = firebaseFirestore ?? FirebaseFirestore.instance;
 
   @override
-  Future<List<HangEventInvite>> getUserEventInvites(String email) async {
-    DocumentSnapshot eventInviteSnapshot = await _firebaseFirestore
+  Future<List<HangEventInvite>> getAllUserEventInvites(String email) async {
+    QuerySnapshot eventInviteSnapshot = await _firebaseFirestore
         .collection("userInvites")
         .doc(email)
         .collection("eventInvites")
-        .doc("events")
         .get();
 
-    List<HangEventInvite> eventInvites = [];
-    if (eventInviteSnapshot.exists) {
-      eventInvites = List.of(eventInviteSnapshot["eventInvites"])
-          .map((m) => HangEventInvite.fromMap(m))
-          .toList();
-    }
+    final allDocSnapshots =
+        eventInviteSnapshot.docs.map((doc) => doc.data()).toList();
+
+    List<HangEventInvite> eventInvites =
+        allDocSnapshots.map((doc) => HangEventInvite.fromMap(doc)).toList();
 
     List<HangEventInvite> retValInvites = [];
     for (HangEventInvite curEventInvite in eventInvites) {
@@ -41,20 +39,66 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       // need a reference to the event to get the main event details
       DocumentSnapshot eventSnapshot = await eventReference.get();
       // we need to get all the userInvites for the event to get the event invite previews
-      DocumentSnapshot eventInviteSnapshot =
-          await eventReference.collection("invites").doc("userInvites").get();
-      List<UserInvite> allEventUserInvites =
-          List.of(eventInviteSnapshot["userInvites"])
-              .map((m) => UserInvite.fromMap(m))
-              .toList();
+      // TODO find a better way to get the "previews" of users per event
+      QuerySnapshot eventInviteQuerySnapshot =
+          await eventReference.collection("invites").get();
+      final allEventInviteDocSnapshots =
+          eventInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
+      List<UserInvite> userInvitesForEvent = allEventInviteDocSnapshots
+          .map((doc) => UserInvite.fromMap(doc))
+          .toList();
+
       HangEvent curEvent = HangEvent.fromSnapshot(eventSnapshot);
-      HangEvent newEvent = curEvent.copyWith(userInvites: allEventUserInvites);
+      HangEvent newEvent = curEvent.copyWith(userInvites: userInvitesForEvent);
       retValInvites.add(HangEventInvite(
           event: newEvent,
           status: curEventInvite.status,
-          type: curEventInvite.type));
+          type: curEventInvite.type,
+          title: curEventInvite.title,
+          eventStartDateTime: newEvent.eventStartDate,
+          eventEndDateTime: newEvent.eventEndDate));
     }
     return retValInvites;
+  }
+
+  @override
+  Future<List<HangEventInvite>> getUserEventInvitesByRange(
+      String email, DateTime startDateTime, DateTime endDateTime) async {
+    QuerySnapshot rangeEventInviteQuerySnapshot = await _firebaseFirestore
+        .collection("userInvites")
+        .doc(email)
+        .collection("eventInvites")
+        .where('eventStartDateTime',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(startDateTime))
+        .where('eventStartDateTime',
+            isLessThanOrEqualTo: Timestamp.fromDate(endDateTime))
+        .get();
+
+    QuerySnapshot draftInviteQuerySnapshot = await _firebaseFirestore
+        .collection("userInvites")
+        .doc(email)
+        .collection("eventInvites")
+        .where('eventStartDateTime', isNull: true)
+        .get();
+
+    final allRangeDocSnapshots =
+        rangeEventInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
+    final allDraftDocSnapshots =
+        draftInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
+
+    List<HangEventInvite> eventInvites = allRangeDocSnapshots
+        .map((doc) => HangEventInvite.fromMap(doc))
+        .toList();
+    List<HangEventInvite> draftEventInvites = allDraftDocSnapshots
+        .map((doc) => HangEventInvite.fromMap(doc))
+        .toList();
+
+    List<HangEventInvite> allEventInvites = [
+      ...eventInvites,
+      ...draftEventInvites
+    ];
+
+    return allEventInvites;
   }
 
   @override
@@ -63,42 +107,22 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
     await _firebaseFirestore.runTransaction((transaction) async {
       DocumentReference dbEventsRef =
           _firebaseFirestore.collection('hangEvents').doc(hangEvent.id);
-
       final eventsSnap = await transaction.get(dbEventsRef);
       if (!eventsSnap.exists) {
         throw Exception(
             "Unable to add users to event. Event cannot be retrieved.");
       }
-      DocumentReference dbEventsUserInvitesRef =
-          dbEventsRef.collection('invites').doc("userInvites");
-
-      // before adding users to the event, make sure that there are no duplicates
-      final eventsUserInvitesSnap =
-          await transaction.get(dbEventsUserInvitesRef);
-
-      List<UserInvite> retValInvites = [];
-      if (eventsUserInvitesSnap.exists) {
-        retValInvites = List.of(eventsUserInvitesSnap["userInvites"])
-            .map((m) => UserInvite.fromMap(m))
-            .toList();
-      }
-
-      Map<String, UserInvite> userInviteMap = {
-        for (UserInvite ui in retValInvites) ui.user.email!: ui
-      };
-      for (UserInvite newUserInvite in userInvites) {
-        if (userInviteMap.containsKey(newUserInvite.user.email)) {
-          throw Exception("User is already invited to this event");
-        }
-        retValInvites.add(newUserInvite);
-      }
-
-      // for each user, add a userinvite for them
       await Future.wait(userInvites.map((ui) async {
-        await addUserInviteForEvent(hangEvent, ui, transaction);
+        DocumentReference dbEventsUserInvitesRef =
+            dbEventsRef.collection('invites').doc(ui.user.email);
+        final dbEventsUserInvitesSnap =
+            await transaction.get(dbEventsUserInvitesRef);
+        if (!dbEventsUserInvitesSnap.exists) {
+          await addUserInviteForEvent(hangEvent, ui, transaction);
+          transaction.set(dbEventsUserInvitesRef, ui.toDocument());
+        }
+        // all reads need to be done before writes
       }));
-      transaction.set(dbEventsUserInvitesRef,
-          {"userInvites": retValInvites.map((ui) => ui.toDocument()).toList()});
     });
   }
 
@@ -117,32 +141,18 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       }
 
       DocumentReference dbEventsUserInvitesRef =
-          dbEventsRef.collection('invites').doc("userInvites");
+          dbEventsRef.collection('invites').doc(userInvite.user.email);
 
       final eventsUserInvitesSnap =
           await transaction.get(dbEventsUserInvitesRef);
 
-      List<UserInvite> retValInvites = [];
       if (eventsUserInvitesSnap.exists) {
-// check if the user is already part of the invites and add if not
-        retValInvites = List.of(eventsUserInvitesSnap["userInvites"])
-            .map((m) => UserInvite.fromMap(m))
-            .toList();
-      }
-
-      Map<String, UserInvite> userInviteMap = {
-        for (UserInvite ui in retValInvites) ui.user.email!: ui
-      };
-      if (userInviteMap.containsKey(userInvite.user.email)) {
         throw Exception("User is already invited to this event");
       }
 
-      retValInvites.add(userInvite);
-
       await addUserInviteForEvent(hangEvent, userInvite, transaction);
 
-      transaction.set(dbEventsUserInvitesRef,
-          {"userInvites": retValInvites.map((ui) => ui.toDocument()).toList()});
+      transaction.set(dbEventsUserInvitesRef, userInvite.toDocument());
     });
   }
 
@@ -185,29 +195,22 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         .collection("userInvites")
         .doc(toAdd.user.email)
         .collection("eventInvites")
-        .doc("events");
+        .doc(hangEvent.id);
     final eventInviteDocumentSnap = await transaction.get(eventInviteRef);
 
     HangEventInvite newEventInvite = HangEventInvite(
-        event: hangEvent, status: toAdd.status, type: toAdd.type);
+        event: hangEvent,
+        status: toAdd.status,
+        type: toAdd.type,
+        title: toAdd.title,
+        eventStartDateTime: hangEvent.eventStartDate,
+        eventEndDateTime: hangEvent.eventEndDate);
 
-    List<HangEventInvite> retValEvents = [];
     if (eventInviteDocumentSnap.exists) {
-      retValEvents = List.of(eventInviteDocumentSnap["eventInvites"])
-          .map((m) => HangEventInvite.fromMap(m))
-          .toList();
-
-      Map<String, HangEventInvite> hangEventInviteMap = {
-        for (HangEventInvite hei in retValEvents) hei.event.id: hei
-      };
-      if (hangEventInviteMap.containsKey(newEventInvite.event.id)) {
-        throw Exception("User is already invited to this event");
-      }
+      throw Exception("User is already invited to this event");
     }
-    retValEvents.add(newEventInvite);
 
-    transaction.set(eventInviteRef,
-        {"eventInvites": retValEvents.map((e) => e.toDocument()).toList()});
+    transaction.set(eventInviteRef, newEventInvite.toDocument());
   }
 
   Future<void> addUserInvitesForEvent(
@@ -217,21 +220,19 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
           .collection("userInvites")
           .doc(ui.user.userName)
           .collection("eventInvites")
-          .doc("events");
+          .doc(event.id);
       final eventInviteDocumentSnap = await transaction.get(eventInviteRef);
 
-      HangEventInvite newEventInvite =
-          HangEventInvite(event: event, status: ui.status, type: ui.type);
+      HangEventInvite newEventInvite = HangEventInvite(
+          event: event,
+          status: ui.status,
+          type: ui.type,
+          title: ui.title,
+          eventStartDateTime: event.eventStartDate,
+          eventEndDateTime: event.eventEndDate);
 
-      List<HangEventInvite> retValEvents = [];
-      if (eventInviteDocumentSnap.exists) {
-        retValEvents = List.of(eventInviteDocumentSnap.get("eventInvites"));
-        retValEvents.add(newEventInvite);
-      } else {
-        retValEvents.add(newEventInvite);
-      }
-      transaction.set(eventInviteRef,
-          {"eventInvites": retValEvents.map((e) => e.toDocument()).toList()});
+      if (eventInviteDocumentSnap.exists) {}
+      transaction.set(eventInviteRef, newEventInvite.toDocument());
     }));
   }
 
@@ -241,18 +242,12 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         .collection("userInvites")
         .doc(toRemove.user.email)
         .collection("eventInvites")
-        .doc("events");
+        .doc(event.id);
     final eventInviteDocumentSnap = await transaction.get(eventInviteRef);
-
-    List<HangEventInvite> retValEvents = [];
-    if (eventInviteDocumentSnap.exists) {
-      retValEvents = List.of(eventInviteDocumentSnap.get("eventInvites"))
-          .map((m) => HangEventInvite.fromMap(m))
-          .where((element) => element.event.id != event.id)
-          .toList();
+    if (!eventInviteDocumentSnap.exists) {
+      throw Exception("User is not part of the evemt. User cannot be removed.");
     }
-    transaction.update(eventInviteRef,
-        {"eventInvites": List.of(retValEvents.map((e) => e.toDocument()))});
+    transaction.delete(eventInviteRef);
   }
 
   Future<void> removeUserInvitesForEvent(HangEvent event,
@@ -262,18 +257,14 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
           .collection("userInvites")
           .doc(ui.user.userName)
           .collection("eventInvites")
-          .doc("events");
+          .doc(event.id);
       final eventInviteDocumentSnap = await transaction.get(eventInviteRef);
 
-      List<HangEventInvite> retValEvents = [];
       if (eventInviteDocumentSnap.exists) {
-        retValEvents = List.of(eventInviteDocumentSnap.get("eventInvites"))
-            .map((m) => HangEventInvite.fromMap(m))
-            .where((element) => element.event.id != event.id)
-            .toList();
+        throw Exception(
+            "User is not part of the group. User cannot be removed.");
       }
-      transaction.update(eventInviteRef,
-          {"eventInvites": List.of(retValEvents.map((e) => e.toDocument()))});
+      transaction.delete(eventInviteRef);
     }));
   }
 
@@ -294,30 +285,24 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         .collection("userInvites")
         .doc(toPromote.user.email)
         .collection("eventInvites")
-        .doc("events");
+        .doc(event.id);
     final eventInviteDocumentSnap = await transaction.get(eventInviteRef);
 
-    List<HangEventInvite> retValEvents = [];
-    if (eventInviteDocumentSnap.exists) {
-      retValEvents = List.of(eventInviteDocumentSnap.get("eventInvites"))
-          .map((m) => HangEventInvite.fromMap(m))
-          .toList();
-    }
-    final indexOfEventInvite =
-        retValEvents.indexWhere((element) => element.event.id == event.id);
-    if (indexOfEventInvite < 0) {
+    if (!eventInviteDocumentSnap.exists) {
       throw Exception(
           "User is not part of the group. User cannot be promoted.");
     }
-    HangEventInvite foundEventInvite = retValEvents[indexOfEventInvite];
-    retValEvents[indexOfEventInvite] = HangEventInvite(
-        event: foundEventInvite.event,
-        status: foundEventInvite.status,
-        type: foundEventInvite.type,
-        title: InviteTitle.admin);
+    HangEventInvite curHangEventInvite =
+        HangEventInvite.fromSnapshot(eventInviteDocumentSnap);
+    HangEventInvite newHangEventInvite = HangEventInvite(
+        event: curHangEventInvite.event,
+        status: curHangEventInvite.status,
+        type: curHangEventInvite.type,
+        title: InviteTitle.admin,
+        eventStartDateTime: curHangEventInvite.event.eventStartDate,
+        eventEndDateTime: curHangEventInvite.event.eventEndDate);
 
-    transaction.update(eventInviteRef,
-        {"groupInvites": List.of(retValEvents.map((e) => e.toDocument()))});
+    transaction.update(eventInviteRef, newHangEventInvite.toDocument());
   }
 
   @override
@@ -325,57 +310,45 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       HangEvent hangEvent, UserInvite toPromote) async {
     await _firebaseFirestore.runTransaction((transaction) async {
       DocumentReference dbEventsRef =
-          _firebaseFirestore.collection('events').doc(hangEvent.id);
+          _firebaseFirestore.collection('hangEvents').doc(hangEvent.id);
 
       final eventSnap = await transaction.get(dbEventsRef);
       if (!eventSnap.exists) {
         throw Exception(
             "Unable to promote user in event. Event cannot be retrieved.");
       }
-      DocumentReference dbEventUserInvitesRef =
-          dbEventsRef.collection('invites').doc("userInvites");
-
-      // before promoting the user, make sure that they are part of the event
-      final eventUserInvitesSnap = await transaction.get(dbEventUserInvitesRef);
-      List<UserInvite> retValInvites = [];
-      if (eventUserInvitesSnap.exists) {
-        retValInvites = List.of(eventUserInvitesSnap["userInvites"])
-            .map((m) => UserInvite.fromMap(m))
-            .toList();
-      }
-      final indexOfUserInvite = retValInvites
-          .indexWhere((element) => element.user.email == toPromote.user.email);
-      if (indexOfUserInvite < 0) {
+      final dbEventUserInvitesRef =
+          dbEventsRef.collection('invites').doc(toPromote.user.email);
+      final userInviteSnap = await transaction.get(dbEventUserInvitesRef);
+      if (!userInviteSnap.exists) {
         throw Exception(
-            "User is not part of the group. User cannot be promoted.");
+            "Unable to promote user in event. User is not part of this event.");
       }
-      retValInvites[indexOfUserInvite] = UserInvite(
+
+      UserInvite newUserInvite = UserInvite(
           user: toPromote.user,
           status: toPromote.status,
           type: toPromote.type,
           title: InviteTitle.admin);
 
       await promoteUserInviteForEvent(hangEvent, toPromote, transaction);
-      transaction.set(dbEventUserInvitesRef,
-          {"userInvites": retValInvites.map((ui) => ui.toDocument()).toList()});
+      transaction.set(dbEventUserInvitesRef, newUserInvite.toDocument());
     });
   }
 
   @override
   Future<List<GroupInvite>> getUserGroupInvites(String email) async {
-    DocumentSnapshot groupInviteSnapshot = await _firebaseFirestore
+    QuerySnapshot groupInviteQuerySnapshot = await _firebaseFirestore
         .collection("userInvites")
         .doc(email)
         .collection("groupInvites")
-        .doc("groups")
         .get();
 
-    List<GroupInvite> groupInvites = [];
-    if (groupInviteSnapshot.exists) {
-      groupInvites = List.of(groupInviteSnapshot["groupInvites"])
-          .map((m) => GroupInvite.fromMap(m))
-          .toList();
-    }
+    final allDocSnapshots =
+        groupInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
+
+    List<GroupInvite> groupInvites =
+        allDocSnapshots.map((doc) => GroupInvite.fromMap(doc)).toList();
 
     List<GroupInvite> retValInvites = [];
     for (GroupInvite curGroupInvite in groupInvites) {
@@ -385,14 +358,16 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       // need a reference to the group to get the main group details
       DocumentSnapshot groupSnapshot = await groupReference.get();
       // we need to get all the userInvites for the group to get the group invite previews
-      DocumentSnapshot groupInviteSnapshot =
-          await groupReference.collection("invites").doc("userInvites").get();
-      List<UserInvite> allEventUserInvites =
-          List.of(groupInviteSnapshot["userInvites"])
-              .map((m) => UserInvite.fromMap(m))
-              .toList();
+      QuerySnapshot groupUserInviteQuerySnapshot =
+          await groupReference.collection("invites").get();
+      final allGroupUserInviteQuerySnapshot =
+          groupUserInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
+
+      List<UserInvite> groupUserInvites = allGroupUserInviteQuerySnapshot
+          .map((doc) => UserInvite.fromMap(doc))
+          .toList();
       Group curGroup = Group.fromSnapshot(groupSnapshot);
-      Group newGroup = curGroup.copyWith(userInvites: allEventUserInvites);
+      Group newGroup = curGroup.copyWith(userInvites: groupUserInvites);
       retValInvites.add(GroupInvite(
           group: newGroup,
           status: curGroupInvite.status,
@@ -409,32 +384,19 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         .collection("userInvites")
         .doc(toAdd.user.email)
         .collection("groupInvites")
-        .doc("groups");
+        .doc(group.id);
     final groupInviteDocumentSnap = await transaction.get(groupInviteRef);
 
+    if (groupInviteDocumentSnap.exists) {
+      throw Exception("User is already invited to this group");
+    }
     GroupInvite newGroupInvite = GroupInvite(
         group: group,
         status: toAdd.status,
         type: toAdd.type,
         title: toAdd.title);
 
-    List<GroupInvite> retValGroups = [];
-    if (groupInviteDocumentSnap.exists) {
-      retValGroups = List.of(groupInviteDocumentSnap["groupInvites"])
-          .map((m) => GroupInvite.fromMap(m))
-          .toList();
-
-      Map<String, GroupInvite> groupInviteMap = {
-        for (GroupInvite gi in retValGroups) gi.group.id: gi
-      };
-      if (groupInviteMap.containsKey(newGroupInvite.group.id)) {
-        throw Exception("User is already invited to this group");
-      }
-    }
-    retValGroups.add(newGroupInvite);
-
-    transaction.set(groupInviteRef,
-        {"groupInvites": retValGroups.map((e) => e.toDocument()).toList()});
+    transaction.set(groupInviteRef, newGroupInvite.toDocument());
   }
 
   Future<void> addUserInvitesForGroup(
@@ -444,21 +406,15 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
           .collection("userInvites")
           .doc(ui.user.userName)
           .collection("groupInvites")
-          .doc("groups");
+          .doc(group.id);
       final groupInviteDocumentSnap = await transaction.get(groupInviteRef);
 
       GroupInvite newEventInvite =
           GroupInvite(group: group, status: ui.status, type: ui.type);
 
-      List<GroupInvite> retValGroups = [];
-      if (groupInviteDocumentSnap.exists) {
-        retValGroups = List.of(groupInviteDocumentSnap.get("groupInvites"));
-        retValGroups.add(newEventInvite);
-      } else {
-        retValGroups.add(newEventInvite);
+      if (!groupInviteDocumentSnap.exists) {
+        transaction.set(groupInviteRef, newEventInvite.toDocument());
       }
-      transaction.set(groupInviteRef,
-          {"groupInvites": retValGroups.map((e) => e.toDocument()).toList()});
     }));
   }
 
@@ -468,18 +424,15 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         .collection("userInvites")
         .doc(toRemove.user.email)
         .collection("groupInvites")
-        .doc("groups");
+        .doc(group.id);
     final groupInviteDocumentSnap = await transaction.get(groupInviteRef);
 
     List<GroupInvite> retValGroups = [];
-    if (groupInviteDocumentSnap.exists) {
-      retValGroups = List.of(groupInviteDocumentSnap.get("groupInvites"))
-          .map((m) => GroupInvite.fromMap(m))
-          .where((element) => element.group.id != group.id)
-          .toList();
+    if (!groupInviteDocumentSnap.exists) {
+      throw Exception(
+          "User cannot be removed from group. User is not part of the group");
     }
-    transaction.update(groupInviteRef,
-        {"groupInvites": List.of(retValGroups.map((e) => e.toDocument()))});
+    transaction.delete(groupInviteRef);
   }
 
   Future<void> promoteUserInviteForGroup(
@@ -488,30 +441,22 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         .collection("userInvites")
         .doc(toPromote.user.email)
         .collection("groupInvites")
-        .doc("groups");
+        .doc(group.id);
     final groupInviteDocumentSnap = await transaction.get(groupInviteRef);
 
-    List<GroupInvite> retValGroups = [];
-    if (groupInviteDocumentSnap.exists) {
-      retValGroups = List.of(groupInviteDocumentSnap.get("groupInvites"))
-          .map((m) => GroupInvite.fromMap(m))
-          .toList();
-    }
-    final indexOfGroupInvite =
-        retValGroups.indexWhere((element) => element.group.id == group.id);
-    if (indexOfGroupInvite < 0) {
+    if (!groupInviteDocumentSnap.exists) {
       throw Exception(
           "User is not part of the group. User cannot be promoted.");
     }
-    GroupInvite foundGroupInvite = retValGroups[indexOfGroupInvite];
-    retValGroups[indexOfGroupInvite] = GroupInvite(
-        group: foundGroupInvite.group,
-        status: foundGroupInvite.status,
-        type: foundGroupInvite.type,
+    GroupInvite dbGroupInvite =
+        GroupInvite.fromSnapshot(groupInviteDocumentSnap);
+    GroupInvite newGroupInvite = GroupInvite(
+        group: dbGroupInvite.group,
+        status: dbGroupInvite.status,
+        type: dbGroupInvite.type,
         title: InviteTitle.admin);
 
-    transaction.update(groupInviteRef,
-        {"groupInvites": List.of(retValGroups.map((e) => e.toDocument()))});
+    transaction.update(groupInviteRef, newGroupInvite.toDocument());
   }
 
   Future<void> removeUserInvitesForGroup(
@@ -550,30 +495,16 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       }
 
       DocumentReference dbGroupUserInvitesRef =
-          dbGroupRef.collection('invites').doc("userInvites");
+          dbGroupRef.collection('invites').doc(userInvite.user.email);
 
       final groupUserInvitesSnap = await transaction.get(dbGroupUserInvitesRef);
-      List<UserInvite> retValInvites = [];
       if (groupUserInvitesSnap.exists) {
-        retValInvites = List.of(groupUserInvitesSnap["userInvites"])
-            .map((m) => UserInvite.fromMap(m))
-            .toList();
-      }
-
-      // check if the user is already part of the invites and add if not
-      Map<String, UserInvite> userInviteMap = {
-        for (UserInvite ui in retValInvites) ui.user.email!: ui
-      };
-      if (userInviteMap.containsKey(userInvite.user.email)) {
         throw Exception("User is already invited to this group");
       }
 
-      retValInvites.add(userInvite);
-
       await addUserInviteForGroup(group, userInvite, transaction);
 
-      transaction.set(dbGroupUserInvitesRef,
-          {"userInvites": retValInvites.map((ui) => ui.toDocument()).toList()});
+      transaction.set(dbGroupUserInvitesRef, userInvite.toDocument());
     });
   }
 
@@ -589,34 +520,17 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         throw Exception(
             "Unable to add users to group. Group cannot be retrieved.");
       }
-      DocumentReference dbGroupUserInvitesRef =
-          dbGroupRef.collection('invites').doc("userInvites");
-
-      // before adding users to the event, make sure that there are no duplicates
-      final groupUserInvitesSnap = await transaction.get(dbGroupUserInvitesRef);
-      List<UserInvite> retValInvites = [];
-      if (groupUserInvitesSnap.exists) {
-        retValInvites = List.of(groupUserInvitesSnap["userInvites"])
-            .map((m) => UserInvite.fromMap(m))
-            .toList();
-      }
-
-      Map<String, UserInvite> userInviteMap = {
-        for (UserInvite ui in retValInvites) ui.user.email!: ui
-      };
-      for (UserInvite newUserInvite in userInvites) {
-        if (userInviteMap.containsKey(newUserInvite.user.email)) {
-          throw Exception("User is already invited to this group");
-        }
-        retValInvites.add(newUserInvite);
-      }
-
-      // for each user, add a userinvite for them
       await Future.wait(userInvites.map((ui) async {
-        await addUserInviteForGroup(group, ui, transaction);
+        DocumentReference dbGroupsUserInvitesRef =
+            dbGroupRef.collection('invites').doc(ui.user.email);
+        final dbEventsUserInvitesSnap =
+            await transaction.get(dbGroupsUserInvitesRef);
+        if (!dbEventsUserInvitesSnap.exists) {
+          await addUserInviteForGroup(group, ui, transaction);
+          transaction.set(dbGroupsUserInvitesRef, ui.toDocument());
+        }
+        // all reads need to be done before writes
       }));
-      transaction.set(dbGroupUserInvitesRef,
-          {"userInvites": retValInvites.map((ui) => ui.toDocument()).toList()});
     });
   }
 
@@ -632,31 +546,22 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
             "Unable to add users to group. Group cannot be retrieved.");
       }
       DocumentReference dbGroupUserInvitesRef =
-          dbGroupRef.collection('invites').doc("userInvites");
+          dbGroupRef.collection('invites').doc(toPromote.user.email);
 
       // before promoting the user, make sure that they are part of the event
       final groupUserInvitesSnap = await transaction.get(dbGroupUserInvitesRef);
-      List<UserInvite> retValInvites = [];
       if (groupUserInvitesSnap.exists) {
-        retValInvites = List.of(groupUserInvitesSnap["userInvites"])
-            .map((m) => UserInvite.fromMap(m))
-            .toList();
-      }
-      final indexOfUserInvite = retValInvites
-          .indexWhere((element) => element.user.email == toPromote.user.email);
-      if (indexOfUserInvite < 0) {
         throw Exception(
             "User is not part of the group. User cannot be promoted.");
       }
-      retValInvites[indexOfUserInvite] = UserInvite(
+      UserInvite newUserInvite = UserInvite(
           user: toPromote.user,
           status: toPromote.status,
           type: toPromote.type,
           title: InviteTitle.admin);
 
       await promoteUserInviteForGroup(group, toPromote, transaction);
-      transaction.set(dbGroupUserInvitesRef,
-          {"userInvites": retValInvites.map((ui) => ui.toDocument()).toList()});
+      transaction.set(dbGroupUserInvitesRef, newUserInvite.toDocument());
     });
   }
 
@@ -706,33 +611,17 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       }
 
       DocumentReference dbGroupUserInvitesRef =
-          dbGroupRef.collection('invites').doc("userInvites");
+          dbGroupRef.collection('invites').doc(toRemoveUserInvite.user.email);
 
       final groupUserInvitesSnap = await transaction.get(dbGroupUserInvitesRef);
-      List<UserInvite> retValInvites = [];
-      if (groupUserInvitesSnap.exists) {
-        retValInvites = List.of(groupUserInvitesSnap["userInvites"])
-            .map((m) => UserInvite.fromMap(m))
-            .toList();
-      }
-
-      // check if the user is already part of the invites and add if not
-      Map<String, UserInvite> userInviteMap = {
-        for (UserInvite ui in retValInvites) ui.user.email!: ui
-      };
-      if (!userInviteMap.containsKey(toRemoveUserInvite.user.email)) {
+      if (!groupUserInvitesSnap.exists) {
         throw Exception(
             "Unable to remove user as they are not part of the group.");
       }
 
-      retValInvites = retValInvites
-          .where((element) => element.user != toRemoveUserInvite.user)
-          .toList();
-
       await removeUserInviteForGroup(group, toRemoveUserInvite, transaction);
 
-      transaction.set(dbGroupUserInvitesRef,
-          {"userInvites": retValInvites.map((ui) => ui.toDocument()).toList()});
+      transaction.delete(dbGroupUserInvitesRef);
     });
   }
 
@@ -758,36 +647,20 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       }
 
       DocumentReference dbEventsUserInvitesRef =
-          dbEventsRef.collection('invites').doc("userInvites");
+          dbEventsRef.collection('invites').doc(toRemoveUserInvite.user.email);
 
       final eventsUserInvitesSnap =
           await transaction.get(dbEventsUserInvitesRef);
 
-      List<UserInvite> retValInvites = [];
-      if (eventsUserInvitesSnap.exists) {
-// check if the user is already part of the invites and add if not
-        retValInvites = List.of(eventsUserInvitesSnap["userInvites"])
-            .map((m) => UserInvite.fromMap(m))
-            .toList();
-      }
-
-      Map<String, UserInvite> userInviteMap = {
-        for (UserInvite ui in retValInvites) ui.user.email!: ui
-      };
-      if (!userInviteMap.containsKey(toRemoveUserInvite.user.email)) {
+      if (!eventsUserInvitesSnap.exists) {
         throw Exception(
             "Unable to remove user from event because user is not part of the event.");
       }
 
-      retValInvites = retValInvites
-          .where((element) => element.user != toRemoveUserInvite.user)
-          .toList();
-
       await removeUserInviteForEvent(
           hangEvent, toRemoveUserInvite, transaction);
 
-      transaction.set(dbEventsUserInvitesRef,
-          {"userInvites": retValInvites.map((ui) => ui.toDocument()).toList()});
+      transaction.delete(dbEventsUserInvitesRef);
     });
   }
 
@@ -800,19 +673,17 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
 
   @override
   Future<UserEventMetadata> getUserEventMetadata(String email) async {
-    DocumentSnapshot eventInviteSnapshot = await _firebaseFirestore
+    QuerySnapshot eventInviteQuerySnapshot = await _firebaseFirestore
         .collection("userInvites")
         .doc(email)
         .collection("eventInvites")
-        .doc("events")
         .get();
 
-    List<HangEventInvite> eventInvites = [];
-    if (eventInviteSnapshot.exists) {
-      eventInvites = List.of(eventInviteSnapshot["eventInvites"])
-          .map((m) => HangEventInvite.fromMap(m))
-          .toList();
-    }
+    final allDocSnapshots =
+        eventInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
+
+    List<HangEventInvite> eventInvites =
+        allDocSnapshots.map((doc) => HangEventInvite.fromMap(doc)).toList();
 
     return UserEventMetadata(
         userEmail: email,

@@ -33,7 +33,7 @@ class Invite extends Equatable {
     return group;
   }
 
-  Map<String, Object> toDocument() {
+  Map<String, Object?> toDocument() {
     return {
       "status": status.toString(),
       "type": type.toString(),

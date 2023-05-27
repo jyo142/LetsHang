@@ -6,7 +6,9 @@ import 'package:letshang/models/user_event_metadata.dart';
 import 'package:letshang/models/user_invite_model.dart';
 
 abstract class BaseUserInvitesRepository {
-  Future<List<HangEventInvite>> getUserEventInvites(String email);
+  Future<List<HangEventInvite>> getAllUserEventInvites(String email);
+  Future<List<HangEventInvite>> getUserEventInvitesByRange(
+      String email, DateTime startDateTime, DateTime endDateTime);
   Future<UserEventMetadata> getUserEventMetadata(String email);
 
   // this method gets all the group invites for a user
@@ -35,8 +37,7 @@ abstract class BaseUserInvitesRepository {
   Future<void> addUserGroupInvites(Group group, List<UserInvite> userInvites);
   Future<void> removeUserGroupInvites(
       Group group, List<UserInvite> toRemoveUserInvites);
-  Future<void> promoteUserGroupInvite(
-      Group group, UserInvite toPromote);
+  Future<void> promoteUserGroupInvite(Group group, UserInvite toPromote);
 
   Future<void> editUserGroupInvites(Group group);
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:letshang/blocs/app_metadata/app_metadata_bloc.dart';
 import 'package:letshang/blocs/app_metadata/app_metadata_state.dart';
 import 'package:letshang/models/bottom_nav_bar.dart';
+import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:letshang/widgets/lh_bottom_nav_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -26,7 +27,23 @@ class _AppScreenState extends State {
                 return Scaffold(
                     body: BottomNavigationBarHelper
                         .bottomNavBarScreens[state.pageIndex].screen,
-                    bottomNavigationBar: const LHBottomNavBar());
+                    floatingActionButton: FloatingActionButton(
+                      child: const CircleAvatar(
+                        radius: 50,
+                        backgroundImage: AssetImage(
+                          "assets/images/fab_logo.png",
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const EditEventScreen(),
+                        ));
+                      },
+                      //params
+                    ),
+                    floatingActionButtonLocation:
+                        FloatingActionButtonLocation.centerDocked,
+                    bottomNavigationBar: LHBottomNavBar());
               },
             )));
   }

@@ -5,9 +5,15 @@ import 'package:letshang/models/invite.dart';
 
 class HangEventInvite extends Invite {
   final HangEvent event;
-
+  final DateTime? eventStartDateTime;
+  final DateTime? eventEndDateTime;
   const HangEventInvite(
-      {required this.event, required status, required type, title})
+      {required this.event,
+      required status,
+      required type,
+      title,
+      this.eventStartDateTime,
+      this.eventEndDateTime})
       : super(status: status, type: type, title: title);
 
   static HangEventInvite fromSnapshot(DocumentSnapshot snap) {
@@ -18,38 +24,55 @@ class HangEventInvite extends Invite {
       {HangEvent? event,
       InviteStatus? status,
       InviteType? type,
-      InviteTitle? title}) {
+      InviteTitle? title,
+      DateTime? eventStartDateTime,
+      DateTime? eventEndDateTime}) {
     return HangEventInvite(
         event: event ?? this.event,
         status: status ?? this.status,
         type: type ?? this.type,
-        title: title ?? this.title);
+        title: title ?? this.title,
+        eventStartDateTime: eventStartDateTime ?? this.eventStartDateTime,
+        eventEndDateTime: eventEndDateTime ?? this.eventEndDateTime);
   }
 
   static HangEventInvite fromMap(Map<String, dynamic> map) {
     HangEventInvite group = HangEventInvite(
-      event: HangEvent.fromMap(map["event"]),
-      status: InviteStatus.values
-          .firstWhere((e) => describeEnum(e) == map["status"]),
-      type: InviteType.values.firstWhere((e) => describeEnum(e) == map["type"]),
-      title:
-          InviteTitle.values.firstWhere((e) => describeEnum(e) == map["title"]),
-    );
+        event: HangEvent.fromMap(map["event"]),
+        status: InviteStatus.values
+            .firstWhere((e) => describeEnum(e) == map["status"]),
+        type:
+            InviteType.values.firstWhere((e) => describeEnum(e) == map["type"]),
+        title: InviteTitle.values
+            .firstWhere((e) => describeEnum(e) == map["title"]),
+        eventStartDateTime: map["eventStartDateTime"] != null
+            ? (map["eventStartDateTime"]).toDate()
+            : null,
+        eventEndDateTime: map["eventEndDateTime"] != null
+            ? (map["eventEndDateTime"]).toDate()
+            : null);
 
     return group;
   }
 
   @override
-  Map<String, Object> toDocument() {
+  Map<String, Object?> toDocument() {
     return {
       "event": event.toDocument(),
       "status": describeEnum(status),
       "type": describeEnum(type),
       "title":
-          title != null ? describeEnum(title!) : describeEnum(InviteTitle.user)
+          title != null ? describeEnum(title!) : describeEnum(InviteTitle.user),
+      "eventStartDateTime": eventStartDateTime != null
+          ? Timestamp.fromDate(eventStartDateTime!)
+          : null,
+      "eventEndDateTime": eventEndDateTime != null
+          ? Timestamp.fromDate(eventEndDateTime!)
+          : null
     };
   }
 
   @override
-  List<Object?> get props => [event, status, type, title];
+  List<Object?> get props =>
+      [event, status, type, title, eventStartDateTime, eventEndDateTime];
 }
