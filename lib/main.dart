@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
+import 'package:letshang/blocs/notifications/notifications_bloc.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:letshang/screens/unauthorized_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,8 +20,13 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AppBloc(userRepository: new UserRepository()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => AppBloc(userRepository: new UserRepository()),
+        ),
+        BlocProvider(create: (context) => NotificationsBloc())
+      ],
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: mainTheme,
