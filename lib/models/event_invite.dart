@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/invite.dart';
+import 'package:letshang/models/user_invite_model.dart';
 
 class HangEventInvite extends Invite {
   final HangEvent event;
@@ -19,6 +20,14 @@ class HangEventInvite extends Invite {
   static HangEventInvite fromSnapshot(DocumentSnapshot snap) {
     return fromMap(snap.data()!);
   }
+
+  HangEventInvite.withUserInvite(HangEvent event, UserInvite userInvite)
+      : this(
+          event: event,
+          status: userInvite.status,
+          type: userInvite.type,
+          title: userInvite.title,
+        );
 
   HangEventInvite copyWith(
       {HangEvent? event,

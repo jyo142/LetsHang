@@ -54,6 +54,7 @@ class UserInvite extends Invite {
     return group;
   }
 
+  @override
   Map<String, Object> toDocument() {
     return {
       "user": user.toDocument(),

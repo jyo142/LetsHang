@@ -119,7 +119,9 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
             await transaction.get(dbEventsUserInvitesRef);
         if (!dbEventsUserInvitesSnap.exists) {
           await addUserInviteForEvent(hangEvent, ui, transaction);
-          transaction.set(dbEventsUserInvitesRef, ui.toDocument());
+          HangEventInvite newEventInvite =
+              HangEventInvite.withUserInvite(hangEvent, ui);
+          transaction.set(dbEventsUserInvitesRef, newEventInvite.toDocument());
         }
         // all reads need to be done before writes
       }));
@@ -550,7 +552,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
 
       // before promoting the user, make sure that they are part of the event
       final groupUserInvitesSnap = await transaction.get(dbGroupUserInvitesRef);
-      if (groupUserInvitesSnap.exists) {
+      if (!groupUserInvitesSnap.exists) {
         throw Exception(
             "User is not part of the group. User cannot be promoted.");
       }

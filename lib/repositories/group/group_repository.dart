@@ -70,19 +70,18 @@ class GroupRepository extends BaseGroupRepository {
 
   @override
   Future<List<UserInvite>> getUserInvitesForGroup(String groupId) async {
-    DocumentSnapshot groupsUserInvitesSnap = await _firebaseFirestore
+    QuerySnapshot groupUserInvitesQuerySnap = await _firebaseFirestore
         .collection('groups')
         .doc(groupId)
         .collection('invites')
-        .doc("userInvites")
         .get();
 
-    List<UserInvite> invites = [];
-    if (groupsUserInvitesSnap.exists) {
-      invites = List.of(groupsUserInvitesSnap["userInvites"])
-          .map((m) => UserInvite.fromMap(m))
-          .toList();
-    }
+    final allDocSnapshots =
+        groupUserInvitesQuerySnap.docs.map((doc) => doc.data()).toList();
+
+    List<UserInvite> invites =
+        allDocSnapshots.map((doc) => UserInvite.fromMap(doc)).toList();
+
     return invites;
   }
 }

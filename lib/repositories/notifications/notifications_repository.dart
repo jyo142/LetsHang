@@ -1,9 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:letshang/models/hang_user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:letshang/models/notifications_model.dart';
 import 'package:letshang/repositories/notifications/base_notifications_repository.dart';
-import 'package:letshang/repositories/user/base_user_repository.dart';
 
 class NotificationsRepository extends BaseNotificationsRepository {
   final FirebaseFirestore _firebaseFirestore;

@@ -1,53 +1,56 @@
-import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
 admin.initializeApp();
 
-const db = admin.firestore();
+export const db = admin.firestore();
+
+export * as eventFunctions from "./eventFunctions";
+export * as groupFunctions from "./groupFunctions";
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
 
-export const onGroupUpdate = functions.firestore
-  .document("groups/{groupId}")
-  .onUpdate(async (snap) => {
-    const newValue = snap.after.data();
-    const newGroupMembers = newValue.memberIds;
-    const prevValue = snap.before.data();
-    const prevGroupMembers = prevValue.memberIds;
-    console.log(`running after updating group : ${newValue.name}`);
-    console.log(prevGroupMembers);
-    console.log(newGroupMembers);
-    const toAddMembers = findNewMembers(prevGroupMembers, newGroupMembers);
 
-    console.log(toAddMembers);
-    await Promise.all(
-      toAddMembers.map(async (member) => {
-        const snapshot = await db
-          .collection("users")
-          .where("userName", "==", member)
-          .get();
-        if (!snapshot.empty) {
-          const curUserSnapshot = snapshot.docs[0];
-          console.log(
-            `sending notifiation to user ${curUserSnapshot.get("userName")}`
-          );
-          const payload = {
-            notification: {
-              title: "New Group Invitation",
-              body: `Hello ${curUserSnapshot.get(
-                "name"
-              )}, you have been invited to the ${newValue.name} group`,
-              sound: "default",
-              badge: "1",
-            },
-          };
-          await admin
-            .messaging()
-            .sendToDevice([curUserSnapshot.get("fcmToken")], payload);
-        }
-      })
-    );
-  });
+// export const onGroupUpdate = functions.firestore
+//     .document("groups/{groupId}")
+//     .onUpdate(async (snap) => {
+//       const newValue = snap.after.data();
+//       const newGroupMembers = newValue.memberIds;
+//       const prevValue = snap.before.data();
+//       const prevGroupMembers = prevValue.memberIds;
+//       console.log(`running after updating group : ${newValue.name}`);
+//       console.log(prevGroupMembers);
+//       console.log(newGroupMembers);
+//       const toAddMembers = findNewMembers(prevGroupMembers, newGroupMembers);
+
+//       console.log(toAddMembers);
+//       await Promise.all(
+//           toAddMembers.map(async (member) => {
+//             const snapshot = await db
+//                 .collection("users")
+//                 .where("userName", "==", member)
+//                 .get();
+//             if (!snapshot.empty) {
+//               const curUserSnapshot = snapshot.docs[0];
+//               console.log(
+//                   `sending notifiation to user ${curUserSnapshot.get("userName")}`
+//               );
+//               const payload = {
+//                 notification: {
+//                   title: "New Group Invitation",
+//                   body: `Hello ${curUserSnapshot.get(
+//                       "name"
+//                   )}, you have been invited to the ${newValue.name} group`,
+//                   sound: "default",
+//                   badge: "1",
+//                 },
+//               };
+//               await admin
+//                   .messaging()
+//                   .sendToDevice([curUserSnapshot.get("fcmToken")], payload);
+//             }
+//           })
+//       );
+//     });
 
 // export const onEventUpdate = functions.firestore
 //     .document("hangEvents/{eventId}/invites/{inviteId}")
@@ -224,15 +227,15 @@ export const onGroupUpdate = functions.firestore
 //       await batch.commit();
 //     });
 
-/**
- * finds members that are not in the firstMembers but are in the secondMembers
- * @param firstMembers first members
- * @param secondMembers second members
- * @return array of members that are not in the firstMembers but are in the secondMembers
- */
-const findNewMembers = (firstMembers: string[], secondMembers: string[]) => {
-  const nonSecondMembers = secondMembers.filter(
-    (mem) => !firstMembers.includes(mem)
-  );
-  return nonSecondMembers;
-};
+// /**
+//  * finds members that are not in the firstMembers but are in the secondMembers
+//  * @param firstMembers first members
+//  * @param secondMembers second members
+//  * @return array of members that are not in the firstMembers but are in the secondMembers
+//  */
+// const findNewMembers = (firstMembers: string[], secondMembers: string[]) => {
+//   const nonSecondMembers = secondMembers.filter(
+//       (mem) => !firstMembers.includes(mem)
+//   );
+//   return nonSecondMembers;
+// };
