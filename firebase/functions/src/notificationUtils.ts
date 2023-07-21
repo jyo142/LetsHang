@@ -1,36 +1,45 @@
 import * as admin from "firebase-admin";
-import {QueryDocumentSnapshot} from "firebase-functions/v2/firestore";
-import {info, error} from "firebase-functions/logger";
-import {db} from ".";
+import { QueryDocumentSnapshot } from "firebase-functions/v2/firestore";
+import { info, error } from "firebase-functions/logger";
+import { db } from ".";
 
-export const addNotification = async (userEmail: string, content: string) => {
+export interface NotificationsMetadata {
+  groupId?: string;
+  eventId?: string;
+}
+export const addNotification = async (
+  userEmail: string,
+  content: string,
+  metadata?: NotificationsMetadata
+) => {
   try {
     await db
-        .collection("notifications")
-        .doc(userEmail)
-        .collection("pendingNotifications")
-        .add({
-          userEmail,
-          content,
-          createdDate: Date.now(),
-        });
+      .collection("notifications")
+      .doc(userEmail)
+      .collection("pendingNotifications")
+      .add({
+        userEmail,
+        content,
+        createdDate: Date.now(),
+        ...metadata,
+      });
   } catch (e) {
     error("There was an error trying to add notification ");
   }
 };
 
 export const sendNotification = async (
-    curUserSnapshot: QueryDocumentSnapshot,
-    notificationTitle: string,
-    notificationBody: string
+  curUserSnapshot: QueryDocumentSnapshot,
+  notificationTitle: string,
+  notificationBody: string
 ) => {
   info(`PENDING : sending notifiation to user ${curUserSnapshot.get("email")}`);
   const userFCMToken = curUserSnapshot.get("fcmToken");
   if (userFCMToken == null) {
     error(
-        `User does not have a fcm token, cannot send a notification. user : ${curUserSnapshot.get(
-            "email"
-        )}`
+      `User does not have a fcm token, cannot send a notification. user : ${curUserSnapshot.get(
+        "email"
+      )}`
     );
   } else {
     const payload = {
@@ -42,10 +51,10 @@ export const sendNotification = async (
       },
     };
     await admin
-        .messaging()
-        .sendToDevice([curUserSnapshot.get("fcmToken")], payload);
+      .messaging()
+      .sendToDevice([curUserSnapshot.get("fcmToken")], payload);
     info(
-        `SUCCESS : sending notifiation to user ${curUserSnapshot.get("email")}`
+      `SUCCESS : sending notifiation to user ${curUserSnapshot.get("email")}`
     );
   }
 };

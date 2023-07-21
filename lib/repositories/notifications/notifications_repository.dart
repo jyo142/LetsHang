@@ -11,14 +11,18 @@ class NotificationsRepository extends BaseNotificationsRepository {
   @override
   Future<List<NotificationsModel>> getPendingNotificationsForUser(
       String userEmail) async {
-    DocumentSnapshot notificationDocSnapshot = await _firebaseFirestore
-        .collection('notifications')
+    QuerySnapshot pendingNotificationsSnapshot = await _firebaseFirestore
+        .collection("notifications")
         .doc(userEmail)
+        .collection("pendingNotifications")
         .get();
 
-    final pendingInvitesSnap =
-        List.of(notificationDocSnapshot["pendingNotifications"]);
-    return List.of(
-        pendingInvitesSnap.map((pis) => NotificationsModel.fromMap(pis)));
+    final allDocSnapshots =
+        pendingNotificationsSnapshot.docs.map((doc) => doc.data()).toList();
+
+    List<NotificationsModel> allPendingNotifications =
+        allDocSnapshots.map((doc) => NotificationsModel.fromMap(doc)).toList();
+
+    return allPendingNotifications;
   }
 }
