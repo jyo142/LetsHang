@@ -2,6 +2,7 @@ import 'package:letshang/models/event_invite.dart';
 import 'package:letshang/models/group_invite.dart';
 import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/hang_event_model.dart';
+import 'package:letshang/models/invite.dart';
 import 'package:letshang/models/user_event_metadata.dart';
 import 'package:letshang/models/user_invite_model.dart';
 
@@ -40,4 +41,12 @@ abstract class BaseUserInvitesRepository {
   Future<void> promoteUserGroupInvite(Group group, UserInvite toPromote);
 
   Future<void> editUserGroupInvites(Group group);
+
+  // accept/invite/maybe
+  Future<void> acceptInvite(
+      InviteType inviteType, String email, String entityId);
+  Future<void> rejectInvite(
+      InviteType inviteType, String email, String entityId);
+  Future<void> maybeInvite(
+      InviteType inviteType, String email, String entityId);
 }

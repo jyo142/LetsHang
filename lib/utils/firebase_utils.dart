@@ -5,4 +5,8 @@ extension FirebaseUtils on DocumentSnapshot {
     Map<String, dynamic> mapData = this.data() as Map<String, dynamic>;
     return mapData.containsKey(key) ? this[key] : null;
   }
+
+  Map<String, dynamic> getDocDataWithId() {
+    return {"id": id, ...?data()};
+  }
 }

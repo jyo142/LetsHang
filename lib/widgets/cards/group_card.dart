@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:letshang/blocs/app/app_bloc.dart';
+import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/group_overview/group_overview_bloc.dart';
 import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/invite.dart';
@@ -71,7 +73,11 @@ class GroupCard extends StatelessWidget {
                     ),
                   );
                   if (shouldRefresh != null && shouldRefresh) {
-                    context.read<GroupOverviewBloc>().add(LoadGroups());
+                    context.read<GroupOverviewBloc>().add(LoadGroupInvites(
+                        email:
+                            (context.read<AppBloc>().state as AppAuthenticated)
+                                .user
+                                .email!));
                   }
                 }
                 if (result == 'view_members') {
@@ -82,7 +88,11 @@ class GroupCard extends StatelessWidget {
                     ),
                   );
                   if (shouldRefresh != null && shouldRefresh) {
-                    context.read<GroupOverviewBloc>().add(LoadGroups());
+                    context.read<GroupOverviewBloc>().add(LoadGroupInvites(
+                        email:
+                            (context.read<AppBloc>().state as AppAuthenticated)
+                                .user
+                                .email!));
                   }
                 }
               },

@@ -2,6 +2,7 @@ import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/user_invite_model.dart';
 
 abstract class BaseGroupRepository {
+  Future<Group?> getGroupById(String groupId);
   Future<Group?> getGroupByName(String groupName);
   Future<List<Group>> getGroupsForUser(String userName);
   // this method gets all of the user invites for a grouop

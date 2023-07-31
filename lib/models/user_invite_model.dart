@@ -54,6 +54,18 @@ class UserInvite extends Invite {
     return group;
   }
 
+  UserInvite copyWith(
+      {HangUserPreview? user,
+      InviteStatus? status,
+      InviteType? type,
+      InviteTitle? title}) {
+    return UserInvite(
+        user: user ?? this.user,
+        status: status ?? this.status,
+        type: type ?? this.type,
+        title: title ?? this.title);
+  }
+
   @override
   Map<String, Object> toDocument() {
     return {

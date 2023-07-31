@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:letshang/models/notifications_model.dart';
 import 'package:letshang/repositories/notifications/base_notifications_repository.dart';
+import 'package:letshang/utils/firebase_utils.dart';
 
 class NotificationsRepository extends BaseNotificationsRepository {
   final FirebaseFirestore _firebaseFirestore;
@@ -17,12 +18,24 @@ class NotificationsRepository extends BaseNotificationsRepository {
         .collection("pendingNotifications")
         .get();
 
-    final allDocSnapshots =
-        pendingNotificationsSnapshot.docs.map((doc) => doc.data()).toList();
+    final allDocSnapshots = pendingNotificationsSnapshot.docs
+        .map((doc) => doc.getDocDataWithId())
+        .toList();
 
     List<NotificationsModel> allPendingNotifications =
         allDocSnapshots.map((doc) => NotificationsModel.fromMap(doc)).toList();
 
     return allPendingNotifications;
+  }
+
+  @override
+  Future<void> removeNotificationForUser(
+      String userEmail, String notificationId) async {
+    await _firebaseFirestore
+        .collection("notifications")
+        .doc(userEmail)
+        .collection("pendingNotifications")
+        .doc(notificationId)
+        .delete();
   }
 }

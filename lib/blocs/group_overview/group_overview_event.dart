@@ -8,7 +8,23 @@ abstract class GroupOverviewEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class LoadGroups extends GroupOverviewEvent {}
+class LoadGroupInvites extends GroupOverviewEvent {
+  final String email;
+
+  const LoadGroupInvites({required this.email});
+
+  @override
+  List<Object> get props => [email];
+}
+
+class LoadIndividualGroup extends GroupOverviewEvent {
+  final String groupId;
+
+  const LoadIndividualGroup({required this.groupId});
+
+  @override
+  List<Object> get props => [groupId];
+}
 
 class UpdateGroups extends GroupOverviewEvent {
   final List<Group> groups;

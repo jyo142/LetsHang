@@ -10,6 +10,7 @@ import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/widgets/appbar/lh_main_app_bar.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:googleapis_auth/auth_io.dart';
 
 /// Example event class.
 class Event {
@@ -106,6 +107,20 @@ class _HomeScreenState extends State<HomeScreen> {
     return [
       for (final d in days) ..._getEventsForDay(d),
     ];
+  }
+
+  Future<AuthClient> obtainCredentials() async => await clientViaUserConsent(
+        ClientId(
+            '234546462541-orv48nfpn35pjae25pp7c89i8p6vk603.apps.googleusercontent.com',
+            '...'),
+        ['scope1', 'scope2'],
+        _prompt,
+      );
+
+  void _prompt(String url) {
+    print('Please go to the following URL and grant access:');
+    print('  => $url');
+    print('');
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
@@ -255,8 +270,34 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 20.0),
-                              ..._pastEvents(context),
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                  backgroundColor: MaterialStateProperty.all(
+                                    Colors.redAccent,
+                                  ),
+                                  shape: MaterialStateProperty.all(
+                                    RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  await obtainCredentials();
+                                },
+                                child: const Padding(
+                                  padding:
+                                      EdgeInsets.only(top: 8.0, bottom: 8.0),
+                                  child: Text(
+                                    'Create New asdfasdfasdf',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      letterSpacing: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           );
                         }

@@ -20,7 +20,7 @@ export const addNotification = async (
       .add({
         userEmail,
         content,
-        createdDate: Date.now(),
+        createdDate: admin.firestore.Timestamp.fromDate(new Date()),
         ...metadata,
       });
   } catch (e) {

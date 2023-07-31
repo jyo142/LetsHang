@@ -17,10 +17,11 @@ class GroupsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        create: (context) => GroupOverviewBloc(
-            email:
-                (context.read<AppBloc>().state as AppAuthenticated).user.email!)
-          ..add(LoadGroups()),
+        create: (context) => GroupOverviewBloc()
+          ..add(LoadGroupInvites(
+              email: (context.read<AppBloc>().state as AppAuthenticated)
+                  .user
+                  .email!)),
         child: const GroupsView());
   }
 }
@@ -95,7 +96,10 @@ class GroupsView extends StatelessWidget {
             ),
           );
           if (shouldRefresh != null && shouldRefresh) {
-            context.read<GroupOverviewBloc>().add(LoadGroups());
+            context.read<GroupOverviewBloc>().add(LoadGroupInvites(
+                email: (context.read<AppBloc>().state as AppAuthenticated)
+                    .user
+                    .email!));
           }
         });
   }
@@ -118,7 +122,11 @@ class GroupsView extends StatelessWidget {
                     ),
                   );
                   if (shouldRefresh != null && shouldRefresh) {
-                    context.read<GroupOverviewBloc>().add(LoadGroups());
+                    context.read<GroupOverviewBloc>().add(LoadGroupInvites(
+                        email:
+                            (context.read<AppBloc>().state as AppAuthenticated)
+                                .user
+                                .email!));
                   }
                 },
                 group: groupInvites[index].group,

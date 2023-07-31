@@ -694,4 +694,86 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
             .length,
         numEvents: eventInvites.length);
   }
+
+  @override
+  Future<void> acceptInvite(
+      InviteType inviteType, String email, String entityId) async {
+    await _firebaseFirestore.runTransaction((transaction) async {
+      await changeInviteStatus(
+          email, entityId, inviteType, InviteStatus.accepted, transaction);
+    });
+  }
+
+  @override
+  Future<void> rejectInvite(
+      InviteType inviteType, String email, String entityId) async {
+    await _firebaseFirestore.runTransaction((transaction) async {
+      await changeInviteStatus(
+          email, entityId, inviteType, InviteStatus.rejected, transaction);
+    });
+  }
+
+  @override
+  Future<void> maybeInvite(
+      InviteType inviteType, String email, String entityId) async {
+    await _firebaseFirestore.runTransaction((transaction) async {
+      await changeInviteStatus(
+          email, entityId, inviteType, InviteStatus.pending, transaction);
+    });
+  }
+
+  Future<void> changeInviteStatus(
+      String email,
+      String id,
+      InviteType inviteType,
+      InviteStatus newInviteStatus,
+      Transaction transaction) async {
+    final inviteCollection =
+        inviteType == InviteType.event ? 'eventInvites' : 'groupInvites';
+    final userInviteCollection =
+        inviteType == InviteType.event ? 'events' : 'groups';
+    DocumentReference dbUserGroupInvitesRef = _firebaseFirestore
+        .collection('userInvites')
+        .doc(email)
+        .collection(inviteCollection)
+        .doc(id);
+    DocumentSnapshot dbGroupInvitesSnap =
+        await transaction.get(dbUserGroupInvitesRef);
+
+    Map<String, Object?> toDocumentResult;
+    if (inviteType == InviteType.group) {
+      GroupInvite dbGroupInvite = GroupInvite.fromSnapshot(dbGroupInvitesSnap);
+      GroupInvite updatedGroupInvite =
+          dbGroupInvite.copyWith(status: newInviteStatus);
+      toDocumentResult = updatedGroupInvite.toDocument();
+    } else {
+      HangEventInvite dbEventInvite =
+          HangEventInvite.fromSnapshot(dbGroupInvitesSnap);
+      HangEventInvite updateEventInvite =
+          dbEventInvite.copyWith(status: newInviteStatus);
+      toDocumentResult = updateEventInvite.toDocument();
+    }
+    await updateEntityUserInviteStatus(
+        email, id, userInviteCollection, newInviteStatus, transaction);
+    transaction.update(dbUserGroupInvitesRef, toDocumentResult);
+  }
+
+  Future<void> updateEntityUserInviteStatus(
+    String email,
+    String id,
+    String userInviteCollection,
+    InviteStatus inviteStatus,
+    Transaction transaction,
+  ) async {
+    DocumentReference dbGroupUserInvitesRef = _firebaseFirestore
+        .collection(userInviteCollection)
+        .doc(id)
+        .collection('invites')
+        .doc(email);
+    DocumentSnapshot dbUserInvitesSnap =
+        await transaction.get(dbGroupUserInvitesRef);
+    UserInvite dbUserInvite = UserInvite.fromSnapshot(dbUserInvitesSnap);
+    UserInvite updatedUserInvite = dbUserInvite.copyWith(status: inviteStatus);
+    transaction.update(dbGroupUserInvitesRef, updatedUserInvite.toDocument());
+  }
 }
