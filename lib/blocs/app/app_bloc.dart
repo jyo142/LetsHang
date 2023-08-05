@@ -42,6 +42,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       } catch (e) {
         yield const AppLoginError(errorMessage: "Failed to login with google");
       }
+    } else if (event is AppUserAuthReturned) {
+      yield* mapAuthenticatedReturnedUser(event.userEmail);
     } else if (event is AppLoginRequested) {
       yield const AppIsLoggingIn();
     } else if (event is AppUserAuthenticated) {
@@ -51,6 +53,15 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     } else {
       // user is logging out
       yield AppUnauthenticated();
+    }
+  }
+
+  Stream<AppState> mapAuthenticatedReturnedUser(String userEmail) async* {
+    final HangUser? foundUser = await _userRepository.getUserByEmail(userEmail);
+    if (foundUser != null) {
+      yield* mapAuthenticatedUser(foundUser);
+    } else {
+      yield AppReturnedUserError(errorMessage: "Unable to find user");
     }
   }
 

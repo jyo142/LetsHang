@@ -71,7 +71,10 @@ class _InvitationLayoutView extends StatelessWidget {
               },
               builder: (context, state) {
                 if (state is InvitationStatusChangedLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [CircularProgressIndicator()],
+                  );
                 }
                 return Container(
                   color: Colors.white,
@@ -90,7 +93,7 @@ class _InvitationLayoutView extends StatelessWidget {
                           },
                           child: SvgPicture.asset(
                             'assets/images/thought_cloud.svg',
-                            semanticsLabel: 'My SVG Image',
+                            semanticsLabel: 'Thought Cloud Image',
                             height: 100,
                             width: 100,
                           ),
@@ -107,7 +110,7 @@ class _InvitationLayoutView extends StatelessWidget {
                           },
                           child: SvgPicture.asset(
                             'assets/images/accept_check.svg',
-                            semanticsLabel: 'My SVG Image',
+                            semanticsLabel: 'Accept Check Image',
                             height: 100,
                             width: 100,
                           ),
@@ -124,7 +127,7 @@ class _InvitationLayoutView extends StatelessWidget {
                           },
                           child: SvgPicture.asset(
                             'assets/images/decline_x.svg',
-                            semanticsLabel: 'My SVG Image',
+                            semanticsLabel: 'Decline X Image',
                             height: 100,
                             width: 100,
                           ),

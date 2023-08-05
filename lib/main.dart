@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
+import 'package:letshang/blocs/app/app_event.dart';
+import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/notifications/notifications_bloc.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
+import 'package:letshang/screens/app_screen.dart';
 import 'package:letshang/screens/unauthorized_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/services/authentication_service.dart';
 import 'package:letshang/services/push_notification_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   await AuthenticationService.initializeFirebase();
@@ -30,7 +34,26 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: mainTheme,
-        home: UnAuthorizedScreen(),
+        home: Scaffold(
+            backgroundColor: const Color(0xFFCCCCCC),
+            body: StreamBuilder(
+              stream: FirebaseAuth.instance.authStateChanges(),
+              builder: ((context, snapshot) {
+                if (snapshot.hasData) {
+                  context.read<AppBloc>().add(AppUserAuthReturned(
+                      userEmail: (snapshot.data as User).email!));
+                  return BlocBuilder<AppBloc, AppState>(
+                    builder: (context, state) {
+                      if (state is AppAuthenticated) {
+                        return const AppScreen();
+                      }
+                      return const Center(child: CircularProgressIndicator());
+                    },
+                  );
+                }
+                return const UnAuthorizedScreen();
+              }),
+            )),
       ),
     );
   }

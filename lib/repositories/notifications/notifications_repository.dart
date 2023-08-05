@@ -38,4 +38,21 @@ class NotificationsRepository extends BaseNotificationsRepository {
         .doc(notificationId)
         .delete();
   }
+
+  @override
+  Future<NotificationsModel> addNotificationForUser(
+      String userEmail, String notificationContent) async {
+    NotificationsModel savingNotification = NotificationsModel(
+        id: FirebaseFirestore.instance.collection('groups').doc().id,
+        userEmail: userEmail,
+        content: notificationContent,
+        createdDate: DateTime.now());
+    await _firebaseFirestore
+        .collection('notifications')
+        .doc(userEmail)
+        .collection("pendingNotifications")
+        .doc(savingNotification.id)
+        .set(savingNotification.toDocument());
+    return savingNotification;
+  }
 }

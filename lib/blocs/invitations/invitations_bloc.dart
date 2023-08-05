@@ -35,37 +35,30 @@ class InvitationsBloc extends Bloc<InvitationsEvent, InvitationsState> {
   Stream<InvitationsState> _mapChangeInvitationStatusToState(
       InvitationsEvent invitationsEvent) async* {
     try {
+      String finalMessage = "";
+      StatusChangeInvitation statusChangeInvitationEvent =
+          invitationsEvent as StatusChangeInvitation;
       if (invitationsEvent is AcceptInvitation) {
         await _invitesRepository.acceptInvite(invitationsEvent.inviteType,
             invitationsEvent.email, invitationsEvent.entityId);
-        _notificationsRepository.removeNotificationForUser(
-            invitationsEvent.email, invitationsEvent.notificationId);
-
-        yield InvitationStatusChangedSuccess(
-            successMessage:
-                'Successfully accepted the invitiation for the ${describeEnum(invitationsEvent.inviteType)}');
-      }
-      if (invitationsEvent is RejectInvitation) {
+        finalMessage =
+            'Successfully accepted the invitiation for the ${describeEnum(statusChangeInvitationEvent.inviteType)}';
+      } else if (invitationsEvent is RejectInvitation) {
         await _invitesRepository.rejectInvite(invitationsEvent.inviteType,
             invitationsEvent.email, invitationsEvent.entityId);
-        _notificationsRepository.removeNotificationForUser(
-            invitationsEvent.email, invitationsEvent.notificationId);
-
-        yield InvitationStatusChangedSuccess(
-            successMessage:
-                'Successfully rejected the invitation for the ${describeEnum(invitationsEvent.inviteType)}');
-      }
-      if (invitationsEvent is MaybeInvitation) {
+        finalMessage =
+            'Successfully rejected the invitiation for the ${describeEnum(statusChangeInvitationEvent.inviteType)}';
+      } else {
         await _invitesRepository.maybeInvite(invitationsEvent.inviteType,
             invitationsEvent.email, invitationsEvent.entityId);
-        _notificationsRepository.removeNotificationForUser(
-            invitationsEvent.email, invitationsEvent.notificationId);
-
-        yield InvitationStatusChangedSuccess(
-            successMessage:
-                'Successfully responded maybe to the invitation for the ${describeEnum(invitationsEvent.inviteType)}');
+        finalMessage =
+            'Successfully responded as tentative to the invitiation for the ${describeEnum(statusChangeInvitationEvent.inviteType)}';
       }
       // remove the notification
+      await _notificationsRepository.removeNotificationForUser(
+          statusChangeInvitationEvent.email,
+          statusChangeInvitationEvent.notificationId);
+      yield InvitationStatusChangedSuccess(successMessage: finalMessage);
     } catch (e) {
       yield const InvitationStatusChangedError(
           errorMessage: "Unable to change status");

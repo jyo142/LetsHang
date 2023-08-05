@@ -8,49 +8,56 @@ abstract class InvitationsEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class AcceptInvitation extends InvitationsEvent {
+class StatusChangeInvitation extends InvitationsEvent {
   final String notificationId;
   final String email;
   final String entityId;
   final InviteType inviteType;
+  const StatusChangeInvitation(
+      {required this.notificationId,
+      required this.email,
+      required this.entityId,
+      required this.inviteType});
+
+  @override
+  List<Object> get props => [notificationId, email, entityId, inviteType];
+}
+
+class AcceptInvitation extends StatusChangeInvitation {
   const AcceptInvitation(
-      {required this.notificationId,
-      required this.email,
-      required this.entityId,
-      required this.inviteType});
-
-  @override
-  List<Object> get props => [email, entityId, inviteType];
+      {required String notificationId,
+      required String email,
+      required String entityId,
+      required InviteType inviteType})
+      : super(
+            notificationId: notificationId,
+            email: email,
+            entityId: entityId,
+            inviteType: inviteType);
 }
 
-class RejectInvitation extends InvitationsEvent {
-  final String notificationId;
-
-  final String email;
-  final String entityId;
-  final InviteType inviteType;
+class RejectInvitation extends StatusChangeInvitation {
   const RejectInvitation(
-      {required this.notificationId,
-      required this.email,
-      required this.entityId,
-      required this.inviteType});
-
-  @override
-  List<Object> get props => [email, entityId, inviteType];
+      {required String notificationId,
+      required String email,
+      required String entityId,
+      required InviteType inviteType})
+      : super(
+            notificationId: notificationId,
+            email: email,
+            entityId: entityId,
+            inviteType: inviteType);
 }
 
-class MaybeInvitation extends InvitationsEvent {
-  final String notificationId;
-
-  final String email;
-  final String entityId;
-  final InviteType inviteType;
+class MaybeInvitation extends StatusChangeInvitation {
   const MaybeInvitation(
-      {required this.notificationId,
-      required this.email,
-      required this.entityId,
-      required this.inviteType});
-
-  @override
-  List<Object> get props => [email, entityId, inviteType];
+      {required String notificationId,
+      required String email,
+      required String entityId,
+      required InviteType inviteType})
+      : super(
+            notificationId: notificationId,
+            email: email,
+            entityId: entityId,
+            inviteType: inviteType);
 }

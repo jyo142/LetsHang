@@ -17,6 +17,15 @@ class NotificationsModel extends Equatable {
       this.eventId,
       this.groupId});
 
+  NotificationsModel.withId(String id, NotificationsModel notificationsModel)
+      : this(
+            id: id,
+            userEmail: notificationsModel.userEmail,
+            content: notificationsModel.content,
+            createdDate: notificationsModel.createdDate,
+            eventId: notificationsModel.eventId,
+            groupId: notificationsModel.groupId);
+
   static NotificationsModel fromSnapshot(DocumentSnapshot snap) {
     return fromMap(snap.data()!);
   }

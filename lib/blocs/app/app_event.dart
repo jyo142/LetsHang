@@ -24,6 +24,15 @@ class AppUserAuthenticated extends AppEvent {
   List<Object> get props => [hangUser];
 }
 
+class AppUserAuthReturned extends AppEvent {
+  const AppUserAuthReturned({required this.userEmail});
+
+  final String userEmail;
+
+  @override
+  List<Object> get props => [userEmail];
+}
+
 class AppLogoutRequested extends AppEvent {}
 
 class AppUserNotRecognized extends AppEvent {
