@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart';
 import 'package:letshang/services/message_service.dart';
+import 'package:googleapis/youtube/v3.dart';
+import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 
 class AuthenticationService {
   static Future<FirebaseApp> initializeFirebase() async {
@@ -17,7 +19,9 @@ class AuthenticationService {
     User? user;
 
     final GoogleSignIn googleSignIn = GoogleSignIn(
-      scopes: <String>[CalendarApi.calendarReadonlyScope],
+      scopes: <String>[
+        CalendarApi.calendarEventsScope,
+      ],
     );
 
     final GoogleSignInAccount? googleSignInAccount =
@@ -31,23 +35,28 @@ class AuthenticationService {
         accessToken: googleSignInAuthentication.accessToken,
         idToken: googleSignInAuthentication.idToken,
       );
-
-      final UserCredential userCredential =
-          await auth.signInWithCredential(credential);
-
-      user = userCredential.user;
-      // try {
-      //   final UserCredential userCredential =
-      //       await auth.signInWithCredential(credential);
-
-      //   user = userCredential.user;
-      // } catch (e) {
-      //   MessageService.showErrorMessage(
-      //       content: 'Error signing in using Google', context: context);
-      // }
     }
 
     return user;
+  }
+
+  static Future<GoogleSignInAuthentication?> enableGoogleCalendarSync() async {
+    final GoogleSignIn googleSignIn = GoogleSignIn(
+      scopes: <String>[
+        CalendarApi.calendarScope
+      ],
+    );
+
+    final GoogleSignInAccount? googleSignInAccount =
+        await googleSignIn.signIn();
+
+    if (googleSignInAccount != null) {
+      final GoogleSignInAuthentication googleSignInAuthentication =
+          await googleSignInAccount.authentication;
+      return googleSignInAuthentication;
+    }
+
+    return null;
   }
 
   static Future<void> signInEmailPassword(String email, String password) async {

@@ -45,6 +45,7 @@ dependencies:
   animated_bottom_navigation_bar: ^1.2.0
   badges: ^3.1.1
   flutter_svg: ^1.1.6
+  flutter_native_timezone: ^2.0.0
 
 dev_dependencies:
   flutter_test:

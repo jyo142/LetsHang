@@ -3,11 +3,13 @@ import {
   onDocumentCreated,
   onDocumentUpdated,
 } from "firebase-functions/v2/firestore";
-import { error } from "firebase-functions/logger";
+import { error, info } from "firebase-functions/logger";
 import { db } from ".";
 import { addNotification, sendNotification } from "./notificationUtils";
 import { QuerySnapshot } from "firebase-admin/firestore";
 import { getStatusTitleDescription } from "./inviteStatusUtils";
+import { OAuth2Client } from "googleapis-common";
+import { calendar } from "@googleapis/calendar";
 
 export const onUserInvitedToEvent = onDocumentCreated(
   "/hangEvents/{eventId}/invites/{email}",
@@ -92,6 +94,10 @@ export const onUserEventInviteChanged = onDocumentUpdated(
         newUserInviteStatus,
         snap.params.eventId
       );
+
+      if (newUserInviteStatus === "accepted") {
+        await sendGoogleCalendarInvite(snap.params.email, eventSnapshot);
+      }
     }
   }
 );
@@ -129,6 +135,44 @@ const handleUserPromotionEvent = async (
   } else {
     error(`Unable to send notification to user ${email} for event ${eventId}`);
   }
+};
+
+const sendGoogleCalendarInvite = async (
+  userEmail: string,
+  eventSnapshot: DocumentSnapshot
+) => {
+  const userSettingsSnapshot = await db
+    .collection("userSettings")
+    .doc(userEmail)
+    .get();
+  // Set the access token obtained after authentication
+  const accessToken = userSettingsSnapshot.get("googleCalendarAccessToken");
+  const authClient = new OAuth2Client();
+
+  authClient.setCredentials({ access_token: accessToken });
+  info("Getting calendar api");
+  const calendarApi = await calendar({
+    version: "v3",
+    auth: authClient,
+  });
+  info("Adding event to calendar");
+  const response = await calendarApi.events.insert({
+    calendarId: "primary",
+    sendNotifications: true,
+    requestBody: {
+      summary: eventSnapshot.get("eventName"),
+      description: eventSnapshot.get("eventDescription"),
+      start: {
+        dateTime: "2023-08-21T09:00:00-07:00",
+        timeZone: userSettingsSnapshot.get("userTimezone"),
+      },
+      end: {
+        dateTime: "2023-08-21T17:00:00-07:00",
+        timeZone: userSettingsSnapshot.get("userTimezone"),
+      },
+    },
+  });
+  info(response);
 };
 
 const handleUserStatusChange = async (

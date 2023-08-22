@@ -33,7 +33,6 @@ class GroupsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: const Color(0xFFCCCCCC),
-        appBar: const LHMainAppBar(screenName: 'Groups'),
         body: SafeArea(
             child: Padding(
                 padding: const EdgeInsets.only(

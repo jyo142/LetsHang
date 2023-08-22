@@ -8,9 +8,12 @@ import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:letshang/screens/app_screen.dart';
 import 'package:letshang/screens/unauthorized_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/screens/user_settings_screen.dart';
 import 'package:letshang/services/authentication_service.dart';
 import 'package:letshang/services/push_notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import 'blocs/user_settings/user_settings_bloc.dart';
 
 void main() async {
   await AuthenticationService.initializeFirebase();
@@ -29,7 +32,10 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (context) => AppBloc(userRepository: new UserRepository()),
         ),
-        BlocProvider(create: (context) => NotificationsBloc())
+        BlocProvider(create: (context) => NotificationsBloc()),
+        BlocProvider(
+          create: (context) => UserSettingsBloc(),
+        )
       ],
       child: MaterialApp(
         title: 'Flutter Demo',

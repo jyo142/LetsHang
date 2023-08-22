@@ -33,6 +33,10 @@ class BottomNavigationBarHelper {
         .add(AppPageIndexChanged(newPageIndex: bottomScreenName.index));
   }
 
+  static String getScreenName(int pageIndex) {
+    return bottomNavBarScreens[pageIndex].screenName;
+  }
+
   static List<LHBottomNavBarModel> bottomNavBarScreens = [
     const LHBottomNavBarModel(
         screenName: 'Home', screenIcon: Icon(Icons.home), screen: HomeScreen()),

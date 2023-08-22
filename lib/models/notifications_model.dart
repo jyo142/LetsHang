@@ -55,5 +55,5 @@ class NotificationsModel extends Equatable {
   }
 
   @override
-  List<Object?> get props => [userEmail, content, eventId, groupId];
+  List<Object?> get props => [id, userEmail, content, eventId, groupId];
 }

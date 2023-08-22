@@ -49,7 +49,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: const Color(0xFFCCCCCC),
-        appBar: const LHMainAppBar(screenName: 'Profile'),
         body: BlocProvider(
           create: (context) => ProfileBloc(
               userRepository: UserRepository(),

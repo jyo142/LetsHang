@@ -6,7 +6,6 @@ import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/widgets/events/past_events_view.dart';
 import 'package:letshang/widgets/events/upcoming_events_view.dart';
-import 'package:letshang/widgets/appbar/lh_main_app_bar.dart';
 
 class EventsScreen extends StatelessWidget {
   const EventsScreen({Key? key}) : super(key: key);
@@ -14,7 +13,6 @@ class EventsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: const LHMainAppBar(screenName: 'Events'),
         body: BlocProvider(
             create: (context) => HangEventOverviewBloc(
                 email: (context.read<AppBloc>().state as AppAuthenticated)

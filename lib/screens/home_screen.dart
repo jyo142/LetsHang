@@ -1,16 +1,23 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
+import 'package:letshang/blocs/user_settings/user_settings_bloc.dart';
 import 'package:letshang/models/event_invite.dart';
 import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/services/authentication_service.dart';
+import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/appbar/lh_main_app_bar.dart';
+import 'package:letshang/widgets/lh_button.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:googleapis_auth/auth_io.dart';
+import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 
 /// Example event class.
 class Event {
@@ -109,18 +116,9 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
   }
 
-  Future<AuthClient> obtainCredentials() async => await clientViaUserConsent(
-        ClientId(
-            '234546462541-orv48nfpn35pjae25pp7c89i8p6vk603.apps.googleusercontent.com',
-            '...'),
-        ['scope1', 'scope2'],
-        _prompt,
-      );
-
-  void _prompt(String url) {
-    print('Please go to the following URL and grant access:');
-    print('  => $url');
-    print('');
+  Future<void> _prompt() async {
+    User? user = await AuthenticationService.signInWithGoogle();
+    final ee = 2;
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
@@ -159,7 +157,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: const LHMainAppBar(screenName: 'Home'),
         body: BlocProvider(
             create: (context) => HangEventOverviewBloc(
                 email: (context.read<AppBloc>().state as AppAuthenticated)
@@ -231,73 +228,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 },
                               ),
                               ..._upcomingEvents(context),
-                              ElevatedButton(
-                                style: ButtonStyle(
-                                  backgroundColor: MaterialStateProperty.all(
-                                    Colors.redAccent,
-                                  ),
-                                  shape: MaterialStateProperty.all(
-                                    RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                ),
-                                onPressed: () async {
-                                  final bool? shouldRefresh =
-                                      await Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const EditEventScreen(),
-                                    ),
-                                  );
-                                  if (shouldRefresh != null && shouldRefresh) {
-                                    context
-                                        .read<HangEventOverviewBloc>()
-                                        .add(LoadHangEvents());
-                                  }
-                                },
-                                child: const Padding(
-                                  padding:
-                                      EdgeInsets.only(top: 8.0, bottom: 8.0),
-                                  child: Text(
-                                    'Create New Event',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      letterSpacing: 2,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              ElevatedButton(
-                                style: ButtonStyle(
-                                  backgroundColor: MaterialStateProperty.all(
-                                    Colors.redAccent,
-                                  ),
-                                  shape: MaterialStateProperty.all(
-                                    RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                ),
-                                onPressed: () async {
-                                  await obtainCredentials();
-                                },
-                                child: const Padding(
-                                  padding:
-                                      EdgeInsets.only(top: 8.0, bottom: 8.0),
-                                  child: Text(
-                                    'Create New asdfasdfasdf',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      letterSpacing: 2,
-                                    ),
-                                  ),
-                                ),
-                              ),
                             ],
                           );
                         }
