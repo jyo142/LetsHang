@@ -213,3 +213,13 @@ class FindEventInviteeError extends EditHangEventsState {
 class EventSavedSuccessfully extends EditHangEventsState {
   EventSavedSuccessfully(EditHangEventsState state) : super.fromState(state);
 }
+
+class EventSavedError extends EditHangEventsState {
+  final String errorMessage;
+
+  EventSavedError(EditHangEventsState state, {required this.errorMessage})
+      : super.fromState(state);
+
+  @override
+  List<Object> get props => [errorMessage];
+}

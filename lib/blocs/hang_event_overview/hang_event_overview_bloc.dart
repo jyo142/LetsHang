@@ -21,22 +21,18 @@ class HangEventOverviewBloc
   // constructor
   HangEventOverviewBloc({required this.email})
       : _userInvitesRepository = UserInvitesRepository(),
-        super(HangEventsLoading());
-
-  @override
-  Stream<HangEventOverviewState> mapEventToState(
-      HangEventOverviewEvent event) async* {
-    if (event is LoadHangEvents) {
-      yield* _mapLoadHangEventsToState();
-    }
-    if (event is LoadHangEventsForDates) {
-      yield* _mapLoadHangEventsToState(
-          startDateTime: event.startDateTime, endDateTime: event.endDateTime);
-    }
+        super(HangEventsLoading()) {
+    on<LoadHangEvents>((event, emit) async {
+      emit(await _mapLoadHangEventsToState());
+    });
+    on<LoadHangEventsForDates>((event, emit) async {
+      emit(await _mapLoadHangEventsToState(
+          startDateTime: event.startDateTime, endDateTime: event.endDateTime));
+    });
   }
 
-  Stream<HangEventOverviewState> _mapLoadHangEventsToState(
-      {DateTime? startDateTime, DateTime? endDateTime}) async* {
+  Future<HangEventOverviewState> _mapLoadHangEventsToState(
+      {DateTime? startDateTime, DateTime? endDateTime}) async {
     List<HangEventInvite> eventsForUser = [];
     if (startDateTime == null && endDateTime == null) {
       eventsForUser =
@@ -46,6 +42,6 @@ class HangEventOverviewBloc
           email, startDateTime!, endDateTime!);
     }
 
-    yield HangEventsRetrieved(hangEvents: eventsForUser);
+    return HangEventsRetrieved(hangEvents: eventsForUser);
   }
 }

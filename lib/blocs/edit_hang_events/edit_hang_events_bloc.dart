@@ -43,38 +43,44 @@ class EditHangEventsBloc
                     for (var member in existingHangEvent!.userInvites)
                       member.user.userName: member
                   }
-                : null));
-
-  @override
-  Stream<EditHangEventsState> mapEventToState(
-      EditHangEventsEvent event) async* {
-    if (event is LoadUserInvites) {
+                : null)) {
+    on<LoadUserInvites>((event, emit) async {
       if (existingHangEvent != null) {
         List<UserInvite> eventUserInvites = await _hangEventRepository
             .getUserInvitesForEvent(existingHangEvent!.id);
         // yield state.copyWith(eventUserInvitees: eventUserInvites);
       }
-    } else if (event is EventNameChanged) {
-      yield state.copyWith(eventName: event.eventName);
-    } else if (event is EventDescriptionChanged) {
-      yield state.copyWith(eventDescription: event.eventDescription);
-    } else if (event is EventStartDateChanged) {
-      yield state.copyWith(eventStartDate: event.eventStartDate);
-    } else if (event is EventStartTimeChanged) {
-      yield state.copyWith(eventStartTime: event.eventStartTime);
-    } else if (event is LimitGuestCountToggled) {
-      yield state.copyWith(limitGuestCount: event.limitGuestCountValue);
-    } else if (event is MaxGuestCountChanged) {
-      yield state.copyWith(maxGuestCount: event.maxGuestCount);
-    } else if (event is EventTypeToggled) {
-      yield state.copyWith(hangEventType: event.eventType);
-    } else if (event is EventPictureChanged) {
-      yield state.copyWith(photoUrl: event.eventPicturePath);
-    } else if (event is EventMainDetailsSavedInitiated) {
-      yield EventMainDetailsSavedLoading(state);
-      yield* _mapMainEventDetailsSavedState(state);
-    } else if (event is EventEndDateTimeChanged) {
-      // need to combine both the DateTime and TimeOfDay
+    });
+    on<EventNameChanged>((event, emit) {
+      emit(state.copyWith(eventName: event.eventName));
+    });
+    on<EventDescriptionChanged>((event, emit) {
+      emit(state.copyWith(eventDescription: event.eventDescription));
+    });
+    on<EventStartDateChanged>((event, emit) {
+      emit(state.copyWith(eventStartDate: event.eventStartDate));
+    });
+    on<EventStartTimeChanged>((event, emit) {
+      emit(state.copyWith(eventStartTime: event.eventStartTime));
+    });
+    on<LimitGuestCountToggled>((event, emit) {
+      emit(state.copyWith(limitGuestCount: event.limitGuestCountValue));
+    });
+    on<MaxGuestCountChanged>((event, emit) {
+      emit(state.copyWith(maxGuestCount: event.maxGuestCount));
+    });
+    on<EventTypeToggled>((event, emit) {
+      emit(state.copyWith(hangEventType: event.eventType));
+    });
+    on<EventPictureChanged>((event, emit) {
+      emit(state.copyWith(photoUrl: event.eventPicturePath));
+    });
+    on<EventMainDetailsSavedInitiated>((event, emit) async {
+      emit(EventMainDetailsSavedLoading(state));
+      emit(await _mapMainEventDetailsSavedState(state));
+    });
+    on<EventEndDateTimeChanged>((event, emit) {
+// need to combine both the DateTime and TimeOfDay
       DateTime newEventEndDateTime = DateTime(
           event.eventEndDate.year,
           event.eventEndDate.month,
@@ -82,47 +88,49 @@ class EditHangEventsBloc
           event.eventEndTime.hour,
           event.eventEndTime.minute);
 
-      yield state.copyWith(eventEndDate: newEventEndDateTime);
-    } else if (event is EventSavedInitiated) {
-      yield* _mapEventSavedState(event, state);
-    }
-    // events to do with finding an event invitee
-    else if (event is EventSearchByInviteeChanged) {
-      yield state.copyWith(searchEventInviteeBy: event.searchEventInviteeBy);
-    } else if (event is EventInviteeValueChanged) {
-      yield state.copyWith(searchEventInvitee: event.inviteeValue);
-    } else if (event is EventSearchByInviteeInitiated) {
-      yield FindEventInviteeLoading(state);
+      emit(state.copyWith(eventEndDate: newEventEndDateTime));
+    });
+    on<EventSavedInitiated>((event, emit) async {
+      emit(await _mapEventSavedState(event, state));
+    });
+    on<EventSearchByInviteeChanged>((event, emit) {
+      emit(state.copyWith(searchEventInviteeBy: event.searchEventInviteeBy));
+    });
+    on<EventInviteeValueChanged>((event, emit) {
+      emit(state.copyWith(searchEventInvitee: event.inviteeValue));
+    });
+    on<EventSearchByInviteeInitiated>((event, emit) async {
+      emit(FindEventInviteeLoading(state));
       try {
         if (state.searchEventInviteeBy == SearchUserBy.username) {
           HangUser? retValUser =
               await _userRepository.getUserByUserName(event.inviteeValue);
-          yield FindEventInviteeRetrieved(state, eventInvitee: retValUser);
+          emit(FindEventInviteeRetrieved(state, eventInvitee: retValUser));
         } else if (state.searchEventInviteeBy == SearchUserBy.email) {
           HangUser? retValUser =
               await _userRepository.getUserByEmail(event.inviteeValue);
-          yield FindEventInviteeRetrieved(state, eventInvitee: retValUser);
+          emit(FindEventInviteeRetrieved(state, eventInvitee: retValUser));
         } else if (state.searchEventInviteeBy == SearchUserBy.group) {
           Group? retValGroup =
               await _groupRepository.getGroupByName(event.inviteeValue);
-          yield FindEventGroupInviteeRetrieved(state,
-              eventGroupInvitee: retValGroup);
+          emit(FindEventGroupInviteeRetrieved(state,
+              eventGroupInvitee: retValGroup));
         }
       } catch (e) {
-        yield FindEventInviteeError(state, errorMessage: "Failed to find user");
+        emit(FindEventInviteeError(state, errorMessage: "Failed to find user"));
       }
-    } else if (event is AddEventInviteeInitiated) {
-      yield state
-          .addUserEventInvitee(HangUserPreview.fromUser(event.eventInvitee));
-    } else if (event is AddEventGroupInviteeInitiated) {
-      yield state.addEventGroupInvitee(event.eventGroupInvitee);
-    } else {
-      yield state;
-    }
+    });
+    on<AddEventInviteeInitiated>((event, emit) {
+      emit(state
+          .addUserEventInvitee(HangUserPreview.fromUser(event.eventInvitee)));
+    });
+    on<AddEventGroupInviteeInitiated>((event, emit) {
+      emit(state.addEventGroupInvitee(event.eventGroupInvitee));
+    });
   }
 
-  Stream<EditHangEventsState> _mapMainEventDetailsSavedState(
-      EditHangEventsState eventsState) async* {
+  Future<EditHangEventsState> _mapMainEventDetailsSavedState(
+      EditHangEventsState eventsState) async {
     try {
       HangEvent savingEvent = HangEvent(
           id: existingHangEvent?.id ?? "",
@@ -148,16 +156,16 @@ class EditHangEventsBloc
                 status: InviteStatus.owner,
                 type: InviteType.event));
       }
-      yield EventMainDetailsSavedSuccessfully(state,
+      return EventMainDetailsSavedSuccessfully(state,
           savedEvent: retvalHangEvent);
     } catch (_) {
-      yield EventMainDetailsSavedError(state, error: 'Unable to save event.');
+      return EventMainDetailsSavedError(state, error: 'Unable to save event.');
     }
   }
 
-  Stream<EditHangEventsState> _mapEventSavedState(
+  Future<EditHangEventsState> _mapEventSavedState(
       EventSavedInitiated eventSavedEvent,
-      EditHangEventsState eventsState) async* {
+      EditHangEventsState eventsState) async {
     _hangEventSubscription?.cancel();
     try {
       final resultEventUserInvitees = List.of(state.eventUserInvitees.values);
@@ -181,7 +189,9 @@ class EditHangEventsBloc
         await _invitesRepository.addUserEventInvites(
             newEvent, savingEvent.userInvites);
       }
-      yield EventSavedSuccessfully(state);
-    } catch (_) {}
+      return EventSavedSuccessfully(state);
+    } catch (e) {
+      return FindEventInviteeError(state, errorMessage: "Failed to find user");
+    }
   }
 }

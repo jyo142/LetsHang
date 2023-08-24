@@ -20,20 +20,23 @@ class InvitationsBloc extends Bloc<InvitationsEvent, InvitationsState> {
   InvitationsBloc()
       : _invitesRepository = UserInvitesRepository(),
         _notificationsRepository = NotificationsRepository(),
-        super(const InvitationsState());
-
-  @override
-  Stream<InvitationsState> mapEventToState(InvitationsEvent event) async* {
-    if (event is AcceptInvitation ||
-        event is RejectInvitation ||
-        event is MaybeInvitation) {
-      yield InvitationStatusChangedLoading();
-      yield* _mapChangeInvitationStatusToState(event);
-    }
+        super(const InvitationsState()) {
+    on<AcceptInvitation>((event, emit) async {
+      emit(InvitationStatusChangedLoading());
+      emit(await _mapChangeInvitationStatusToState(event));
+    });
+    on<RejectInvitation>((event, emit) async {
+      emit(InvitationStatusChangedLoading());
+      emit(await _mapChangeInvitationStatusToState(event));
+    });
+    on<MaybeInvitation>((event, emit) async {
+      emit(InvitationStatusChangedLoading());
+      emit(await _mapChangeInvitationStatusToState(event));
+    });
   }
 
-  Stream<InvitationsState> _mapChangeInvitationStatusToState(
-      InvitationsEvent invitationsEvent) async* {
+  Future<InvitationsState> _mapChangeInvitationStatusToState(
+      InvitationsEvent invitationsEvent) async {
     try {
       String finalMessage = "";
       StatusChangeInvitation statusChangeInvitationEvent =
@@ -58,9 +61,9 @@ class InvitationsBloc extends Bloc<InvitationsEvent, InvitationsState> {
       await _notificationsRepository.removeNotificationForUser(
           statusChangeInvitationEvent.email,
           statusChangeInvitationEvent.notificationId);
-      yield InvitationStatusChangedSuccess(successMessage: finalMessage);
+      return InvitationStatusChangedSuccess(successMessage: finalMessage);
     } catch (e) {
-      yield const InvitationStatusChangedError(
+      return const InvitationStatusChangedError(
           errorMessage: "Unable to change status");
     }
   }

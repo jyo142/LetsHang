@@ -27,8 +27,9 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
     final allDocSnapshots =
         eventInviteSnapshot.docs.map((doc) => doc.data()).toList();
 
-    List<HangEventInvite> eventInvites =
-        allDocSnapshots.map((doc) => HangEventInvite.fromMap(doc)).toList();
+    List<HangEventInvite> eventInvites = allDocSnapshots
+        .map((doc) => HangEventInvite.fromMap(doc as Map<String, dynamic>))
+        .toList();
 
     List<HangEventInvite> retValInvites = [];
     for (HangEventInvite curEventInvite in eventInvites) {
@@ -45,7 +46,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       final allEventInviteDocSnapshots =
           eventInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
       List<UserInvite> userInvitesForEvent = allEventInviteDocSnapshots
-          .map((doc) => UserInvite.fromMap(doc))
+          .map((doc) => UserInvite.fromMap(doc as Map<String, dynamic>))
           .toList();
 
       HangEvent curEvent = HangEvent.fromSnapshot(eventSnapshot);
@@ -87,10 +88,10 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         draftInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
 
     List<HangEventInvite> eventInvites = allRangeDocSnapshots
-        .map((doc) => HangEventInvite.fromMap(doc))
+        .map((doc) => HangEventInvite.fromMap(doc as Map<String, dynamic>))
         .toList();
     List<HangEventInvite> draftEventInvites = allDraftDocSnapshots
-        .map((doc) => HangEventInvite.fromMap(doc))
+        .map((doc) => HangEventInvite.fromMap(doc as Map<String, dynamic>))
         .toList();
 
     List<HangEventInvite> allEventInvites = [
@@ -349,8 +350,9 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
     final allDocSnapshots =
         groupInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
 
-    List<GroupInvite> groupInvites =
-        allDocSnapshots.map((doc) => GroupInvite.fromMap(doc)).toList();
+    List<GroupInvite> groupInvites = allDocSnapshots
+        .map((doc) => GroupInvite.fromMap(doc as Map<String, dynamic>))
+        .toList();
 
     List<GroupInvite> retValInvites = [];
     for (GroupInvite curGroupInvite in groupInvites) {
@@ -366,7 +368,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
           groupUserInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
 
       List<UserInvite> groupUserInvites = allGroupUserInviteQuerySnapshot
-          .map((doc) => UserInvite.fromMap(doc))
+          .map((doc) => UserInvite.fromMap(doc as Map<String, dynamic>))
           .toList();
       Group curGroup = Group.fromSnapshot(groupSnapshot);
       Group newGroup = curGroup.copyWith(userInvites: groupUserInvites);
@@ -684,8 +686,9 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
     final allDocSnapshots =
         eventInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
 
-    List<HangEventInvite> eventInvites =
-        allDocSnapshots.map((doc) => HangEventInvite.fromMap(doc)).toList();
+    List<HangEventInvite> eventInvites = allDocSnapshots
+        .map((doc) => HangEventInvite.fromMap(doc as Map<String, dynamic>))
+        .toList();
 
     return UserEventMetadata(
         userEmail: email,

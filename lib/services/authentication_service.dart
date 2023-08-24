@@ -42,9 +42,7 @@ class AuthenticationService {
 
   static Future<GoogleSignInAuthentication?> enableGoogleCalendarSync() async {
     final GoogleSignIn googleSignIn = GoogleSignIn(
-      scopes: <String>[
-        CalendarApi.calendarScope
-      ],
+      scopes: <String>[CalendarApi.calendarScope],
     );
 
     final GoogleSignInAccount? googleSignInAccount =
@@ -53,6 +51,7 @@ class AuthenticationService {
     if (googleSignInAccount != null) {
       final GoogleSignInAuthentication googleSignInAuthentication =
           await googleSignInAccount.authentication;
+
       return googleSignInAuthentication;
     }
 

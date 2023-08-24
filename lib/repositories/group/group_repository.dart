@@ -89,8 +89,9 @@ class GroupRepository extends BaseGroupRepository {
     final allDocSnapshots =
         groupUserInvitesQuerySnap.docs.map((doc) => doc.data()).toList();
 
-    List<UserInvite> invites =
-        allDocSnapshots.map((doc) => UserInvite.fromMap(doc)).toList();
+    List<UserInvite> invites = allDocSnapshots
+        .map((doc) => UserInvite.fromMap(doc as Map<String, dynamic>))
+        .toList();
 
     return invites;
   }

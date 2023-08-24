@@ -12,27 +12,23 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   // constructor
   NotificationsBloc()
       : _notificationsRepository = NotificationsRepository(),
-        super(const NotificationsState());
-
-  @override
-  Stream<NotificationsState> mapEventToState(NotificationsEvent event) async* {
-    // events to do with the group metadata
-    if (event is LoadPendingNotifications) {
-      yield* _mapPendingNotificationsState(event.userEmail);
-    }
+        super(const NotificationsState()) {
+    on<LoadPendingNotifications>((event, emit) async {
+      emit(await _mapPendingNotificationsState(event.userEmail));
+    });
   }
 
-  Stream<NotificationsState> _mapPendingNotificationsState(
-      String userEmail) async* {
+  Future<NotificationsState> _mapPendingNotificationsState(
+      String userEmail) async {
     try {
       List<NotificationsModel> allPendingNotifications =
           await _notificationsRepository
               .getPendingNotificationsForUser(userEmail);
 
-      yield PendingUserNotificationsRetrieved(
+      return PendingUserNotificationsRetrieved(
           pendingNotifications: allPendingNotifications);
     } catch (_) {
-      yield const PendingUserNotificationsError(
+      return const PendingUserNotificationsError(
           errorMessage: 'Unable to get notifications for user.');
     }
   }

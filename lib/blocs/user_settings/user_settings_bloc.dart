@@ -17,93 +17,95 @@ class UserSettingsBloc extends Bloc<UserSettingsEvent, UserSettingsState> {
   UserSettingsBloc()
       : _userSettingsRepository = UserSettingsRepository(),
         super(const UserSettingsState(
-            userSettingsStateStatus: UserSettingsStateStatus.initial));
-  @override
-  Stream<UserSettingsState> mapEventToState(UserSettingsEvent event) async* {
-    if (event is SetUser) {
-      yield state.copyWith(userEmail: event.userEmail);
-    } else {
-      // first check if the user email is set
-      if (state.userEmail?.isEmpty ?? false) {
-        yield state.copyWith(
-            userSettingsStateStatus: UserSettingsStateStatus.error,
-            errorMessage: "Unable to use user settings");
-        return;
-      }
-      if (event is LoadUserSettings) {
-        yield state.copyWith(
-          userSettingsStateStatus: UserSettingsStateStatus.userSettingsLoading,
-        );
-        UserSettingsModel? curUserSettings =
-            await _userSettingsRepository.getUserSettings(state.userEmail!);
-        yield state.copyWith(
-            userSettingsStateStatus:
-                UserSettingsStateStatus.userSettingsRetrieved,
-            userSettings: curUserSettings);
-      }
-      if (event is SyncGoogleCalendar) {
-        yield state.copyWith(
-            userSettingsStateStatus:
-                UserSettingsStateStatus.settingsChangedLoading);
-        try {
-          // first try to sync the calendar with googles
-          GoogleSignInAuthentication? googleAuthResult =
-              await _getGoogleSignInAuth();
-          if (googleAuthResult != null) {
-            String? userTimezone = await _getUserTimezone();
-            UserSettingsModel? curUserSettings =
-                await _userSettingsRepository.getUserSettings(state.userEmail!);
-            curUserSettings ??= UserSettingsModel(userEmail: state.userEmail!);
-            curUserSettings = curUserSettings.copyWith(
-                syncGoogleCalendar: true,
-                googleCalendarAccessToken: googleAuthResult.accessToken,
-                userTimezone: userTimezone);
-            await _userSettingsRepository.setUserSettings(
-                state.userEmail!, curUserSettings);
-            yield state.copyWith(
-                userSettingsStateStatus:
-                    UserSettingsStateStatus.settingsChangedSuccess);
-            yield state.copyWith(
-                userSettingsStateStatus:
-                    UserSettingsStateStatus.userSettingsRetrieved,
-                userSettings: curUserSettings);
-          } else {
-            yield state.copyWith(
-                userSettingsStateStatus:
-                    UserSettingsStateStatus.settingsChangedError,
-                errorMessage: "Unable to sync google calendar");
-          }
-        } catch (e) {
-          yield state.copyWith(
-              userSettingsStateStatus:
-                  UserSettingsStateStatus.settingsChangedError,
-              errorMessage: "Unable to sync google calendar");
-        }
-      }
-      if (event is UnsyncGoogleCalendar) {
-        try {
-          yield state.copyWith(
-              userSettingsStateStatus:
-                  UserSettingsStateStatus.settingsChangedLoading);
-          UserSettingsModel newUserSettings = state.userSettings!.copyWith(
-            syncGoogleCalendar: false,
-          );
+            userSettingsStateStatus: UserSettingsStateStatus.initial)) {
+    on<SetUser>((event, emit) async {
+      emit(state.copyWith(userEmail: event.userEmail));
+    });
+    on<LoadUserSettings>((event, emit) async {
+      _validateUserSettings(emit);
+      emit(state.copyWith(
+        userSettingsStateStatus: UserSettingsStateStatus.userSettingsLoading,
+      ));
+      UserSettingsModel? curUserSettings =
+          await _userSettingsRepository.getUserSettings(state.userEmail!);
+      emit(state.copyWith(
+          userSettingsStateStatus:
+              UserSettingsStateStatus.userSettingsRetrieved,
+          userSettings: curUserSettings));
+    });
+    on<SyncGoogleCalendar>((event, emit) async {
+      _validateUserSettings(emit);
+      emit(state.copyWith(
+          userSettingsStateStatus:
+              UserSettingsStateStatus.settingsChangedLoading));
+      try {
+        // first try to sync the calendar with googles
+        GoogleSignInAuthentication? googleAuthResult =
+            await _getGoogleSignInAuth();
+        if (googleAuthResult != null) {
+          String? userTimezone = await _getUserTimezone();
+          UserSettingsModel? curUserSettings =
+              await _userSettingsRepository.getUserSettings(state.userEmail!);
+          curUserSettings ??= UserSettingsModel(userEmail: state.userEmail!);
+          curUserSettings = curUserSettings.copyWith(
+              syncGoogleCalendar: true,
+              googleCalendarAccessToken: googleAuthResult.accessToken,
+              userTimezone: userTimezone);
           await _userSettingsRepository.setUserSettings(
-              state.userEmail!, newUserSettings);
-          yield state.copyWith(
+              state.userEmail!, curUserSettings);
+          emit(state.copyWith(
               userSettingsStateStatus:
-                  UserSettingsStateStatus.settingsChangedSuccess);
-          yield state.copyWith(
+                  UserSettingsStateStatus.settingsChangedSuccess));
+          emit(state.copyWith(
               userSettingsStateStatus:
                   UserSettingsStateStatus.userSettingsRetrieved,
-              userSettings: newUserSettings);
-        } catch (e) {
-          yield state.copyWith(
+              userSettings: curUserSettings));
+        } else {
+          emit(state.copyWith(
               userSettingsStateStatus:
                   UserSettingsStateStatus.settingsChangedError,
-              errorMessage: "Unable to unsync google calendar");
+              errorMessage: "Unable to sync google calendar"));
         }
+      } catch (e) {
+        emit(state.copyWith(
+            userSettingsStateStatus:
+                UserSettingsStateStatus.settingsChangedError,
+            errorMessage: "Unable to sync google calendar"));
       }
+    });
+    on<UnsyncGoogleCalendar>((event, emit) async {
+      _validateUserSettings(emit);
+      try {
+        emit(state.copyWith(
+            userSettingsStateStatus:
+                UserSettingsStateStatus.settingsChangedLoading));
+        UserSettingsModel newUserSettings = state.userSettings!.copyWith(
+          syncGoogleCalendar: false,
+        );
+        await _userSettingsRepository.setUserSettings(
+            state.userEmail!, newUserSettings);
+        emit(state.copyWith(
+            userSettingsStateStatus:
+                UserSettingsStateStatus.settingsChangedSuccess));
+        emit(state.copyWith(
+            userSettingsStateStatus:
+                UserSettingsStateStatus.userSettingsRetrieved,
+            userSettings: newUserSettings));
+      } catch (e) {
+        emit(state.copyWith(
+            userSettingsStateStatus:
+                UserSettingsStateStatus.settingsChangedError,
+            errorMessage: "Unable to unsync google calendar"));
+      }
+    });
+  }
+
+  void _validateUserSettings(Emitter<UserSettingsState> emit) {
+    if (state.userEmail?.isEmpty ?? false) {
+      emit(state.copyWith(
+          userSettingsStateStatus: UserSettingsStateStatus.error,
+          errorMessage: "Unable to use user settings"));
+      return;
     }
   }
 

@@ -16,65 +16,56 @@ class UsernamePicBloc extends Bloc<UsernamePicEvent, UsernamePicState> {
       required this.userName,
       required this.email})
       : _userRepository = userRepository,
-        super(UsernamePicLoading(username: userName, email: email));
-  @override
-  Stream<UsernamePicState> mapEventToState(UsernamePicEvent event) async* {
-    if (event is LoadProfile) {
-      if (userName != null) {
-        // yield* _mapLoadProfileToState();
-      }
-    } else if (event is UsernamePicUsernameChanged) {
-      yield state.copyWith(username: event.username);
-    } else if (event is UsernamePicProfilePicChanged) {
-      yield state.copyWith(profilePicPath: event.profilePicPath);
-    }
-    if (event is SubmitUsernamePicEvent) {
-      yield UsernamePicSubmitLoading(state);
-      yield* _mapSubmitUsernamePicToState(state);
-    }
+        super(UsernamePicLoading(username: userName, email: email)) {
+    on<UsernamePicUsernameChanged>((event, emit) {
+      emit(state.copyWith(username: event.username));
+    });
+    on<UsernamePicProfilePicChanged>((event, emit) {
+      emit(state.copyWith(profilePicPath: event.profilePicPath));
+    });
+    on<SubmitUsernamePicEvent>((event, emit) async {
+      emit(UsernamePicSubmitLoading(state));
+      emit(await _mapSubmitUsernamePicToState(state));
+    });
   }
 
-  Stream<UsernamePicState> _mapSubmitUsernamePicToState(
-      UsernamePicState state) async* {
+  Future<UsernamePicState> _mapSubmitUsernamePicToState(
+      UsernamePicState state) async {
     try {
       if (state.username == null || state.username!.isEmpty) {
-        yield UsernamePicSubmitError(state,
+        return UsernamePicSubmitError(state,
             errorMessage:
                 "Unable to save profile information. Username is required");
-        return;
       }
 
       if (state.profilePicPath == null) {
-        yield UsernamePicSubmitError(state,
+        return UsernamePicSubmitError(state,
             errorMessage:
                 "Unable to save profile information. Invalid profile picture");
-        return;
       }
 
       HangUser? hangUser = await _userRepository.getUserByEmail(email);
       if (hangUser == null) {
-        yield UsernamePicSubmitError(state,
+        return UsernamePicSubmitError(state,
             errorMessage:
                 "Unable to save profile information. User was not found");
-        return;
       }
 
       final downloadUrl = await StorageService.uploadFile(
           state.profilePicPath!, '${state.username}-profilePic');
       if (downloadUrl == null) {
-        yield UsernamePicSubmitError(state,
+        return UsernamePicSubmitError(state,
             errorMessage:
                 "Unable to save profile information. An error occured saving your profile picture");
-        return;
       }
       hangUser.profilePicDownloadUrl = downloadUrl;
       hangUser.userName = state.username!;
       // all information is valid and was able to update the profile picture.
       await _userRepository.updateUser(hangUser);
       // user has to be in the system at this point
-      yield UsernamePicSubmitSuccessful(state, curUser: hangUser);
+      return UsernamePicSubmitSuccessful(state, curUser: hangUser);
     } catch (e) {
-      yield UsernamePicSubmitError(state,
+      return UsernamePicSubmitError(state,
           errorMessage: "Unable to retrieve profile information.");
     }
   }

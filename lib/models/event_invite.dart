@@ -18,7 +18,7 @@ class HangEventInvite extends Invite {
       : super(status: status, type: type, title: title);
 
   static HangEventInvite fromSnapshot(DocumentSnapshot snap) {
-    return fromMap(snap.data()!);
+    return fromMap(snap.data() as Map<String, dynamic>);
   }
 
   HangEventInvite.withUserInvite(HangEvent event, UserInvite userInvite)

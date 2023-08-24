@@ -27,7 +27,7 @@ class NotificationsModel extends Equatable {
             groupId: notificationsModel.groupId);
 
   static NotificationsModel fromSnapshot(DocumentSnapshot snap) {
-    return fromMap(snap.data()!);
+    return fromMap(snap.data() as Map<String, dynamic>);
   }
 
   static NotificationsModel fromMap(Map<String, dynamic> map) {

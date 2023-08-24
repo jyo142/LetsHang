@@ -12,49 +12,51 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
   // constructor
   SignUpBloc({required UserRepository userRepository})
       : _userRepository = userRepository,
-        super(SignUpState());
-
-  @override
-  Stream<SignUpState> mapEventToState(SignUpEvent event) async* {
-    if (event is UserNameChanged) {
-      yield state.copyWith(userName: event.userName);
-    } else if (event is PasswordChanged) {
-      yield state.copyWith(password: event.password);
-    } else if (event is ConfirmPasswordChanged) {
-      yield state.copyWith(confirmPassword: event.confirmPassword);
-    } else if (event is EmailPasswordSubmitted) {
-      yield SignUpEmailPasswordSubmitLoading(state);
-      yield* _mapEmailPasswordSubmitToState(event, state);
-    } else if (event is NameChanged) {
-      yield state.copyWith(name: event.name);
-    } else if (event is EmailChanged) {
-      yield state.copyWith(email: event.email);
-    } else if (event is PhoneNumberChanged) {
-      yield state.copyWith(name: event.phoneNumber);
-    } else {
-      yield state;
-    }
+        super(SignUpState()) {
+    on<UserNameChanged>((event, emit) {
+      emit(state.copyWith(userName: event.userName));
+    });
+    on<PasswordChanged>((event, emit) {
+      emit(state.copyWith(password: event.password));
+    });
+    on<ConfirmPasswordChanged>((event, emit) {
+      emit(state.copyWith(confirmPassword: event.confirmPassword));
+    });
+    on<EmailPasswordSubmitted>((event, emit) {
+      emit(SignUpEmailPasswordSubmitLoading(state));
+    });
+    on<EmailPasswordSubmitted>((event, emit) async {
+      emit(SignUpEmailPasswordSubmitLoading(state));
+      emit(await _mapEmailPasswordSubmitToState(event, state));
+    });
+    on<NameChanged>((event, emit) {
+      emit(state.copyWith(name: event.name));
+    });
+    on<EmailChanged>((event, emit) {
+      emit(state.copyWith(email: event.email));
+    });
+    on<PhoneNumberChanged>((event, emit) {
+      emit(state.copyWith(name: event.phoneNumber));
+    });
   }
 
-  Stream<SignUpState> _mapEmailPasswordSubmitToState(
+  Future<SignUpState> _mapEmailPasswordSubmitToState(
       EmailPasswordSubmitted emailPasswordSubmitted,
-      SignUpState signUpState) async* {
+      SignUpState signUpState) async {
     if (signUpState.email == null ||
         signUpState.email.isEmpty ||
         signUpState.password == null ||
         signUpState.password!.isEmpty ||
         signUpState.confirmPassword == null ||
         signUpState.confirmPassword!.isEmpty) {
-      yield SignUpError(signUpState,
+      return SignUpError(signUpState,
           errorMessage:
               "Missing data. Please make sure to fill out all data before continuing.");
-      return;
     }
     if (signUpState.password != signUpState.confirmPassword) {
-      yield SignUpError(signUpState,
+      return SignUpError(signUpState,
           errorMessage:
               "Passwords do not match. Please make sure the passwords match before continuing.");
-      return;
     }
     HangUser? existingEmailUser =
         await _userRepository.getUserByEmail(signUpState.email);
@@ -66,14 +68,14 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
         HangUser newUser =
             HangUser(userName: signUpState.userName, email: signUpState.email);
         await _userRepository.addUser(newUser);
-        yield SignUpEmailPasswordCreated(signUpState);
+        return SignUpEmailPasswordCreated(signUpState);
       } on Exception catch (e) {
-        yield SignUpError(signUpState,
+        return SignUpError(signUpState,
             errorMessage:
                 "Unable to create new account. Please try again later. ${e.toString()}");
       }
     } else {
-      yield SignUpError(signUpState, errorMessage: "Email already exists");
+      return SignUpError(signUpState, errorMessage: "Email already exists");
     }
   }
 }

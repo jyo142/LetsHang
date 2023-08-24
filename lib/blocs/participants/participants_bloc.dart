@@ -35,107 +35,104 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
         _userRepository = UserRepository(),
         _userInvitesRepository = UserInvitesRepository(),
         _groupRepository = GroupRepository(),
-        super(HangEventParticipantsLoading());
-
-  @override
-  Stream<ParticipantsState> mapEventToState(ParticipantsEvent event) async* {
-    if (event is LoadHangEventParticipants) {
-      yield* _mapLoadEventInvitesToState();
-    }
-    if (event is LoadGroupParticipants) {
+        super(HangEventParticipantsLoading()) {
+    on<LoadHangEventParticipants>((event, emit) async {
+      emit(await _mapLoadEventInvitesToState());
+    });
+    on<LoadGroupParticipants>((event, emit) async {
       if (curGroup != null) {
-        yield* _mapLoadGroupInvitesToState();
+        emit(await _mapLoadGroupInvitesToState());
       }
-    }
-    if (event is AddPeoplePressed) {
-      yield state.copyWith(addParticipantBy: AddParticipantBy.none);
-    }
-    if (event is SearchByEmailPressed) {
-      yield state.copyWith(
-          addParticipantBy: AddParticipantBy.email, searchByEmailValue: '');
-    }
-    if (event is SearchByUsernamePressed) {
-      yield state.copyWith(
+    });
+    on<AddPeoplePressed>((event, emit) {
+      emit(state.copyWith(addParticipantBy: AddParticipantBy.none));
+    });
+    on<SearchByEmailPressed>((event, emit) {
+      emit(state.copyWith(
+          addParticipantBy: AddParticipantBy.email, searchByEmailValue: ''));
+    });
+    on<SearchByUsernamePressed>((event, emit) {
+      emit(state.copyWith(
         addParticipantBy: AddParticipantBy.username,
         searchByUsernameValue: '',
-      );
-    }
-    if (event is SearchByUsernameChanged) {
-      yield state.copyWith(searchByUsernameValue: event.usernameValue);
-    }
-    if (event is SearchByEmailChanged) {
-      yield state.copyWith(searchByEmailValue: event.emailValue);
-    }
-    if (event is SearchByUsernameSubmitted) {
-      yield SearchParticipantLoading(state);
-      yield* _mapSearchParticipantsState();
-    }
-    if (event is SearchByEmailSubmitted) {
-      yield SearchParticipantLoading(state);
-      yield* _mapSearchParticipantsState();
-    }
-    if (event is ClearSearchFields) {
-      yield state.copyWith(
+      ));
+    });
+    on<SearchByUsernameChanged>((event, emit) {
+      emit(state.copyWith(searchByUsernameValue: event.usernameValue));
+    });
+    on<SearchByEmailChanged>((event, emit) {
+      emit(state.copyWith(searchByEmailValue: event.emailValue));
+    });
+    on<SearchByUsernameSubmitted>((event, emit) async {
+      emit(SearchParticipantLoading(state));
+      emit(await _mapSearchParticipantsState());
+    });
+    on<SearchByEmailSubmitted>((event, emit) async {
+      emit(SearchParticipantLoading(state));
+      emit(await _mapSearchParticipantsState());
+    });
+    on<ClearSearchFields>((event, emit) {
+      emit(state.copyWith(
           searchByEmailValue: '',
           searchByUsernameValue: '',
-          addParticipantBy: AddParticipantBy.none);
-    }
-    if (event is SendInviteInitiated) {
-      yield SendInviteLoading(state);
-      yield* _mapSendInviteState(event.invitedUser);
-    }
-    if (event is SendRemoveInviteInitiated) {
-      yield SendInviteLoading(state);
-      yield* _mapSendRemoveInviteState(event.toRemoveUser);
-    }
-    if (event is AddInviteeInitiated) {
+          addParticipantBy: AddParticipantBy.none));
+    });
+    on<SendInviteInitiated>((event, emit) async {
+      emit(SendInviteLoading(state));
+      emit(await _mapSendInviteState(event.invitedUser));
+    });
+    on<SendRemoveInviteInitiated>((event, emit) async {
+      emit(SendInviteLoading(state));
+      emit(await _mapSendRemoveInviteState(event.toRemoveUser));
+    });
+    on<AddInviteeInitiated>((event, emit) {
       ParticipantsState newState = state.addInvitee(
           HangUserPreview.fromUser(event.invitedUser), event.inviteTitle);
-      yield newState.copyWith(
+      emit(newState.copyWith(
           searchByEmailValue: '',
           searchByUsernameValue: '',
-          addParticipantBy: AddParticipantBy.none);
-    }
-    if (event is RemoveInviteeInitiated) {
+          addParticipantBy: AddParticipantBy.none));
+    });
+    on<RemoveInviteeInitiated>((event, emit) {
       ParticipantsState newState =
           state.removeInvitee(event.toRemoveUserPreview);
-      yield newState;
-    }
-    if (event is SendAllInviteesInitiated) {
-      yield SendAllInvitesLoading(state);
-      yield* _mapSendAllInviteesState(state.invitedUsers);
-    }
-    if (event is SearchByGroupChanged) {
-      yield state.copyWith(searchByGroupValue: event.groupValue);
-    }
-    if (event is SearchByGroupSubmitted) {
-      yield SearchGroupLoading(state);
-      yield* _mapSearchGroupState();
-    }
-    if (event is SelectMembersInitiated) {
-      yield SelectMembersState(state, allMembers: event.groupMembers);
-    }
-    if (event is SelectMembersSelected) {
+      emit(newState);
+    });
+    on<SendAllInviteesInitiated>((event, emit) async {
+      emit(SendAllInvitesLoading(state));
+      emit(await _mapSendAllInviteesState(state.invitedUsers));
+    });
+    on<SearchByGroupChanged>((event, emit) {
+      emit(state.copyWith(searchByGroupValue: event.groupValue));
+    });
+    on<SearchByGroupSubmitted>((event, emit) async {
+      emit(SearchGroupLoading(state));
+      emit(await _mapSearchGroupState());
+    });
+    on<SelectMembersInitiated>((event, emit) {
+      emit(SelectMembersState(state, allMembers: event.groupMembers));
+    });
+    on<SelectMembersSelected>((event, emit) {
       final selectMembersState = state as SelectMembersState;
-      yield selectMembersState.toggleSelectedMember(
-          state, event.selectedMember);
-    }
-    if (event is SelectMembersInviteInitiated) {
-      yield SelectMembersInviteLoading(state as SelectMembersState);
-      yield* _mapSendGroupInviteState(event.selectedMembers);
-    }
-    if (event is PromoteInviteeInitiated) {
+      emit(
+          selectMembersState.toggleSelectedMember(state, event.selectedMember));
+    });
+    on<SelectMembersInviteInitiated>((event, emit) async {
+      emit(SelectMembersInviteLoading(state as SelectMembersState));
+      emit(await _mapSendGroupInviteState(event.selectedMembers));
+    });
+    on<PromoteInviteeInitiated>((event, emit) {
       ParticipantsState newState =
           state.promoteInvitee(event.toPromoteUserPreview);
-      yield newState;
-    }
-    if (event is SendPromoteInviteeInitiated) {
-      yield SendInviteLoading(state);
-      yield* _mapSendPromoteInviteState(event.toPromoteUserPreview);
-    }
+      emit(newState);
+    });
+    on<SendPromoteInviteeInitiated>((event, emit) async {
+      emit(SendInviteLoading(state));
+      emit(await _mapSendPromoteInviteState(event.toPromoteUserPreview));
+    });
   }
 
-  Stream<ParticipantsState> _mapLoadGroupInvitesToState() async* {
+  Future<ParticipantsState> _mapLoadGroupInvitesToState() async {
     List<UserInvite> allUserInvites =
         await _groupRepository.getUserInvitesForGroup(curGroup!.id);
 
@@ -153,13 +150,13 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
         .where((element) => element.status == InviteStatus.rejected)
         .toList();
 
-    yield state.copyWith(
+    return state.copyWith(
         attendingUsers: attendingUsers,
         invitedUsers: invitedUsers,
         rejectedUsers: rejectedUsers);
   }
 
-  Stream<ParticipantsState> _mapLoadEventInvitesToState() async* {
+  Future<ParticipantsState> _mapLoadEventInvitesToState() async {
     List<UserInvite> allUserInvites =
         await _hangEventRepository.getUserInvitesForEvent(curEvent!.id);
 
@@ -177,13 +174,13 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
         .where((element) => element.status == InviteStatus.rejected)
         .toList();
 
-    yield state.copyWith(
+    return state.copyWith(
         attendingUsers: attendingUsers,
         invitedUsers: invitedUsers,
         rejectedUsers: rejectedUsers);
   }
 
-  Stream<ParticipantsState> _mapSearchParticipantsState() async* {
+  Future<ParticipantsState> _mapSearchParticipantsState() async {
     try {
       HangUser? retValUser;
       if (state.addParticipantBy == AddParticipantBy.username) {
@@ -195,116 +192,120 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
             await _userRepository.getUserByEmail(state.searchByEmailValue);
       }
       if (retValUser == null) {
-        yield SearchParticipantError(state,
+        return SearchParticipantError(state,
             errorMessage: "Failed to find user.");
       } else {
         if (state.allUsers.contains(retValUser.email)) {
-          yield SearchParticipantError(state,
+          return SearchParticipantError(state,
               errorMessage: "User is already part of this event");
         } else {
-          yield SearchParticipantRetrieved(state, foundUser: retValUser);
+          return SearchParticipantRetrieved(state, foundUser: retValUser);
         }
       }
     } catch (e) {
-      yield SearchParticipantError(state, errorMessage: "Failed to find user.");
+      return SearchParticipantError(state,
+          errorMessage: "Failed to find user.");
     }
   }
 
-  Stream<ParticipantsState> _mapSearchGroupState() async* {
+  Future<ParticipantsState> _mapSearchGroupState() async {
     try {
       Group? retValGroup =
           await _groupRepository.getGroupByName(state.searchByGroupValue);
       if (retValGroup == null) {
-        yield SearchGroupError(state, errorMessage: "Failed to find group.");
+        return SearchGroupError(state, errorMessage: "Failed to find group.");
       } else {
-        yield SearchGroupRetrieved(state, foundGroup: retValGroup);
+        return SearchGroupRetrieved(state, foundGroup: retValGroup);
       }
     } catch (e) {
-      yield SearchGroupError(state, errorMessage: "Failed to find group.");
+      return SearchGroupError(state, errorMessage: "Failed to find group.");
     }
   }
 
-  Stream<ParticipantsState> _mapSendGroupInviteState(
-      Map<String, UserInvite> selectedMembers) async* {
+  Future<ParticipantsState> _mapSendGroupInviteState(
+      Map<String, UserInvite> selectedMembers) async {
     try {
       List<UserInvite> allUserInvites =
           selectedMembers.entries.map((e) => e.value).toList();
       await _userInvitesRepository.addUserEventInvites(
           curEvent!, allUserInvites);
-      yield SendInviteSuccess(state);
+      return SendInviteSuccess(state);
     } catch (e) {
-      yield SelectMembersInviteError(state as SelectMembersState,
+      return SelectMembersInviteError(state as SelectMembersState,
           errorMessage: "Failed to send invite to user.");
     }
   }
 
-  Stream<ParticipantsState> _mapSendAllInviteesState(
-      List<UserInvite> allInvitedUsers) async* {
+  Future<ParticipantsState> _mapSendAllInviteesState(
+      List<UserInvite> allInvitedUsers) async {
     try {
       await _userInvitesRepository.addUserEventInvites(
           curEvent!, allInvitedUsers);
       HangEvent savingEvent =
           curEvent!.copyWith(currentStage: HangEventStage.complete);
       await _hangEventRepository.editHangEvent(savingEvent);
-      yield SendAllInvitesSuccess(state);
+      return SendAllInvitesSuccess(state);
     } catch (e) {
-      yield SendAllInvitesError(state,
+      return SendAllInvitesError(state,
           errorMessage: "Failed to send invites to users.");
     }
   }
 
-  Stream<ParticipantsState> _mapSendInviteState(HangUser invitedUser) async* {
+  Future<ParticipantsState> _mapSendInviteState(HangUser invitedUser) async {
     try {
       if (curEvent != null) {
         await _userInvitesRepository.addUserEventInvite(
             curEvent!, UserInvite.fromInvitedEventUser(invitedUser));
-        yield SendInviteSuccess(state);
+        return SendInviteSuccess(state);
       }
       if (curGroup != null) {
         await _userInvitesRepository.addUserGroupInvite(
             curGroup!, UserInvite.fromInvitedGroupUser(invitedUser));
-        yield SendInviteSuccess(state);
+        return SendInviteSuccess(state);
       }
+      return SendInviteError(state, errorMessage: "Failed to promote user.");
     } catch (e) {
-      yield SendInviteError(state,
+      return SendInviteError(state,
           errorMessage: "Failed to send invite to user.");
     }
   }
 
-  Stream<ParticipantsState> _mapSendRemoveInviteState(
-      HangUserPreview toRemoveUser) async* {
+  Future<ParticipantsState> _mapSendRemoveInviteState(
+      HangUserPreview toRemoveUser) async {
     try {
       if (curEvent != null) {
         await _userInvitesRepository.removeUserEventInvite(
             curEvent!, UserInvite.fromInvitedEventUserPreview(toRemoveUser));
-        yield SendInviteSuccess(state);
+        return SendInviteSuccess(state);
       }
       if (curGroup != null) {
         await _userInvitesRepository.removeUserGroupInvite(
             curGroup!, UserInvite.fromInvitedGroupUserPreview(toRemoveUser));
-        yield SendInviteSuccess(state);
+        return SendInviteSuccess(state);
       }
+      return SendInviteError(state, errorMessage: "Failed to promote user.");
     } catch (e) {
-      yield SendInviteError(state,
+      return SendInviteError(state,
           errorMessage: "Failed to send invite to user.");
     }
   }
 
-  Stream<ParticipantsState> _mapSendPromoteInviteState(
-      HangUserPreview toRemoveUser) async* {
+  Future<ParticipantsState> _mapSendPromoteInviteState(
+      HangUserPreview toRemoveUser) async {
     try {
       if (curEvent != null) {
         await _userInvitesRepository.promoteUserEventInvite(
             curEvent!, UserInvite.fromInvitedEventUserPreview(toRemoveUser));
-        yield SendInviteSuccess(state);
+        return SendInviteSuccess(state);
       }
       if (curGroup != null) {
         await _userInvitesRepository.promoteUserGroupInvite(
             curGroup!, UserInvite.fromInvitedGroupUserPreview(toRemoveUser));
-        yield SendInviteSuccess(state);
+        return SendInviteSuccess(state);
       }
+      return SendInviteError(state, errorMessage: "Failed to promote user.");
     } catch (e) {
-      yield SendInviteError(state, errorMessage: "Failed to promote user.");
+      return SendInviteError(state, errorMessage: "Failed to promote user.");
     }
   }
 }

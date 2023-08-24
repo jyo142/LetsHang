@@ -39,7 +39,7 @@ class UserInvite extends Invite {
   }
 
   static UserInvite fromSnapshot(DocumentSnapshot snap) {
-    return fromMap(snap.data()!);
+    return fromMap(snap.data() as Map<String, dynamic>);
   }
 
   static UserInvite fromMap(Map<String, dynamic> map) {

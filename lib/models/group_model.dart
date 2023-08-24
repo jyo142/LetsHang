@@ -21,7 +21,7 @@ class Group extends HasUserInvites {
 
   static Group fromSnapshot(DocumentSnapshot snap,
       [List<UserInvite>? userInvites]) {
-    return fromMap(snap.data()!, userInvites);
+    return fromMap(snap.data() as Map<String, dynamic>, userInvites);
   }
 
   static Group fromMap(Map<String, dynamic> map,

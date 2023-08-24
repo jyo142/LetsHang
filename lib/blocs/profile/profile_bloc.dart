@@ -16,25 +16,23 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ProfileBloc({required UserRepository userRepository, required this.email})
       : _userRepository = userRepository,
         _userInvitesRepository = UserInvitesRepository(),
-        super(ProfileInfoLoading(email: email));
-  @override
-  Stream<ProfileState> mapEventToState(ProfileEvent event) async* {
-    if (event is LoadProfile) {
-      yield* _mapLoadProfileToState();
-    }
+        super(ProfileInfoLoading(email: email)) {
+    on<LoadProfile>((event, emit) async {
+      emit(await _mapLoadProfileToState());
+    });
   }
 
-  Stream<ProfileState> _mapLoadProfileToState() async* {
+  Future<ProfileState> _mapLoadProfileToState() async {
     try {
       HangUser? hangUser = await _userRepository.getUserByEmail(email);
       // get metadata for events about user
       UserEventMetadata userEventMetadata =
           await _userInvitesRepository.getUserEventMetadata(email);
       // user has to be in the system at this point
-      yield ProfileInfoRetrieved(
+      return ProfileInfoRetrieved(
           hangUser: hangUser!, userEventMetadata: userEventMetadata);
     } catch (e) {
-      yield ProfileInfoError(
+      return ProfileInfoError(
           errorMessage: "Unable to retrieve profile information.");
     }
   }

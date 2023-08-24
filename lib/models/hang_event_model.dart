@@ -42,7 +42,7 @@ class HangEvent extends HasUserInvites {
 
   static HangEvent fromSnapshot(DocumentSnapshot snap,
       [List<UserInvite>? eventInvites]) {
-    return fromMap(snap.data()!, eventInvites);
+    return fromMap(snap.data() as Map<String, dynamic>, eventInvites);
   }
 
   HangEvent copyWith(

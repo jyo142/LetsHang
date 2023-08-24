@@ -21,24 +21,21 @@ class GroupOverviewBloc extends Bloc<GroupOverviewEvent, GroupOverviewState> {
   GroupOverviewBloc()
       : _userInvitesRepository = UserInvitesRepository(),
         _groupRepository = GroupRepository(),
-        super(GroupsLoading());
-
-  @override
-  Stream<GroupOverviewState> mapEventToState(GroupOverviewEvent event) async* {
-    if (event is LoadGroupInvites) {
+        super(GroupsLoading()) {
+    on<LoadGroupInvites>((event, emit) async {
       List<GroupInvite> groups =
           await _userInvitesRepository.getUserGroupInvites(event.email);
-      yield GroupsRetrieved(groupsForUser: groups);
-    }
-    if (event is LoadIndividualGroup) {
-      yield IndividualGroupLoading();
+      emit(GroupsRetrieved(groupsForUser: groups));
+    });
+    on<LoadIndividualGroup>((event, emit) async {
+      emit(IndividualGroupLoading());
       Group? foundGroup = await _groupRepository.getGroupById(event.groupId);
       if (foundGroup != null) {
-        yield IndividualGroupRetrieved(group: foundGroup);
+        emit(IndividualGroupRetrieved(group: foundGroup));
       } else {
-        yield IndividualGroupRetrievedError(
-            errorMessage: "Unable to find group");
+        emit(const IndividualGroupRetrievedError(
+            errorMessage: "Unable to find group"));
       }
-    }
+    });
   }
 }

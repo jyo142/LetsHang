@@ -36,25 +36,20 @@ class EditGroupBloc extends Bloc<EditGroupEvent, EditGroupState> {
                     for (var member in existingGroup!.userInvites)
                       member.user.userName: member
                   }
-                : null));
-
-  @override
-  Stream<EditGroupState> mapEventToState(EditGroupEvent event) async* {
-    // events to do with the group metadata
-    if (event is GroupNameChanged) {
-      yield state.copyWith(groupName: event.groupName);
-    }
-    if (event is DeleteGroupMemberInitialized) {
-      yield state.deleteGroupMember(event.groupMemberUserName);
-    }
-
-    if (event is SaveGroupInitiated) {
-      yield SaveGroupLoading(state);
-      yield* _mapGroupSavedState(event);
-    }
+                : null)) {
+    on<GroupNameChanged>((event, emit) async {
+      emit(state.copyWith(groupName: event.groupName));
+    });
+    on<DeleteGroupMemberInitialized>((event, emit) async {
+      emit(state.deleteGroupMember(event.groupMemberUserName));
+    });
+    on<SaveGroupInitiated>((event, emit) async {
+      emit(SaveGroupLoading(state));
+      emit(await _mapGroupSavedState(event));
+    });
   }
 
-  Stream<EditGroupState> _mapGroupSavedState(SaveGroupInitiated event) async* {
+  Future<EditGroupState> _mapGroupSavedState(SaveGroupInitiated event) async {
     try {
       Group savingGroup = Group(
           id: existingGroup?.id ?? "",
@@ -74,9 +69,9 @@ class EditGroupBloc extends Bloc<EditGroupEvent, EditGroupState> {
         await _invitesRepository.addUserGroupInvites(
             retvalGroup, event.allInvitedMembers);
       }
-      yield SavedGroupSuccessfully(state);
+      return SavedGroupSuccessfully(state);
     } catch (_) {
-      yield SaveGroupError(state, errorMessage: 'Unable to save group.');
+      return SaveGroupError(state, errorMessage: 'Unable to save group.');
     }
   }
 }

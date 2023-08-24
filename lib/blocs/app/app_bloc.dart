@@ -13,11 +13,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   AppBloc({required UserRepository userRepository})
       : _userRepository = userRepository,
-        super(const AppState());
-  @override
-  Stream<AppState> mapEventToState(AppEvent event) async* {
-    if (event is AppGoogleLoginRequested) {
-      yield AppLoginLoading();
+        super(const AppState()) {
+    on<AppGoogleLoginRequested>((event, emit) async {
+      emit(AppLoginLoading());
       try {
         User? user = await AuthenticationService.signInWithGoogle();
         if (user != null) {
@@ -27,47 +25,51 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
           if (curHangUser == null) {
             await _userRepository.addFirebaseUser(user.email!, user);
-            yield AppNewFirebaseUser(firebaseUser: user);
+            emit(AppNewFirebaseUser(firebaseUser: user));
           } else {
             if (curHangUser.userName.isEmpty) {
-              yield AppNewFirebaseUser(firebaseUser: user);
+              emit(AppNewFirebaseUser(firebaseUser: user));
             } else {
-              yield* mapAuthenticatedUser(curHangUser);
+              emit(await mapAuthenticatedUser(curHangUser));
             }
           }
         } else {
-          yield const AppLoginError(
-              errorMessage: "Failed to login with google");
+          emit(
+              const AppLoginError(errorMessage: "Failed to login with google"));
         }
       } catch (e) {
-        yield const AppLoginError(errorMessage: "Failed to login with google");
+        emit(const AppLoginError(errorMessage: "Failed to login with google"));
       }
-    } else if (event is AppUserAuthReturned) {
-      yield* mapAuthenticatedReturnedUser(event.userEmail);
-    } else if (event is AppLoginRequested) {
-      yield const AppIsLoggingIn();
-    } else if (event is AppUserAuthenticated) {
-      yield* mapAuthenticatedUser(event.hangUser);
-    } else if (event is AppSignupRequested) {
-      yield AppNewUser();
-    } else {
-      // user is logging out
-      yield AppUnauthenticated();
-    }
+    });
+    on<AppUserAuthReturned>((event, emit) async {
+      emit(await mapAuthenticatedReturnedUser(event.userEmail));
+    });
+    on<AppLoginRequested>((event, emit) async {
+      emit(const AppIsLoggingIn());
+    });
+    on<AppUserAuthenticated>((event, emit) async {
+      emit(await mapAuthenticatedUser(event.hangUser));
+    });
+    on<AppSignupRequested>((event, emit) async {
+      emit(AppNewUser());
+    });
+    on<AppLogoutRequested>((event, emit) async {
+      emit(AppUnauthenticated());
+    });
   }
 
-  Stream<AppState> mapAuthenticatedReturnedUser(String userEmail) async* {
+  Future<AppState> mapAuthenticatedReturnedUser(String userEmail) async {
     final HangUser? foundUser = await _userRepository.getUserByEmail(userEmail);
     if (foundUser != null) {
-      yield* mapAuthenticatedUser(foundUser);
+      return mapAuthenticatedUser(foundUser);
     } else {
-      yield AppReturnedUserError(errorMessage: "Unable to find user");
+      return AppReturnedUserError(errorMessage: "Unable to find user");
     }
   }
 
-  Stream<AppState> mapAuthenticatedUser(HangUser curUser) async* {
+  Future<AppState> mapAuthenticatedUser(HangUser curUser) async {
     final fcmToken = await FirebaseMessaging.instance.getToken();
     await _userRepository.updateFCMToken(curUser.email!, fcmToken);
-    yield AppAuthenticated(user: curUser);
+    return AppAuthenticated(user: curUser);
   }
 }

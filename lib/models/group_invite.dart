@@ -11,7 +11,7 @@ class GroupInvite extends Invite {
       : super(status: status, type: type, title: title);
 
   static GroupInvite fromSnapshot(DocumentSnapshot snap) {
-    return fromMap(snap.data()!);
+    return fromMap(snap.data() as Map<String, dynamic>);
   }
 
   GroupInvite copyWith(
@@ -44,7 +44,8 @@ class GroupInvite extends Invite {
       "group": group.toDocument(),
       "status": describeEnum(status),
       "type": describeEnum(type),
-      "title": title != null ? describeEnum(title!) : describeEnum(InviteTitle.user)
+      "title":
+          title != null ? describeEnum(title!) : describeEnum(InviteTitle.user)
     };
   }
 

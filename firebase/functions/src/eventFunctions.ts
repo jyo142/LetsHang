@@ -141,12 +141,19 @@ const sendGoogleCalendarInvite = async (
   userEmail: string,
   eventSnapshot: DocumentSnapshot
 ) => {
+  info("Sending google calendar invite");
   const userSettingsSnapshot = await db
     .collection("userSettings")
     .doc(userEmail)
     .get();
   // Set the access token obtained after authentication
   const accessToken = userSettingsSnapshot.get("googleCalendarAccessToken");
+  const eventStartDate = eventSnapshot.get("eventStartDate");
+  const eventEndDate = eventSnapshot.get("eventEndDate");
+
+  if (!accessToken || !eventStartDate || !eventEndDate) {
+    return;
+  }
   const authClient = new OAuth2Client();
 
   authClient.setCredentials({ access_token: accessToken });
@@ -156,6 +163,9 @@ const sendGoogleCalendarInvite = async (
     auth: authClient,
   });
   info("Adding event to calendar");
+  const startString = new Date(eventStartDate.toDate()).toISOString();
+  const endString = new Date(eventEndDate.toDate()).toISOString();
+  info("Start end dates ", startString, endString);
   const response = await calendarApi.events.insert({
     calendarId: "primary",
     sendNotifications: true,
@@ -163,11 +173,11 @@ const sendGoogleCalendarInvite = async (
       summary: eventSnapshot.get("eventName"),
       description: eventSnapshot.get("eventDescription"),
       start: {
-        dateTime: "2023-08-21T09:00:00-07:00",
+        dateTime: startString,
         timeZone: userSettingsSnapshot.get("userTimezone"),
       },
       end: {
-        dateTime: "2023-08-21T17:00:00-07:00",
+        dateTime: endString,
         timeZone: userSettingsSnapshot.get("userTimezone"),
       },
     },

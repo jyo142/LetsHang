@@ -24,7 +24,7 @@ class UserSettingsModel extends Equatable {
             userTimezone: userSettingsModel.userTimezone);
 
   static UserSettingsModel fromSnapshot(DocumentSnapshot snap) {
-    return fromMap(snap.data()!);
+    return fromMap(snap.data() as Map<String, dynamic>);
   }
 
   UserSettingsModel copyWith(

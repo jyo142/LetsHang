@@ -80,8 +80,9 @@ class HangEventRepository extends BaseHangEventRepository {
     final allDocSnapshots =
         eventsUserInvitesQuerySnap.docs.map((doc) => doc.data()).toList();
 
-    List<UserInvite> invites =
-        allDocSnapshots.map((doc) => UserInvite.fromMap(doc)).toList();
+    List<UserInvite> invites = allDocSnapshots
+        .map((doc) => UserInvite.fromMap(doc as Map<String, dynamic>))
+        .toList();
 
     return invites;
   }

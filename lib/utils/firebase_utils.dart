@@ -7,6 +7,6 @@ extension FirebaseUtils on DocumentSnapshot {
   }
 
   Map<String, dynamic> getDocDataWithId() {
-    return {"id": id, ...?data()};
+    return {"id": id, ...?data() as Map<String, dynamic>};
   }
 }

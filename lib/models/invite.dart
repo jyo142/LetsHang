@@ -16,7 +16,7 @@ class Invite extends Equatable {
   const Invite({required this.status, required this.type, this.title});
 
   static Invite fromSnapshot(DocumentSnapshot snap) {
-    return fromMap(snap.data()!);
+    return fromMap(snap.data() as Map<String, dynamic>);
   }
 
   static Invite fromMap(Map<String, dynamic> map) {
