@@ -154,6 +154,7 @@ class EditHangEventsBloc
             UserInvite(
                 user: creatingUser,
                 status: InviteStatus.owner,
+                title: InviteTitle.organizer,
                 type: InviteType.event));
       }
       return EventMainDetailsSavedSuccessfully(state,

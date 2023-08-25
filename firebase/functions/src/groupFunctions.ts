@@ -3,7 +3,7 @@ import {
   onDocumentCreated,
   onDocumentUpdated,
 } from "firebase-functions/v2/firestore";
-import { error } from "firebase-functions/logger";
+import { error, info } from "firebase-functions/logger";
 import { db } from ".";
 import { addNotification, sendNotification } from "./notificationUtils";
 import { QuerySnapshot } from "firebase-admin/firestore";
@@ -12,6 +12,14 @@ import { getStatusTitleDescription } from "./inviteStatusUtils";
 export const onUserInvitedToGroup = onDocumentCreated(
   "/groups/{groupId}/invites/{email}",
   async (snap) => {
+    if (!snap.data) {
+      info("No data");
+      return;
+    }
+    if (snap.data.get("title") === "organizer") {
+      info("Do not send invite for organizers");
+      return;
+    }
     const groupSnapshot = await db
       .collection("groups")
       .doc(snap.params.groupId)
@@ -54,6 +62,10 @@ export const onUserGroupInviteChanged = onDocumentUpdated(
     const oldUserInviteTitle = oldUserInviteData?.get("title");
     const isTitleDifferent = newUserInviteTitle !== oldUserInviteTitle;
 
+    if (newUserInviteTitle === "organzier") {
+      info("Do not send invite for organizers");
+      return;
+    }
     const newUserInviteStatus = newUserInviteData?.get("status");
     const oldUserInviteStatus = oldUserInviteData?.get("status");
     const isStatusDifferent = newUserInviteStatus !== oldUserInviteStatus;

@@ -15,6 +15,14 @@ import { getAccessTokenFromRefreshToken } from "./services/googleAuthService";
 export const onUserInvitedToEvent = onDocumentCreated(
   "/hangEvents/{eventId}/invites/{email}",
   async (snap) => {
+    if (!snap.data) {
+      info("No data");
+      return;
+    }
+    if (snap.data.get("title") === "organizer") {
+      info("Do not send invite for organizers");
+      return;
+    }
     const eventSnapshot = await db
       .collection("hangEvents")
       .doc(snap.params.eventId)
@@ -61,6 +69,10 @@ export const onUserEventInviteChanged = onDocumentUpdated(
     const newUserInviteTitle = newUserInviteData?.get("title");
     const oldUserInviteTitle = oldUserInviteData?.get("title");
     const isTitleDifferent = newUserInviteTitle !== oldUserInviteTitle;
+    if (newUserInviteTitle === "organzier") {
+      info("Do not send invite for organizers");
+      return;
+    }
 
     const newUserInviteStatus = newUserInviteData?.get("status");
     const oldUserInviteStatus = oldUserInviteData?.get("status");
