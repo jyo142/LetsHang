@@ -4,21 +4,21 @@ export const getStatusTitleDescription = (
   inviteType: "Group" | "Event",
   newUserStatus: string,
   curUserSnapshot: QueryDocumentSnapshot,
-  inviteTypeName: string
+  inviteTypeName: string,
 ) => {
   switch (newUserStatus) {
     case "accepted":
       return {
         title: `${inviteType} invitation accepted`,
         description: `${curUserSnapshot.get(
-          "name"
+          "name",
         )} has accepted your invite to ${inviteType.toLowerCase()} : ${inviteTypeName}`,
       };
     case "rejected":
       return {
         title: `${inviteType} invitation rejected`,
         description: `${curUserSnapshot.get(
-          "name"
+          "name",
         )} has rejected your invite to ${inviteType.toLowerCase()} : ${inviteTypeName}`,
       };
     default:
@@ -26,7 +26,7 @@ export const getStatusTitleDescription = (
       return {
         title: `${inviteType} invitation tentative`,
         description: `${curUserSnapshot.get(
-          "name"
+          "name",
         )} has responded as tentative to your invite to ${inviteType.toLowerCase()} : ${inviteTypeName}`,
       };
   }

@@ -5,13 +5,13 @@ class UserSettingsModel extends Equatable {
   final String? id;
   final String userEmail;
   final bool? syncGoogleCalendar;
-  final String? googleCalendarAccessToken;
+  final String? googleApiRefreshToken;
   final String? userTimezone;
   const UserSettingsModel(
       {this.id,
       required this.userEmail,
       this.syncGoogleCalendar,
-      this.googleCalendarAccessToken,
+      this.googleApiRefreshToken,
       this.userTimezone});
 
   UserSettingsModel.withId(String id, UserSettingsModel userSettingsModel)
@@ -19,8 +19,7 @@ class UserSettingsModel extends Equatable {
             id: id,
             userEmail: userSettingsModel.userEmail,
             syncGoogleCalendar: userSettingsModel.syncGoogleCalendar,
-            googleCalendarAccessToken:
-                userSettingsModel.googleCalendarAccessToken,
+            googleApiRefreshToken: userSettingsModel.googleApiRefreshToken,
             userTimezone: userSettingsModel.userTimezone);
 
   static UserSettingsModel fromSnapshot(DocumentSnapshot snap) {
@@ -31,13 +30,13 @@ class UserSettingsModel extends Equatable {
       {String? id,
       String? userEmail,
       bool? syncGoogleCalendar,
-      String? googleCalendarAccessToken,
+      String? googleApiRefreshToken,
       String? userTimezone}) {
     return UserSettingsModel(
         userEmail: userEmail ?? this.userEmail,
         syncGoogleCalendar: syncGoogleCalendar ?? this.syncGoogleCalendar,
-        googleCalendarAccessToken:
-            googleCalendarAccessToken ?? this.googleCalendarAccessToken,
+        googleApiRefreshToken:
+            googleApiRefreshToken ?? this.googleApiRefreshToken,
         userTimezone: userTimezone ?? this.userTimezone);
   }
 
@@ -48,8 +47,8 @@ class UserSettingsModel extends Equatable {
         syncGoogleCalendar: map.containsKey('syncGoogleCalendar')
             ? map['syncGoogleCalendar']
             : null,
-        googleCalendarAccessToken: map.containsKey('googleCalendarAccessToken')
-            ? map['googleCalendarAccessToken']
+        googleApiRefreshToken: map.containsKey('googleApiRefreshToken')
+            ? map['googleApiRefreshToken']
             : null,
         userTimezone:
             map.containsKey('userTimezone') ? map['userTimezone'] : null);
@@ -62,17 +61,12 @@ class UserSettingsModel extends Equatable {
       'id': id,
       'userEmail': userEmail,
       'syncGoogleCalendar': syncGoogleCalendar,
-      'googleCalendarAccessToken': googleCalendarAccessToken,
+      'googleApiRefreshToken': googleApiRefreshToken,
       'userTimezone': userTimezone
     };
   }
 
   @override
-  List<Object?> get props => [
-        id,
-        userEmail,
-        syncGoogleCalendar,
-        googleCalendarAccessToken,
-        userTimezone
-      ];
+  List<Object?> get props =>
+      [id, userEmail, syncGoogleCalendar, googleApiRefreshToken, userTimezone];
 }

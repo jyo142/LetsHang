@@ -6,9 +6,9 @@ export const db = admin.firestore();
 
 export * as eventFunctions from "./eventFunctions";
 export * as groupFunctions from "./groupFunctions";
+export * as userSettingsFunctions from "./userSettingsFunctions";
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
-
 
 // export const onGroupUpdate = functions.firestore
 //     .document("groups/{groupId}")

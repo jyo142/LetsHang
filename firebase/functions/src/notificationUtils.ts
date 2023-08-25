@@ -10,7 +10,7 @@ export interface NotificationsMetadata {
 export const addNotification = async (
   userEmail: string,
   content: string,
-  metadata?: NotificationsMetadata
+  metadata?: NotificationsMetadata,
 ) => {
   try {
     await db
@@ -31,15 +31,15 @@ export const addNotification = async (
 export const sendNotification = async (
   curUserSnapshot: QueryDocumentSnapshot,
   notificationTitle: string,
-  notificationBody: string
+  notificationBody: string,
 ) => {
   info(`PENDING : sending notifiation to user ${curUserSnapshot.get("email")}`);
   const userFCMToken = curUserSnapshot.get("fcmToken");
   if (userFCMToken == null) {
     error(
       `User does not have a fcm token, cannot send a notification. user : ${curUserSnapshot.get(
-        "email"
-      )}`
+        "email",
+      )}`,
     );
   } else {
     const payload = {
@@ -54,7 +54,7 @@ export const sendNotification = async (
       .messaging()
       .sendToDevice([curUserSnapshot.get("fcmToken")], payload);
     info(
-      `SUCCESS : sending notifiation to user ${curUserSnapshot.get("email")}`
+      `SUCCESS : sending notifiation to user ${curUserSnapshot.get("email")}`,
     );
   }
 };

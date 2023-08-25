@@ -27,20 +27,20 @@ export const onUserInvitedToGroup = onDocumentCreated(
         curUserSnapshot,
         "New Group Invitation",
         `Hello ${curUserSnapshot.get(
-          "name"
-        )}, you have been invited to the group :  ${groupSnapshot.get("name")}`
+          "name",
+        )}, you have been invited to the group :  ${groupSnapshot.get("name")}`,
       );
       await addNotification(
         snap.params.email,
         `You have been invited to the group : ${groupSnapshot.get("name")}`,
-        { groupId: snap.params.groupId }
+        { groupId: snap.params.groupId },
       );
     } else {
       error(
-        `Unable to send notification to user ${snap.params.email} for group ${snap.params.groupId}`
+        `Unable to send notification to user ${snap.params.email} for group ${snap.params.groupId}`,
       );
     }
-  }
+  },
 );
 
 export const onUserGroupInviteChanged = onDocumentUpdated(
@@ -77,7 +77,7 @@ export const onUserGroupInviteChanged = onDocumentUpdated(
         userSnapshot,
         newUserInviteTitle,
         snap.params.email,
-        snap.params.groupId
+        snap.params.groupId,
       );
     }
     if (isStatusDifferent) {
@@ -85,10 +85,10 @@ export const onUserGroupInviteChanged = onDocumentUpdated(
         groupSnapshot,
         userSnapshot,
         newUserInviteStatus,
-        snap.params.groupId
+        snap.params.groupId,
       );
     }
-  }
+  },
 );
 
 const handleUserPromotionGroup = async (
@@ -96,7 +96,7 @@ const handleUserPromotionGroup = async (
   userSnapshot: QuerySnapshot,
   newUserInviteTitle: string,
   email: string,
-  groupId: string
+  groupId: string,
 ) => {
   if (
     groupSnapshot.exists &&
@@ -108,17 +108,17 @@ const handleUserPromotionGroup = async (
       curUserSnapshot,
       "Group Admin Promotion",
       `Hello ${curUserSnapshot.get(
-        "name"
+        "name",
       )}, you have been promoted to admin for the group : ${groupSnapshot.get(
-        "name"
-      )}`
+        "name",
+      )}`,
     );
     await addNotification(
       email,
       `You have been promoted to admin for the group : ${groupSnapshot.get(
-        "name"
+        "name",
       )}`,
-      { groupId }
+      { groupId },
     );
   } else {
     error(`Unable to send notification to user ${email} for event ${groupId}`);
@@ -129,7 +129,7 @@ const handleUserStatusChange = async (
   groupSnapshot: DocumentSnapshot,
   userSnapshot: QuerySnapshot,
   newUserStatus: string,
-  groupId: string
+  groupId: string,
 ) => {
   const groupOwner = groupSnapshot.get("groupOwner");
   if (groupSnapshot.exists && !userSnapshot.empty) {
@@ -138,18 +138,18 @@ const handleUserStatusChange = async (
       "Group",
       newUserStatus,
       curUserSnapshot,
-      groupSnapshot.get("name")
+      groupSnapshot.get("name"),
     );
     await sendNotification(
       curUserSnapshot,
       titleDescription.title,
-      titleDescription.description
+      titleDescription.description,
     );
 
     await addNotification(groupOwner.email, titleDescription.description);
   } else {
     error(
-      `Unable to send notification to user ${groupOwner.email} for group ${groupId}`
+      `Unable to send notification to user ${groupOwner.email} for group ${groupId}`,
     );
   }
 };

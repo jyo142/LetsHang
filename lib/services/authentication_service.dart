@@ -40,22 +40,18 @@ class AuthenticationService {
     return user;
   }
 
-  static Future<GoogleSignInAuthentication?> enableGoogleCalendarSync() async {
+  static Future<GoogleSignInAccount?> enableGoogleCalendarSync() async {
     final GoogleSignIn googleSignIn = GoogleSignIn(
+      clientId:
+          "234546462541-v1lii1re9j69dm8ipve7ndf5b8jnr9fg.apps.googleusercontent.com",
+      forceCodeForRefreshToken: true,
       scopes: <String>[CalendarApi.calendarScope],
     );
 
     final GoogleSignInAccount? googleSignInAccount =
         await googleSignIn.signIn();
 
-    if (googleSignInAccount != null) {
-      final GoogleSignInAuthentication googleSignInAuthentication =
-          await googleSignInAccount.authentication;
-
-      return googleSignInAuthentication;
-    }
-
-    return null;
+    return googleSignInAccount;
   }
 
   static Future<void> signInEmailPassword(String email, String password) async {

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:letshang/models/user_settings_model.dart';
 import 'package:letshang/repositories/settings/base_user_settings_repository.dart';
@@ -40,17 +41,14 @@ class UserSettingsBloc extends Bloc<UserSettingsEvent, UserSettingsState> {
               UserSettingsStateStatus.settingsChangedLoading));
       try {
         // first try to sync the calendar with googles
-        GoogleSignInAuthentication? googleAuthResult =
-            await _getGoogleSignInAuth();
+        GoogleSignInAccount? googleAuthResult = await _getGoogleSignInAuth();
         if (googleAuthResult != null) {
           String? userTimezone = await _getUserTimezone();
           UserSettingsModel? curUserSettings =
               await _userSettingsRepository.getUserSettings(state.userEmail!);
           curUserSettings ??= UserSettingsModel(userEmail: state.userEmail!);
           curUserSettings = curUserSettings.copyWith(
-              syncGoogleCalendar: true,
-              googleCalendarAccessToken: googleAuthResult.accessToken,
-              userTimezone: userTimezone);
+              syncGoogleCalendar: true, userTimezone: userTimezone);
           await _userSettingsRepository.setUserSettings(
               state.userEmail!, curUserSettings);
           emit(state.copyWith(
@@ -60,6 +58,12 @@ class UserSettingsBloc extends Bloc<UserSettingsEvent, UserSettingsState> {
               userSettingsStateStatus:
                   UserSettingsStateStatus.userSettingsRetrieved,
               userSettings: curUserSettings));
+
+          await FirebaseFunctions.instance
+              .httpsCallable('userSettingsFunctions-getUserToken')
+              .call(
+            {"code": googleAuthResult.serverAuthCode},
+          );
         } else {
           emit(state.copyWith(
               userSettingsStateStatus:
@@ -109,9 +113,9 @@ class UserSettingsBloc extends Bloc<UserSettingsEvent, UserSettingsState> {
     }
   }
 
-  Future<GoogleSignInAuthentication?> _getGoogleSignInAuth() async {
+  Future<GoogleSignInAccount?> _getGoogleSignInAuth() async {
     try {
-      GoogleSignInAuthentication? credentials =
+      GoogleSignInAccount? credentials =
           await AuthenticationService.enableGoogleCalendarSync();
       if (credentials != null) {
         return credentials;

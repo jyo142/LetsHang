@@ -10,6 +10,7 @@ import { QuerySnapshot } from "firebase-admin/firestore";
 import { getStatusTitleDescription } from "./inviteStatusUtils";
 import { OAuth2Client } from "googleapis-common";
 import { calendar } from "@googleapis/calendar";
+import { getAccessTokenFromRefreshToken } from "./services/googleAuthService";
 
 export const onUserInvitedToEvent = onDocumentCreated(
   "/hangEvents/{eventId}/invites/{email}",
@@ -29,25 +30,25 @@ export const onUserInvitedToEvent = onDocumentCreated(
         curUserSnapshot,
         "New Event Invitation",
         `Hello ${curUserSnapshot.get(
-          "name"
+          "name",
         )}, you have been invited to the event :  ${eventSnapshot.get(
-          "eventName"
-        )}`
+          "eventName",
+        )}`,
       );
 
       await addNotification(
         snap.params.email,
         `You have been invited to the event : ${eventSnapshot.get(
-          "eventName"
+          "eventName",
         )}`,
-        { eventId: snap.params.eventId }
+        { eventId: snap.params.eventId },
       );
     } else {
       error(
-        `Unable to send notification to user ${snap.params.email} for event ${snap.params.eventId}`
+        `Unable to send notification to user ${snap.params.email} for event ${snap.params.eventId}`,
       );
     }
-  }
+  },
 );
 
 export const onUserEventInviteChanged = onDocumentUpdated(
@@ -84,7 +85,7 @@ export const onUserEventInviteChanged = onDocumentUpdated(
         userSnapshot,
         newUserInviteTitle,
         snap.params.email,
-        snap.params.eventId
+        snap.params.eventId,
       );
     }
     if (isStatusDifferent) {
@@ -92,14 +93,14 @@ export const onUserEventInviteChanged = onDocumentUpdated(
         eventSnapshot,
         userSnapshot,
         newUserInviteStatus,
-        snap.params.eventId
+        snap.params.eventId,
       );
 
       if (newUserInviteStatus === "accepted") {
         await sendGoogleCalendarInvite(snap.params.email, eventSnapshot);
       }
     }
-  }
+  },
 );
 
 const handleUserPromotionEvent = async (
@@ -107,7 +108,7 @@ const handleUserPromotionEvent = async (
   userSnapshot: QuerySnapshot,
   newUserInviteTitle: string,
   email: string,
-  eventId: string
+  eventId: string,
 ) => {
   if (
     eventSnapshot.exists &&
@@ -119,18 +120,18 @@ const handleUserPromotionEvent = async (
       curUserSnapshot,
       "Event Admin Promotion",
       `Hello ${curUserSnapshot.get(
-        "name"
+        "name",
       )}, you have been promoted to admin for the event : ${eventSnapshot.get(
-        "eventName"
-      )}`
+        "eventName",
+      )}`,
     );
 
     await addNotification(
       email,
       `You have been promoted to admin for the event : ${eventSnapshot.get(
-        "eventName"
+        "eventName",
       )}`,
-      { eventId: eventId }
+      { eventId: eventId },
     );
   } else {
     error(`Unable to send notification to user ${email} for event ${eventId}`);
@@ -139,7 +140,7 @@ const handleUserPromotionEvent = async (
 
 const sendGoogleCalendarInvite = async (
   userEmail: string,
-  eventSnapshot: DocumentSnapshot
+  eventSnapshot: DocumentSnapshot,
 ) => {
   info("Sending google calendar invite");
   const userSettingsSnapshot = await db
@@ -147,15 +148,19 @@ const sendGoogleCalendarInvite = async (
     .doc(userEmail)
     .get();
   // Set the access token obtained after authentication
-  const accessToken = userSettingsSnapshot.get("googleCalendarAccessToken");
+  const refreshToken = userSettingsSnapshot.get("googleApiRefreshToken");
   const eventStartDate = eventSnapshot.get("eventStartDate");
   const eventEndDate = eventSnapshot.get("eventEndDate");
 
-  if (!accessToken || !eventStartDate || !eventEndDate) {
+  if (!refreshToken || !eventStartDate || !eventEndDate) {
+    return;
+  }
+  const accessToken = await getAccessTokenFromRefreshToken(refreshToken);
+  if (!accessToken) {
+    info("Unable to get access token from refresh token");
     return;
   }
   const authClient = new OAuth2Client();
-
   authClient.setCredentials({ access_token: accessToken });
   info("Getting calendar api");
   const calendarApi = await calendar({
@@ -189,7 +194,7 @@ const handleUserStatusChange = async (
   eventSnapshot: DocumentSnapshot,
   userSnapshot: QuerySnapshot,
   newUserStatus: string,
-  eventId: string
+  eventId: string,
 ) => {
   const eventOwner = eventSnapshot.get("eventOwner");
   if (eventSnapshot.exists && !userSnapshot.empty) {
@@ -198,12 +203,12 @@ const handleUserStatusChange = async (
       "Event",
       newUserStatus,
       curUserSnapshot,
-      eventSnapshot.get("eventName")
+      eventSnapshot.get("eventName"),
     );
     await sendNotification(
       curUserSnapshot,
       titleDescription.title,
-      titleDescription.description
+      titleDescription.description,
     );
 
     await addNotification(eventOwner.email, titleDescription.description, {
@@ -211,7 +216,7 @@ const handleUserStatusChange = async (
     });
   } else {
     error(
-      `Unable to send notification to user ${eventOwner.email} for event ${eventId}`
+      `Unable to send notification to user ${eventOwner.email} for event ${eventId}`,
     );
   }
 };
