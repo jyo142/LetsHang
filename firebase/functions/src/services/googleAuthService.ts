@@ -1,11 +1,12 @@
 import axios from "axios";
 
-const clientId =
-  "234546462541-v1lii1re9j69dm8ipve7ndf5b8jnr9fg.apps.googleusercontent.com";
-const clientSecret = "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";
-
 export const getRefreshToken = async (code: string) => {
   const redirectUri = "";
+  const clientId = process.env.OAUTH_CLIENT_ID;
+  const clientSecret = process.env.OAUTH_CLIENT_SECRET;
+  if (!clientId || !clientSecret) {
+    return undefined;
+  }
   const data = new URLSearchParams();
   data.append("code", code);
   data.append("client_id", clientId);
@@ -26,6 +27,11 @@ export const getRefreshToken = async (code: string) => {
 
 export const getAccessTokenFromRefreshToken = async (refreshToken: string) => {
   const data = new URLSearchParams();
+  const clientId = process.env.OAUTH_CLIENT_ID;
+  const clientSecret = process.env.OAUTH_CLIENT_SECRET;
+  if (!clientId || !clientSecret) {
+    return undefined;
+  }
   data.append("client_id", clientId);
   data.append("client_secret", clientSecret);
   data.append("grant_type", "refresh_token");

@@ -35,6 +35,10 @@ class AuthenticationService {
         accessToken: googleSignInAuthentication.accessToken,
         idToken: googleSignInAuthentication.idToken,
       );
+      final UserCredential userCredential =
+          await auth.signInWithCredential(credential);
+
+      user = userCredential.user;
     }
 
     return user;
