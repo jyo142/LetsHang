@@ -7,35 +7,48 @@ import 'hang_user_preview_model.dart';
 class UserInvite extends Invite {
   final HangUserPreview user;
 
-  const UserInvite({required this.user, required status, required type, title})
-      : super(status: status, type: type, title: title);
+  const UserInvite(
+      {required this.user, required status, required type, title, invitingUser})
+      : super(
+            status: status,
+            type: type,
+            title: title,
+            invitingUser: invitingUser);
 
-  static UserInvite fromInvitedEventUser(HangUser user) {
+  static UserInvite fromInvitedEventUser(
+      HangUser user, HangUserPreview invitingUser) {
     return UserInvite(
         user: HangUserPreview.fromUser(user),
         status: InviteStatus.pending,
-        type: InviteType.event);
+        type: InviteType.event,
+        invitingUser: invitingUser);
   }
 
-  static UserInvite fromInvitedGroupUser(HangUser user) {
+  static UserInvite fromInvitedGroupUser(
+      HangUser user, HangUserPreview invitingUser) {
     return UserInvite(
         user: HangUserPreview.fromUser(user),
         status: InviteStatus.pending,
-        type: InviteType.group);
+        type: InviteType.group,
+        invitingUser: invitingUser);
   }
 
-  static UserInvite fromInvitedEventUserPreview(HangUserPreview userPreview) {
+  static UserInvite fromInvitedEventUserPreview(
+      HangUserPreview userPreview, HangUserPreview invitingUser) {
     return UserInvite(
         user: userPreview,
         status: InviteStatus.pending,
-        type: InviteType.event);
+        type: InviteType.event,
+        invitingUser: invitingUser);
   }
 
-  static UserInvite fromInvitedGroupUserPreview(HangUserPreview userPreview) {
+  static UserInvite fromInvitedGroupUserPreview(
+      HangUserPreview userPreview, HangUserPreview invitingUser) {
     return UserInvite(
         user: userPreview,
         status: InviteStatus.pending,
-        type: InviteType.group);
+        type: InviteType.group,
+        invitingUser: invitingUser);
   }
 
   static UserInvite fromSnapshot(DocumentSnapshot snap) {
@@ -43,14 +56,13 @@ class UserInvite extends Invite {
   }
 
   static UserInvite fromMap(Map<String, dynamic> map) {
+    Invite invite = Invite.fromMap(map);
     UserInvite group = UserInvite(
         user: HangUserPreview.fromMap(map["user"]),
-        status: InviteStatus.values
-            .firstWhere((e) => describeEnum(e) == map["status"]),
-        type:
-            InviteType.values.firstWhere((e) => describeEnum(e) == map["type"]),
-        title: InviteTitle.values
-            .firstWhere((e) => describeEnum(e) == map["title"]));
+        title: invite.title,
+        status: invite.status,
+        type: invite.type,
+        invitingUser: invite.invitingUser);
     return group;
   }
 
@@ -67,16 +79,11 @@ class UserInvite extends Invite {
   }
 
   @override
-  Map<String, Object> toDocument() {
-    return {
-      "user": user.toDocument(),
-      "status": describeEnum(status),
-      "type": describeEnum(type),
-      "title":
-          title != null ? describeEnum(title!) : describeEnum(InviteTitle.user),
-    };
+  Map<String, Object?> toDocument() {
+    final inviteToDocument = super.toDocument();
+    return {"user": user.toDocument(), ...inviteToDocument};
   }
 
   @override
-  List<Object?> get props => [user, status, type, title];
+  List<Object?> get props => [user, status, type, title, invitingUser];
 }

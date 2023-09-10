@@ -5,6 +5,8 @@ abstract class BaseNotificationsRepository {
       String userEmail);
   Future<NotificationsModel> addNotificationForUser(
       String userEmail, String notificationContent);
+  Future<void> markNotificationAsReadForUser(
+      String userEmail, String notificationId);
   Future<void> removeNotificationForUser(
       String userEmail, String notificationId);
 }

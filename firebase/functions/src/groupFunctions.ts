@@ -42,6 +42,7 @@ export const onUserInvitedToGroup = onDocumentCreated(
         snap.params.email,
         `You have been invited to the group : ${groupSnapshot.get("name")}`,
         { groupId: snap.params.groupId },
+        snap.data.get("invitingUser"),
       );
     } else {
       error(
@@ -90,6 +91,7 @@ export const onUserGroupInviteChanged = onDocumentUpdated(
         newUserInviteTitle,
         snap.params.email,
         snap.params.groupId,
+        newUserInviteData?.get("invitingUser"),
       );
     }
     if (isStatusDifferent) {
@@ -98,6 +100,7 @@ export const onUserGroupInviteChanged = onDocumentUpdated(
         userSnapshot,
         newUserInviteStatus,
         snap.params.groupId,
+        newUserInviteData?.get("invitingUser"),
       );
     }
   },
@@ -109,6 +112,7 @@ const handleUserPromotionGroup = async (
   newUserInviteTitle: string,
   email: string,
   groupId: string,
+  invitingUser?: any,
 ) => {
   if (
     groupSnapshot.exists &&
@@ -131,6 +135,7 @@ const handleUserPromotionGroup = async (
         "name",
       )}`,
       { groupId },
+      invitingUser,
     );
   } else {
     error(`Unable to send notification to user ${email} for event ${groupId}`);
@@ -142,6 +147,7 @@ const handleUserStatusChange = async (
   userSnapshot: QuerySnapshot,
   newUserStatus: string,
   groupId: string,
+  invitingUser?: DocumentSnapshot,
 ) => {
   const groupOwner = groupSnapshot.get("groupOwner");
   if (groupSnapshot.exists && !userSnapshot.empty) {
@@ -158,7 +164,12 @@ const handleUserStatusChange = async (
       titleDescription.description,
     );
 
-    await addNotification(groupOwner.email, titleDescription.description);
+    await addNotification(
+      groupOwner.email,
+      titleDescription.description,
+      { groupId },
+      invitingUser,
+    );
   } else {
     error(
       `Unable to send notification to user ${groupOwner.email} for group ${groupId}`,

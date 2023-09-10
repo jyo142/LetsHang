@@ -37,7 +37,8 @@ class _NotificationsView extends StatelessWidget {
       backgroundColor: const Color(0xFFCCCCCC),
       body: SafeArea(child: BlocBuilder<NotificationsBloc, NotificationsState>(
           builder: (context, state) {
-        if (state is PendingUserNotificationsRetrieved) {
+        if (state.notificationStateStatus ==
+            NotificationStateStatus.pendingUserNotificationsRetrieved) {
           if (state.pendingNotifications.isEmpty) {
             return Center(
               child: Text('You have no new notifications',

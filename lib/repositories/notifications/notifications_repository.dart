@@ -55,4 +55,30 @@ class NotificationsRepository extends BaseNotificationsRepository {
         .set(savingNotification.toDocument());
     return savingNotification;
   }
+
+  @override
+  Future<void> markNotificationAsReadForUser(
+      String userEmail, String notificationId) async {
+    // move the notifcation from pending collection to read collection
+    DocumentReference notificationReference = _firebaseFirestore
+        .collection("notifications")
+        .doc(userEmail)
+        .collection("pendingNotifications")
+        .doc(notificationId);
+    DocumentSnapshot notificationSnap = await notificationReference.get();
+
+    if (notificationSnap.exists) {
+      NotificationsModel currentNotification =
+          NotificationsModel.fromSnapshot(notificationSnap);
+
+      notificationReference.delete();
+
+      await _firebaseFirestore
+          .collection('notifications')
+          .doc(userEmail)
+          .collection("readNotifications")
+          .doc(notificationId)
+          .set(currentNotification.toDocument());
+    }
+  }
 }

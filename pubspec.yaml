@@ -47,6 +47,7 @@ dependencies:
   flutter_svg: ^1.1.6
   flutter_native_timezone: ^2.0.0
   cloud_functions: ^4.4.0
+  firebase_app_check: ^0.1.5+2
 
 dev_dependencies:
   flutter_test:

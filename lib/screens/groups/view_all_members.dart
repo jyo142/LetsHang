@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/blocs/app/app_bloc.dart';
+import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/participants/participants_bloc.dart';
 import 'package:letshang/models/group_model.dart';
+import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/appbar/lh_app_bar.dart';
@@ -19,8 +22,12 @@ class ViewAllGroupMembers extends StatelessWidget {
       appBar: const LHAppBar(screenName: 'View Group Members'),
       backgroundColor: const Color(0xFFCCCCCC),
       body: BlocProvider(
-        create: (context) =>
-            ParticipantsBloc(curGroup: curGroup)..add(LoadGroupParticipants()),
+        create: (context) => ParticipantsBloc(
+            curUser: HangUserPreview.fromUser(
+              (context.read<AppBloc>().state as AppAuthenticated).user,
+            ),
+            curGroup: curGroup)
+          ..add(LoadGroupParticipants()),
         child: SafeArea(
             child: Padding(
           padding: const EdgeInsets.only(

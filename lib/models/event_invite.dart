@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:letshang/models/hang_event_model.dart';
+import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:letshang/models/user_invite_model.dart';
 
@@ -13,9 +14,14 @@ class HangEventInvite extends Invite {
       required status,
       required type,
       title,
+      invitingUser,
       this.eventStartDateTime,
       this.eventEndDateTime})
-      : super(status: status, type: type, title: title);
+      : super(
+            status: status,
+            type: type,
+            title: title,
+            invitingUser: invitingUser);
 
   static HangEventInvite fromSnapshot(DocumentSnapshot snap) {
     return fromMap(snap.data() as Map<String, dynamic>);
@@ -23,17 +29,18 @@ class HangEventInvite extends Invite {
 
   HangEventInvite.withUserInvite(HangEvent event, UserInvite userInvite)
       : this(
-          event: event,
-          status: userInvite.status,
-          type: userInvite.type,
-          title: userInvite.title,
-        );
+            event: event,
+            status: userInvite.status,
+            type: userInvite.type,
+            title: userInvite.title,
+            invitingUser: userInvite.invitingUser);
 
   HangEventInvite copyWith(
       {HangEvent? event,
       InviteStatus? status,
       InviteType? type,
       InviteTitle? title,
+      HangUserPreview? invitingUser,
       DateTime? eventStartDateTime,
       DateTime? eventEndDateTime}) {
     return HangEventInvite(
@@ -41,19 +48,20 @@ class HangEventInvite extends Invite {
         status: status ?? this.status,
         type: type ?? this.type,
         title: title ?? this.title,
+        invitingUser: invitingUser ?? this.invitingUser,
         eventStartDateTime: eventStartDateTime ?? this.eventStartDateTime,
         eventEndDateTime: eventEndDateTime ?? this.eventEndDateTime);
   }
 
   static HangEventInvite fromMap(Map<String, dynamic> map) {
+    Invite invite = Invite.fromMap(map);
+
     HangEventInvite group = HangEventInvite(
         event: HangEvent.fromMap(map["event"]),
-        status: InviteStatus.values
-            .firstWhere((e) => describeEnum(e) == map["status"]),
-        type:
-            InviteType.values.firstWhere((e) => describeEnum(e) == map["type"]),
-        title: InviteTitle.values
-            .firstWhere((e) => describeEnum(e) == map["title"]),
+        status: invite.status,
+        type: invite.type,
+        title: invite.title,
+        invitingUser: invite.invitingUser,
         eventStartDateTime: map["eventStartDateTime"] != null
             ? (map["eventStartDateTime"]).toDate()
             : null,
@@ -66,22 +74,27 @@ class HangEventInvite extends Invite {
 
   @override
   Map<String, Object?> toDocument() {
+    final inviteToDocument = super.toDocument();
     return {
       "event": event.toDocument(),
-      "status": describeEnum(status),
-      "type": describeEnum(type),
-      "title":
-          title != null ? describeEnum(title!) : describeEnum(InviteTitle.user),
       "eventStartDateTime": eventStartDateTime != null
           ? Timestamp.fromDate(eventStartDateTime!)
           : null,
       "eventEndDateTime": eventEndDateTime != null
           ? Timestamp.fromDate(eventEndDateTime!)
-          : null
+          : null,
+      ...inviteToDocument
     };
   }
 
   @override
-  List<Object?> get props =>
-      [event, status, type, title, eventStartDateTime, eventEndDateTime];
+  List<Object?> get props => [
+        event,
+        status,
+        type,
+        title,
+        invitingUser,
+        eventStartDateTime,
+        eventEndDateTime
+      ];
 }

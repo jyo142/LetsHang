@@ -10,6 +10,26 @@ abstract class HangEventOverviewState extends Equatable {
 
 class HangEventsLoading extends HangEventOverviewState {}
 
+class IndividualEventLoading extends HangEventOverviewState {}
+
+class IndividualEventRetrieved extends HangEventOverviewState {
+  final HangEvent hangEvent;
+
+  const IndividualEventRetrieved({required this.hangEvent});
+
+  @override
+  List<Object> get props => [hangEvent];
+}
+
+class IndividualEventRetrievedError extends HangEventOverviewState {
+  final String errorMessage;
+
+  const IndividualEventRetrievedError({required this.errorMessage});
+
+  @override
+  List<Object> get props => [errorMessage];
+}
+
 class HangEventsRetrieved extends HangEventOverviewState {
   late final List<HangEventInvite> hangEvents;
   late final List<HangEventInvite> pastHangEvents;

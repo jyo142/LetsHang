@@ -12,7 +12,7 @@ class HangEventRepository extends BaseHangEventRepository {
   @override
   Future<HangEvent?> getEventById(String eventId) async {
     DocumentSnapshot docSnapshot =
-        await _firebaseFirestore.collection('events').doc(eventId).get();
+        await _firebaseFirestore.collection('hangEvents').doc(eventId).get();
     if (docSnapshot.exists) {
       return HangEvent.fromSnapshot(docSnapshot);
     }

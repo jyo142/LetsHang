@@ -4,6 +4,7 @@ import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/participants/participants_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
+import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/screens/edit_event_screen.dart';
@@ -42,7 +43,11 @@ class AddPeopleEventScreen extends StatelessWidget {
       ),
       backgroundColor: const Color(0xFFCCCCCC),
       body: BlocProvider(
-          create: (context) => ParticipantsBloc(curEvent: curEvent)
+          create: (context) => ParticipantsBloc(
+              curUser: HangUserPreview.fromUser(
+                (context.read<AppBloc>().state as AppAuthenticated).user,
+              ),
+              curEvent: curEvent)
             ..add(AddInviteeInitiated(
                 invitedUser:
                     (context.read<AppBloc>().state as AppAuthenticated).user,

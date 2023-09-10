@@ -8,14 +8,17 @@ class NotificationsModel extends Equatable {
   final DateTime createdDate;
   final String? eventId;
   final String? groupId;
-
+  final String? initiatedUserName;
+  final String? initiatedUserPhotoUrl;
   const NotificationsModel(
       {required this.id,
       required this.userEmail,
       required this.content,
       required this.createdDate,
       this.eventId,
-      this.groupId});
+      this.groupId,
+      this.initiatedUserName,
+      this.initiatedUserPhotoUrl});
 
   NotificationsModel.withId(String id, NotificationsModel notificationsModel)
       : this(
@@ -24,7 +27,9 @@ class NotificationsModel extends Equatable {
             content: notificationsModel.content,
             createdDate: notificationsModel.createdDate,
             eventId: notificationsModel.eventId,
-            groupId: notificationsModel.groupId);
+            groupId: notificationsModel.groupId,
+            initiatedUserName: notificationsModel.initiatedUserName,
+            initiatedUserPhotoUrl: notificationsModel.initiatedUserPhotoUrl);
 
   static NotificationsModel fromSnapshot(DocumentSnapshot snap) {
     return fromMap(snap.data() as Map<String, dynamic>);
@@ -38,7 +43,13 @@ class NotificationsModel extends Equatable {
         content: map['content'],
         createdDate: createdDateTimestamp.toDate(),
         eventId: map.containsKey('eventId') ? map['eventId'] : null,
-        groupId: map.containsKey('groupId') ? map['groupId'] : null);
+        groupId: map.containsKey('groupId') ? map['groupId'] : null,
+        initiatedUserName: map.containsKey('initiatedUserName')
+            ? map['initiatedUserName']
+            : null,
+        initiatedUserPhotoUrl: map.containsKey('initiatedUserPhotoUrl')
+            ? map['initiatedUserPhotoUrl']
+            : null);
 
     return notification;
   }
@@ -51,9 +62,19 @@ class NotificationsModel extends Equatable {
       "createdDate": Timestamp.fromDate(createdDate),
       'eventId': eventId,
       'groupId': groupId,
+      'initiatedUserName': initiatedUserName,
+      'initiatedUserPhotoUrl': initiatedUserPhotoUrl
     };
   }
 
   @override
-  List<Object?> get props => [id, userEmail, content, eventId, groupId];
+  List<Object?> get props => [
+        id,
+        userEmail,
+        content,
+        eventId,
+        groupId,
+        initiatedUserName,
+        initiatedUserPhotoUrl
+      ];
 }

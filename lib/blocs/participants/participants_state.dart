@@ -86,7 +86,8 @@ class ParticipantsState extends Equatable {
         user: foundUserInvite.user,
         status: foundUserInvite.status,
         type: foundUserInvite.type,
-        title: InviteTitle.admin);
+        title: InviteTitle.admin,
+        invitingUser: foundUserInvite.invitingUser);
 
     return copyWith(invitedUsers: newInvitees);
   }

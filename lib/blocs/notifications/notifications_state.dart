@@ -1,29 +1,34 @@
 part of 'notifications_bloc.dart';
 
-class NotificationsState extends Equatable {
-  const NotificationsState();
-
-  @override
-  List<Object?> get props => [];
+enum NotificationStateStatus {
+  initial,
+  pendingUserNotificationsLoading,
+  pendingUserNotificationsRetrieved,
+  error
 }
 
-class PendingUserNotificationsLoading extends NotificationsState {}
+class NotificationsState extends Equatable {
+  final List<NotificationsModel> pendingNotifications;
+  final String? errorMessage;
+  final NotificationStateStatus notificationStateStatus;
 
-class PendingUserNotificationsRetrieved extends NotificationsState {
-  late final List<NotificationsModel> pendingNotifications;
-  PendingUserNotificationsRetrieved({required this.pendingNotifications}) {
-    final dateNow = DateTime.now();
-    // past events are when the current date is after both the start and end date of the event
+  NotificationsState(
+      {this.pendingNotifications = const [],
+      required this.notificationStateStatus,
+      this.errorMessage});
+
+  NotificationsState copyWith(
+      {NotificationStateStatus? notificationStateStatus,
+      List<NotificationsModel>? pendingNotifications,
+      String? errorMessage}) {
+    return NotificationsState(
+        notificationStateStatus:
+            notificationStateStatus ?? this.notificationStateStatus,
+        pendingNotifications: pendingNotifications ?? this.pendingNotifications,
+        errorMessage: errorMessage ?? this.errorMessage);
   }
 
   @override
-  List<Object> get props => [pendingNotifications];
-}
-
-class PendingUserNotificationsError extends NotificationsState {
-  final String errorMessage;
-  const PendingUserNotificationsError({required this.errorMessage});
-
-  @override
-  List<Object> get props => [errorMessage];
+  List<Object?> get props =>
+      [notificationStateStatus, pendingNotifications, errorMessage];
 }

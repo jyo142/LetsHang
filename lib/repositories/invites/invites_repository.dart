@@ -302,6 +302,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         status: curHangEventInvite.status,
         type: curHangEventInvite.type,
         title: InviteTitle.admin,
+        invitingUser: curHangEventInvite.invitingUser,
         eventStartDateTime: curHangEventInvite.event.eventStartDate,
         eventEndDateTime: curHangEventInvite.event.eventEndDate);
 
@@ -332,7 +333,8 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
           user: toPromote.user,
           status: toPromote.status,
           type: toPromote.type,
-          title: InviteTitle.admin);
+          title: InviteTitle.admin,
+          invitingUser: toPromote.invitingUser);
 
       await promoteUserInviteForEvent(hangEvent, toPromote, transaction);
       transaction.set(dbEventUserInvitesRef, newUserInvite.toDocument());
@@ -376,7 +378,8 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
           group: newGroup,
           status: curGroupInvite.status,
           type: curGroupInvite.type,
-          title: curGroupInvite.title));
+          title: curGroupInvite.title,
+          invitingUser: curGroupInvite.invitingUser));
     }
     return retValInvites;
   }
@@ -398,7 +401,8 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         group: group,
         status: toAdd.status,
         type: toAdd.type,
-        title: toAdd.title);
+        title: toAdd.title,
+        invitingUser: toAdd.invitingUser);
 
     transaction.set(groupInviteRef, newGroupInvite.toDocument());
   }
@@ -413,8 +417,11 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
           .doc(group.id);
       final groupInviteDocumentSnap = await transaction.get(groupInviteRef);
 
-      GroupInvite newEventInvite =
-          GroupInvite(group: group, status: ui.status, type: ui.type);
+      GroupInvite newEventInvite = GroupInvite(
+          group: group,
+          status: ui.status,
+          type: ui.type,
+          invitingUser: ui.invitingUser);
 
       if (!groupInviteDocumentSnap.exists) {
         transaction.set(groupInviteRef, newEventInvite.toDocument());
@@ -458,7 +465,8 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         group: dbGroupInvite.group,
         status: dbGroupInvite.status,
         type: dbGroupInvite.type,
-        title: InviteTitle.admin);
+        title: InviteTitle.admin,
+        invitingUser: dbGroupInvite.invitingUser);
 
     transaction.update(groupInviteRef, newGroupInvite.toDocument());
   }
@@ -562,7 +570,8 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
           user: toPromote.user,
           status: toPromote.status,
           type: toPromote.type,
-          title: InviteTitle.admin);
+          title: InviteTitle.admin,
+          invitingUser: toPromote.invitingUser);
 
       await promoteUserInviteForGroup(group, toPromote, transaction);
       transaction.set(dbGroupUserInvitesRef, newUserInvite.toDocument());

@@ -158,12 +158,13 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: BlocProvider(
-            create: (context) => HangEventOverviewBloc(
-                email: (context.read<AppBloc>().state as AppAuthenticated)
-                    .user
-                    .email!)
+            create: (context) => HangEventOverviewBloc()
               ..add(LoadHangEventsForDates(
-                  startDateTime: _startOfWeek, endDateTime: _endOfWeek)),
+                  userEmail: (context.read<AppBloc>().state as AppAuthenticated)
+                      .user
+                      .email!,
+                  startDateTime: _startOfWeek,
+                  endDateTime: _endOfWeek)),
             child: SafeArea(
                 child: Padding(
                     padding: const EdgeInsets.only(
@@ -222,6 +223,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                               focusedDay.weekday));
                                   context.read<HangEventOverviewBloc>().add(
                                       LoadHangEventsForDates(
+                                          userEmail: (context
+                                                  .read<AppBloc>()
+                                                  .state as AppAuthenticated)
+                                              .user
+                                              .email!,
                                           startDateTime: newStartOfWeek,
                                           endDateTime: newEndOfWeek));
                                   _focusedDay = focusedDay;
@@ -312,7 +318,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   );
                   if (shouldRefresh != null && shouldRefresh) {
-                    context.read<HangEventOverviewBloc>().add(LoadHangEvents());
+                    context.read<HangEventOverviewBloc>().add(LoadHangEvents(
+                        userEmail:
+                            (context.read<AppBloc>().state as AppAuthenticated)
+                                .user
+                                .email!));
                   }
                 },
               ),

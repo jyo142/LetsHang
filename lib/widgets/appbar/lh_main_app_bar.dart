@@ -66,7 +66,7 @@ class LHMainAppBar extends StatelessWidget implements PreferredSizeWidget {
                 );
               },
             );
-            if (state is PendingUserNotificationsRetrieved) {
+            if (state.pendingNotifications.isNotEmpty) {
               final badgeContent =
                   Text(state.pendingNotifications.length.toString());
 

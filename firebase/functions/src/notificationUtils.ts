@@ -11,21 +11,24 @@ export const addNotification = async (
   userEmail: string,
   content: string,
   metadata?: NotificationsMetadata,
+  initiatedUserData?: any,
 ) => {
-  try {
-    await db
-      .collection("notifications")
-      .doc(userEmail)
-      .collection("pendingNotifications")
-      .add({
-        userEmail,
-        content,
-        createdDate: admin.firestore.Timestamp.fromDate(new Date()),
-        ...metadata,
-      });
-  } catch (e) {
-    error("There was an error trying to add notification ");
-  }
+  const pendingNotificationCollectionRef = db
+    .collection("notifications")
+    .doc(userEmail)
+    .collection("pendingNotifications");
+  info(initiatedUserData);
+  await pendingNotificationCollectionRef.add({
+    id: pendingNotificationCollectionRef.doc().id,
+    userEmail,
+    content,
+    createdDate: admin.firestore.Timestamp.fromDate(new Date()),
+    initiatedUserPhotoUrl: initiatedUserData
+      ? initiatedUserData["photoUrl"]
+      : null,
+    initiatedUserName: initiatedUserData ? initiatedUserData["name"] : null,
+    ...metadata,
+  });
 };
 
 export const sendNotification = async (

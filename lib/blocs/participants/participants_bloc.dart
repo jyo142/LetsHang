@@ -27,10 +27,11 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
   final BaseUserRepository _userRepository;
   final BaseUserInvitesRepository _userInvitesRepository;
   final BaseGroupRepository _groupRepository;
+  final HangUserPreview curUser;
   final HangEvent? curEvent;
   final Group? curGroup;
   // constructor
-  ParticipantsBloc({this.curEvent, this.curGroup})
+  ParticipantsBloc({required this.curUser, this.curEvent, this.curGroup})
       : _hangEventRepository = HangEventRepository(),
         _userRepository = UserRepository(),
         _userInvitesRepository = UserInvitesRepository(),
@@ -255,12 +256,12 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
     try {
       if (curEvent != null) {
         await _userInvitesRepository.addUserEventInvite(
-            curEvent!, UserInvite.fromInvitedEventUser(invitedUser));
+            curEvent!, UserInvite.fromInvitedEventUser(invitedUser, curUser));
         return SendInviteSuccess(state);
       }
       if (curGroup != null) {
         await _userInvitesRepository.addUserGroupInvite(
-            curGroup!, UserInvite.fromInvitedGroupUser(invitedUser));
+            curGroup!, UserInvite.fromInvitedGroupUser(invitedUser, curUser));
         return SendInviteSuccess(state);
       }
       return SendInviteError(state, errorMessage: "Failed to promote user.");
@@ -274,13 +275,13 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
       HangUserPreview toRemoveUser) async {
     try {
       if (curEvent != null) {
-        await _userInvitesRepository.removeUserEventInvite(
-            curEvent!, UserInvite.fromInvitedEventUserPreview(toRemoveUser));
+        await _userInvitesRepository.removeUserEventInvite(curEvent!,
+            UserInvite.fromInvitedEventUserPreview(toRemoveUser, curUser));
         return SendInviteSuccess(state);
       }
       if (curGroup != null) {
-        await _userInvitesRepository.removeUserGroupInvite(
-            curGroup!, UserInvite.fromInvitedGroupUserPreview(toRemoveUser));
+        await _userInvitesRepository.removeUserGroupInvite(curGroup!,
+            UserInvite.fromInvitedGroupUserPreview(toRemoveUser, curUser));
         return SendInviteSuccess(state);
       }
       return SendInviteError(state, errorMessage: "Failed to promote user.");
@@ -294,13 +295,13 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
       HangUserPreview toRemoveUser) async {
     try {
       if (curEvent != null) {
-        await _userInvitesRepository.promoteUserEventInvite(
-            curEvent!, UserInvite.fromInvitedEventUserPreview(toRemoveUser));
+        await _userInvitesRepository.promoteUserEventInvite(curEvent!,
+            UserInvite.fromInvitedEventUserPreview(toRemoveUser, curUser));
         return SendInviteSuccess(state);
       }
       if (curGroup != null) {
-        await _userInvitesRepository.promoteUserGroupInvite(
-            curGroup!, UserInvite.fromInvitedGroupUserPreview(toRemoveUser));
+        await _userInvitesRepository.promoteUserGroupInvite(curGroup!,
+            UserInvite.fromInvitedGroupUserPreview(toRemoveUser, curUser));
         return SendInviteSuccess(state);
       }
       return SendInviteError(state, errorMessage: "Failed to promote user.");

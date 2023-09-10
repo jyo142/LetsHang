@@ -8,17 +8,29 @@ abstract class HangEventOverviewEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class LoadHangEvents extends HangEventOverviewEvent {}
+class LoadHangEvents extends HangEventOverviewEvent {
+  final String userEmail;
+
+  const LoadHangEvents({
+    required this.userEmail,
+  });
+
+  @override
+  List<Object> get props => [userEmail];
+}
 
 class LoadHangEventsForDates extends HangEventOverviewEvent {
+  final String userEmail;
   final DateTime startDateTime;
   final DateTime endDateTime;
 
   const LoadHangEventsForDates(
-      {required this.startDateTime, required this.endDateTime});
+      {required this.userEmail,
+      required this.startDateTime,
+      required this.endDateTime});
 
   @override
-  List<Object> get props => [endDateTime, endDateTime];
+  List<Object> get props => [userEmail, endDateTime, endDateTime];
 }
 
 class UpdateHangEvents extends HangEventOverviewEvent {
@@ -28,4 +40,13 @@ class UpdateHangEvents extends HangEventOverviewEvent {
 
   @override
   List<Object> get props => [hangEvents];
+}
+
+class LoadIndividualEvent extends HangEventOverviewEvent {
+  final String eventId;
+
+  const LoadIndividualEvent({required this.eventId});
+
+  @override
+  List<Object> get props => [eventId];
 }

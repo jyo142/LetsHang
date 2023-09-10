@@ -35,7 +35,11 @@ class EditGroupsScreen extends StatelessWidget {
                 existingGroup: curGroup),
           ),
           BlocProvider(
-            create: (context) => ParticipantsBloc(curGroup: curGroup)
+            create: (context) => ParticipantsBloc(
+                curUser: HangUserPreview.fromUser(
+                  (context.read<AppBloc>().state as AppAuthenticated).user,
+                ),
+                curGroup: curGroup)
               ..add(curGroup == null
                   ? AddInviteeInitiated(
                       invitedUser:
