@@ -3,6 +3,7 @@ import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart
 import 'package:letshang/layouts/invitation_layout.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/invite.dart';
+import 'package:letshang/models/notifications_model.dart';
 import 'package:letshang/widgets/avatars/attendees_avatar.dart';
 import 'package:letshang/widgets/cards/user_event_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,10 +11,10 @@ import 'package:intl/intl.dart';
 
 class EventInvitationScreen extends StatelessWidget {
   final String eventId;
-  final String notificationId;
+  final NotificationsModel notification;
 
   const EventInvitationScreen(
-      {Key? key, required this.eventId, required this.notificationId})
+      {Key? key, required this.eventId, required this.notification})
       : super(key: key);
 
   @override
@@ -24,17 +25,17 @@ class EventInvitationScreen extends StatelessWidget {
               ..add(LoadIndividualEvent(eventId: eventId)),
             child: _EventInvitationScreenView(
               eventId: eventId,
-              notificationId: notificationId,
+              notification: notification,
             )));
   }
 }
 
 class _EventInvitationScreenView extends StatelessWidget {
   final String eventId;
-  final String notificationId;
+  final NotificationsModel notification;
 
   const _EventInvitationScreenView(
-      {required this.eventId, required this.notificationId});
+      {required this.eventId, required this.notification});
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +48,7 @@ class _EventInvitationScreenView extends StatelessWidget {
       if (state is IndividualEventRetrieved) {
         return InvitationLayout(
             entityId: eventId,
-            notificationId: notificationId,
+            notification: notification,
             inviteType: InviteType.event,
             invitationContent: _EventInvitationContent(event: state.hangEvent));
       } else if (state is IndividualEventRetrievedError) {

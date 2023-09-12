@@ -26,7 +26,7 @@ class NotificationsCard extends StatelessWidget {
               MaterialPageRoute(
                 builder: (context) => GroupInvitationScreen(
                   groupId: notification.groupId!,
-                  notificationId: notification.id,
+                  notification: notification,
                 ),
               ),
             );
@@ -35,7 +35,7 @@ class NotificationsCard extends StatelessWidget {
               MaterialPageRoute(
                 builder: (context) => EventInvitationScreen(
                   eventId: notification.eventId!,
-                  notificationId: notification.id,
+                  notification: notification,
                 ),
               ),
             );

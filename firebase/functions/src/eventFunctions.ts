@@ -38,26 +38,27 @@ export const onUserInvitedToEvent = onDocumentCreated(
         curUserSnapshot,
         "New Event Invitation",
         `Hello ${curUserSnapshot.get(
-          "name"
+          "name",
         )}, you have been invited to the event :  ${eventSnapshot.get(
-          "eventName"
-        )}`
+          "eventName",
+        )}`,
       );
 
       await addNotification(
         snap.params.email,
         `You have been invited to the event : ${eventSnapshot.get(
-          "eventName"
+          "eventName",
         )}`,
         { eventId: snap.params.eventId },
-        snap.data.get("invitingUser")
+        snap.data.get("invitingUser"),
+        eventSnapshot.get("eventEndDate"),
       );
     } else {
       error(
-        `Unable to send notification to user ${snap.params.email} for event ${snap.params.eventId}`
+        `Unable to send notification to user ${snap.params.email} for event ${snap.params.eventId}`,
       );
     }
-  }
+  },
 );
 
 export const onUserEventInviteChanged = onDocumentUpdated(
@@ -99,7 +100,7 @@ export const onUserEventInviteChanged = onDocumentUpdated(
         newUserInviteTitle,
         snap.params.email,
         snap.params.eventId,
-        newUserInviteData?.get("invitingUser")
+        newUserInviteData?.get("invitingUser"),
       );
     }
     if (isStatusDifferent) {
@@ -108,14 +109,14 @@ export const onUserEventInviteChanged = onDocumentUpdated(
         userSnapshot,
         newUserInviteStatus,
         snap.params.eventId,
-        newUserInviteData?.get("invitingUser")
+        newUserInviteData?.get("invitingUser"),
       );
 
       if (newUserInviteStatus === "accepted") {
         await sendGoogleCalendarInvite(snap.params.email, eventSnapshot);
       }
     }
-  }
+  },
 );
 
 const handleUserPromotionEvent = async (
@@ -124,7 +125,7 @@ const handleUserPromotionEvent = async (
   newUserInviteTitle: string,
   email: string,
   eventId: string,
-  invitingUser?: any
+  invitingUser?: any,
 ) => {
   if (
     eventSnapshot.exists &&
@@ -136,19 +137,20 @@ const handleUserPromotionEvent = async (
       curUserSnapshot,
       "Event Admin Promotion",
       `Hello ${curUserSnapshot.get(
-        "name"
+        "name",
       )}, you have been promoted to admin for the event : ${eventSnapshot.get(
-        "eventName"
-      )}`
+        "eventName",
+      )}`,
     );
 
     await addNotification(
       email,
       `You have been promoted to admin for the event : ${eventSnapshot.get(
-        "eventName"
+        "eventName",
       )}`,
       { eventId: eventId },
-      invitingUser
+      invitingUser,
+      eventSnapshot.get("eventEndDate"),
     );
   } else {
     error(`Unable to send notification to user ${email} for event ${eventId}`);
@@ -157,7 +159,7 @@ const handleUserPromotionEvent = async (
 
 const sendGoogleCalendarInvite = async (
   userEmail: string,
-  eventSnapshot: DocumentSnapshot
+  eventSnapshot: DocumentSnapshot,
 ) => {
   info("Sending google calendar invite");
   const userSettingsSnapshot = await db
@@ -212,7 +214,7 @@ const handleUserStatusChange = async (
   userSnapshot: QuerySnapshot,
   newUserStatus: string,
   eventId: string,
-  invitingUser?: any
+  invitingUser?: any,
 ) => {
   const eventOwner = eventSnapshot.get("eventOwner");
   if (eventSnapshot.exists && !userSnapshot.empty) {
@@ -221,12 +223,12 @@ const handleUserStatusChange = async (
       "Event",
       newUserStatus,
       curUserSnapshot,
-      eventSnapshot.get("eventName")
+      eventSnapshot.get("eventName"),
     );
     await sendNotification(
       curUserSnapshot,
       titleDescription.title,
-      titleDescription.description
+      titleDescription.description,
     );
 
     await addNotification(
@@ -235,11 +237,12 @@ const handleUserStatusChange = async (
       {
         eventId: eventId,
       },
-      invitingUser
+      invitingUser,
+      eventSnapshot.get("eventEndDate"),
     );
   } else {
     error(
-      `Unable to send notification to user ${eventOwner.email} for event ${eventId}`
+      `Unable to send notification to user ${eventOwner.email} for event ${eventId}`,
     );
   }
 };

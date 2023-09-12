@@ -12,6 +12,7 @@ export const addNotification = async (
   content: string,
   metadata?: NotificationsMetadata,
   initiatedUserData?: any,
+  expirationDate?: number,
 ) => {
   const pendingNotificationCollectionRef = db
     .collection("notifications")
@@ -23,6 +24,7 @@ export const addNotification = async (
     userEmail,
     content,
     createdDate: admin.firestore.Timestamp.fromDate(new Date()),
+    expirationDate,
     initiatedUserPhotoUrl: initiatedUserData
       ? initiatedUserData["photoUrl"]
       : null,

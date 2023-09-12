@@ -4,15 +4,16 @@ import 'package:letshang/blocs/group_overview/group_overview_bloc.dart';
 import 'package:letshang/layouts/invitation_layout.dart';
 import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/invite.dart';
+import 'package:letshang/models/notifications_model.dart';
 import 'package:letshang/widgets/avatars/attendees_avatar.dart';
 import 'package:letshang/widgets/cards/user_event_card.dart';
 
 class GroupInvitationScreen extends StatelessWidget {
   final String groupId;
-  final String notificationId;
+  final NotificationsModel notification;
 
   const GroupInvitationScreen(
-      {Key? key, required this.groupId, required this.notificationId})
+      {Key? key, required this.groupId, required this.notification})
       : super(key: key);
 
   @override
@@ -23,17 +24,17 @@ class GroupInvitationScreen extends StatelessWidget {
                 GroupOverviewBloc()..add(LoadIndividualGroup(groupId: groupId)),
             child: _GroupInvitationScreenView(
               groupId: groupId,
-              notificationId: notificationId,
+              notification: notification,
             )));
   }
 }
 
 class _GroupInvitationScreenView extends StatelessWidget {
   final String groupId;
-  final String notificationId;
+  final NotificationsModel notification;
 
   const _GroupInvitationScreenView(
-      {required this.groupId, required this.notificationId});
+      {required this.groupId, required this.notification});
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +46,7 @@ class _GroupInvitationScreenView extends StatelessWidget {
       if (state is IndividualGroupRetrieved) {
         return InvitationLayout(
             entityId: groupId,
-            notificationId: notificationId,
+            notification: notification,
             inviteType: InviteType.group,
             invitationContent: _GroupInvitationContent(group: state.group));
       } else if (state is IndividualGroupRetrievedError) {

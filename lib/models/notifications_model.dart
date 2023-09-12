@@ -1,11 +1,14 @@
 import 'package:equatable/equatable.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+import 'package:letshang/utils/firebase_utils.dart';
 
 class NotificationsModel extends Equatable {
   final String id;
   final String userEmail;
   final String content;
   final DateTime createdDate;
+  final DateTime? expirationDate;
   final String? eventId;
   final String? groupId;
   final String? initiatedUserName;
@@ -15,6 +18,7 @@ class NotificationsModel extends Equatable {
       required this.userEmail,
       required this.content,
       required this.createdDate,
+      this.expirationDate,
       this.eventId,
       this.groupId,
       this.initiatedUserName,
@@ -26,6 +30,7 @@ class NotificationsModel extends Equatable {
             userEmail: notificationsModel.userEmail,
             content: notificationsModel.content,
             createdDate: notificationsModel.createdDate,
+            expirationDate: notificationsModel.expirationDate,
             eventId: notificationsModel.eventId,
             groupId: notificationsModel.groupId,
             initiatedUserName: notificationsModel.initiatedUserName,
@@ -37,11 +42,14 @@ class NotificationsModel extends Equatable {
 
   static NotificationsModel fromMap(Map<String, dynamic> map) {
     Timestamp createdDateTimestamp = map['createdDate'];
+    Timestamp? expirationDateTimestamp =
+        map.containsKey("expirationDate") ? map['expirationDate'] : null;
     NotificationsModel notification = NotificationsModel(
         id: map['id'],
         userEmail: map["userEmail"],
         content: map['content'],
         createdDate: createdDateTimestamp.toDate(),
+        expirationDate: expirationDateTimestamp?.toDate(),
         eventId: map.containsKey('eventId') ? map['eventId'] : null,
         groupId: map.containsKey('groupId') ? map['groupId'] : null,
         initiatedUserName: map.containsKey('initiatedUserName')
@@ -55,7 +63,7 @@ class NotificationsModel extends Equatable {
   }
 
   Map<String, Object?> toDocument() {
-    return {
+    Map<String, Object?> retVal = {
       'id': id,
       'userEmail': userEmail,
       'content': content,
@@ -65,6 +73,10 @@ class NotificationsModel extends Equatable {
       'initiatedUserName': initiatedUserName,
       'initiatedUserPhotoUrl': initiatedUserPhotoUrl
     };
+    if (expirationDate != null) {
+      retVal["expirationDate"] = Timestamp.fromDate(expirationDate!);
+    }
+    return retVal;
   }
 
   @override
@@ -74,7 +86,9 @@ class NotificationsModel extends Equatable {
         content,
         eventId,
         groupId,
+        createdDate,
+        expirationDate,
         initiatedUserName,
-        initiatedUserPhotoUrl
+        initiatedUserPhotoUrl,
       ];
 }

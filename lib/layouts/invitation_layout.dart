@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:googleapis/photoslibrary/v1.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/invitations/invitations_bloc.dart';
 import 'package:letshang/blocs/notifications/notifications_bloc.dart';
 import 'package:letshang/models/invite.dart';
+import 'package:letshang/models/notifications_model.dart';
 import 'package:letshang/services/message_service.dart';
 
 class InvitationLayout extends StatelessWidget {
   final Widget invitationContent;
   final String entityId;
-  final String notificationId;
+  final NotificationsModel notification;
   final InviteType inviteType;
 
   const InvitationLayout(
       {Key? key,
       required this.entityId,
-      required this.notificationId,
+      required this.notification,
       required this.inviteType,
       required this.invitationContent})
       : super(key: key);
@@ -28,7 +30,7 @@ class InvitationLayout extends StatelessWidget {
         create: (context) => InvitationsBloc(),
         child: _InvitationLayoutView(
           entityId: entityId,
-          notificationId: notificationId,
+          notification: notification,
           inviteType: inviteType,
           invitationContent: invitationContent,
         ));
@@ -38,12 +40,12 @@ class InvitationLayout extends StatelessWidget {
 class _InvitationLayoutView extends StatelessWidget {
   final Widget invitationContent;
   final String entityId;
-  final String notificationId;
+  final NotificationsModel notification;
   final InviteType inviteType;
 
   const _InvitationLayoutView(
       {required this.entityId,
-      required this.notificationId,
+      required this.notification,
       required this.inviteType,
       required this.invitationContent});
 
@@ -51,10 +53,26 @@ class _InvitationLayoutView extends StatelessWidget {
   Widget build(BuildContext context) {
     final userEmail =
         (context.read<AppBloc>().state as AppAuthenticated).user.email!;
+    final isNotificationExpired = notification.expirationDate != null &&
+        notification.expirationDate!.isBefore(DateTime.now());
     return SafeArea(
         child: Stack(
       children: [
         invitationContent,
+        if (isNotificationExpired) ...[
+          MaterialBanner(
+            padding: EdgeInsets.all(20),
+            content: Text("This invitation has expired",
+                style: Theme.of(context).textTheme.bodyText1!),
+            backgroundColor: Colors.red,
+            actions: <Widget>[
+              TextButton(
+                onPressed: null,
+                child: Text(''),
+              ),
+            ],
+          ),
+        ],
         Align(
             alignment: Alignment.bottomCenter,
             child: BlocConsumer<InvitationsBloc, InvitationsState>(
@@ -82,56 +100,90 @@ class _InvitationLayoutView extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        InkWell(
-                          // on Tap function used and call back function os defined here
-                          onTap: () async {
-                            context.read<InvitationsBloc>().add(MaybeInvitation(
-                                email: userEmail,
-                                notificationId: notificationId,
-                                entityId: entityId,
-                                inviteType: inviteType));
-                          },
-                          child: SvgPicture.asset(
-                            'assets/images/thought_cloud.svg',
-                            semanticsLabel: 'Thought Cloud Image',
-                            height: 100,
-                            width: 100,
+                        if (isNotificationExpired) ...[
+                          Opacity(
+                            // on Tap function used and call back function os defined here
+                            opacity: .5,
+                            child: SvgPicture.asset(
+                              'assets/images/thought_cloud.svg',
+                              semanticsLabel: 'Thought Cloud Image',
+                              height: 100,
+                              width: 100,
+                            ),
                           ),
-                        ),
-                        InkWell(
-                          // on Tap function used and call back function os defined here
-                          onTap: () async {
-                            context.read<InvitationsBloc>().add(
-                                AcceptInvitation(
-                                    email: userEmail,
-                                    notificationId: notificationId,
-                                    entityId: entityId,
-                                    inviteType: inviteType));
-                          },
-                          child: SvgPicture.asset(
-                            'assets/images/accept_check.svg',
-                            semanticsLabel: 'Accept Check Image',
-                            height: 100,
-                            width: 100,
+                          Opacity(
+                            // on Tap function used and call back function os defined here
+                            opacity: .5,
+                            child: SvgPicture.asset(
+                              'assets/images/accept_check.svg',
+                              semanticsLabel: 'Accept Check Image',
+                              height: 100,
+                              width: 100,
+                            ),
                           ),
-                        ),
-                        InkWell(
-                          // on Tap function used and call back function os defined here
-                          onTap: () async {
-                            context.read<InvitationsBloc>().add(
-                                RejectInvitation(
-                                    email: userEmail,
-                                    notificationId: notificationId,
-                                    entityId: entityId,
-                                    inviteType: inviteType));
-                          },
-                          child: SvgPicture.asset(
-                            'assets/images/decline_x.svg',
-                            semanticsLabel: 'Decline X Image',
-                            height: 100,
-                            width: 100,
+                          Opacity(
+                            // on Tap function used and call back function os defined here
+                            opacity: .5,
+                            child: SvgPicture.asset(
+                              'assets/images/decline_x.svg',
+                              semanticsLabel: 'Decline X Image',
+                              height: 100,
+                              width: 100,
+                            ),
                           ),
-                        ),
+                        ] else ...[
+                          InkWell(
+                            // on Tap function used and call back function os defined here
+                            onTap: () async {
+                              context.read<InvitationsBloc>().add(
+                                  MaybeInvitation(
+                                      email: userEmail,
+                                      notificationId: notification.id,
+                                      entityId: entityId,
+                                      inviteType: inviteType));
+                            },
+                            child: SvgPicture.asset(
+                              'assets/images/thought_cloud.svg',
+                              semanticsLabel: 'Thought Cloud Image',
+                              height: 100,
+                              width: 100,
+                            ),
+                          ),
+                          InkWell(
+                            // on Tap function used and call back function os defined here
+                            onTap: () async {
+                              context.read<InvitationsBloc>().add(
+                                  AcceptInvitation(
+                                      email: userEmail,
+                                      notificationId: notification.id,
+                                      entityId: entityId,
+                                      inviteType: inviteType));
+                            },
+                            child: SvgPicture.asset(
+                              'assets/images/accept_check.svg',
+                              semanticsLabel: 'Accept Check Image',
+                              height: 100,
+                              width: 100,
+                            ),
+                          ),
+                          InkWell(
+                            // on Tap function used and call back function os defined here
+                            onTap: () async {
+                              context.read<InvitationsBloc>().add(
+                                  RejectInvitation(
+                                      email: userEmail,
+                                      notificationId: notification.id,
+                                      entityId: entityId,
+                                      inviteType: inviteType));
+                            },
+                            child: SvgPicture.asset(
+                              'assets/images/decline_x.svg',
+                              semanticsLabel: 'Decline X Image',
+                              height: 100,
+                              width: 100,
+                            ),
+                          ),
+                        ]
                       ]),
                 );
               },
