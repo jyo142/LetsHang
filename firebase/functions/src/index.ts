@@ -7,6 +7,7 @@ export const db = admin.firestore();
 export * as eventFunctions from "./eventFunctions";
 export * as groupFunctions from "./groupFunctions";
 export * as userSettingsFunctions from "./userSettingsFunctions";
+export * as googleCalendarFunctions from "./googleCalendarFunctions";
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
 

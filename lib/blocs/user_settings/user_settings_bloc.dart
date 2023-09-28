@@ -64,6 +64,9 @@ class UserSettingsBloc extends Bloc<UserSettingsEvent, UserSettingsState> {
               .call(
             {"code": googleAuthResult.serverAuthCode},
           );
+          await FirebaseFunctions.instance
+              .httpsCallable('googleCalendarFunctions-getCalendarEvents')
+              .call();
         } else {
           emit(state.copyWith(
               userSettingsStateStatus:

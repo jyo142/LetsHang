@@ -120,9 +120,8 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
             await transaction.get(dbEventsUserInvitesRef);
         if (!dbEventsUserInvitesSnap.exists) {
           await addUserInviteForEvent(hangEvent, ui, transaction);
-          HangEventInvite newEventInvite =
-              HangEventInvite.withUserInvite(hangEvent, ui);
-          transaction.set(dbEventsUserInvitesRef, newEventInvite.toDocument());
+
+          transaction.set(dbEventsUserInvitesRef, ui.toDocument());
         }
         // all reads need to be done before writes
       }));
@@ -705,6 +704,48 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
             .where((element) => element.title == InviteTitle.organizer)
             .length,
         numEvents: eventInvites.length);
+  }
+
+  @override
+  Future<bool> hasEventInviteConflict(
+      String email, DateTime? startDateTime, DateTime? endDateTime) async {
+    // check if the new dates is in between an event in the db
+    bool hasInBetweenDates = false;
+    bool hasContainsDates = false;
+    if (startDateTime != null) {
+      QuerySnapshot inBetweenDates = await _firebaseFirestore
+          .collection("userInvites")
+          .doc(email)
+          .collection("eventInvites")
+          .where('eventEndDateTime',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startDateTime))
+          .get();
+
+      final inBetweenDatesSnapshots =
+          inBetweenDates.docs.map((doc) => doc.data()).toList();
+      List<HangEventInvite> eventInvites = inBetweenDatesSnapshots
+          .map((doc) => HangEventInvite.fromMap(doc as Map<String, dynamic>))
+          .toList();
+
+      hasInBetweenDates = eventInvites.any((element) =>
+          element.eventStartDateTime != null &&
+          element.eventStartDateTime!.isBefore(startDateTime));
+    }
+
+    if (startDateTime != null && endDateTime != null) {
+      // check if the new dates contains an event in the db
+      QuerySnapshot containsDates = await _firebaseFirestore
+          .collection("userInvites")
+          .doc(email)
+          .collection("eventInvites")
+          .where('eventStartDateTime',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startDateTime))
+          .where('eventStartDateTime',
+              isLessThanOrEqualTo: Timestamp.fromDate(endDateTime))
+          .get();
+      hasContainsDates = containsDates.size > 0;
+    }
+    return hasInBetweenDates || hasContainsDates;
   }
 
   @override

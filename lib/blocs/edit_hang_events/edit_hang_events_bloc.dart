@@ -2,12 +2,16 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:letshang/blocs/edit_hang_events/edit_hang_events_event.dart';
 import 'package:letshang/blocs/edit_hang_events/edit_hang_events_state.dart';
+import 'package:letshang/models/discussions/discussion_metadata.dart';
+import 'package:letshang/models/discussions/discussion_model.dart';
 import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/hang_user_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:letshang/models/user_invite_model.dart';
+import 'package:letshang/repositories/discussions/base_discussions_repository.dart';
+import 'package:letshang/repositories/discussions/discussions_repository.dart';
 import 'package:letshang/repositories/group/group_repository.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
 import 'package:letshang/repositories/invites/base_invites_repository.dart';
@@ -17,10 +21,10 @@ import 'package:letshang/repositories/user/user_repository.dart';
 class EditHangEventsBloc
     extends Bloc<EditHangEventsEvent, EditHangEventsState> {
   final HangEventRepository _hangEventRepository;
+  final BaseDiscussionsRepository _discussionsRepository;
   final BaseUserInvitesRepository _invitesRepository;
   final UserRepository _userRepository;
   final GroupRepository _groupRepository;
-  StreamSubscription? _hangEventSubscription;
   final HangUserPreview creatingUser;
   final HangEvent? existingHangEvent;
   // constructor
@@ -29,6 +33,7 @@ class EditHangEventsBloc
       required this.creatingUser,
       this.existingHangEvent})
       : _hangEventRepository = hangEventRepository,
+        _discussionsRepository = DiscussionsRepository(),
         _invitesRepository = UserInvitesRepository(),
         _userRepository = UserRepository(),
         _groupRepository = GroupRepository(),
@@ -89,9 +94,6 @@ class EditHangEventsBloc
           event.eventEndTime.minute);
 
       emit(state.copyWith(eventEndDate: newEventEndDateTime));
-    });
-    on<EventSavedInitiated>((event, emit) async {
-      emit(await _mapEventSavedState(event, state));
     });
     on<EventSearchByInviteeChanged>((event, emit) {
       emit(state.copyWith(searchEventInviteeBy: event.searchEventInviteeBy));
@@ -156,6 +158,8 @@ class EditHangEventsBloc
                 status: InviteStatus.owner,
                 title: InviteTitle.organizer,
                 type: InviteType.event));
+        await _discussionsRepository
+            .addEventDiscussion(retvalHangEvent.id, true, []);
       }
       return EventMainDetailsSavedSuccessfully(state,
           savedEvent: retvalHangEvent);
@@ -167,7 +171,6 @@ class EditHangEventsBloc
   Future<EditHangEventsState> _mapEventSavedState(
       EventSavedInitiated eventSavedEvent,
       EditHangEventsState eventsState) async {
-    _hangEventSubscription?.cancel();
     try {
       final resultEventUserInvitees = List.of(state.eventUserInvitees.values);
 

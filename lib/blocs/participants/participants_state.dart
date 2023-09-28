@@ -112,11 +112,13 @@ class SearchParticipantLoading extends ParticipantsState {
 
 class SearchParticipantRetrieved extends ParticipantsState {
   final HangUser? foundUser;
-  SearchParticipantRetrieved(ParticipantsState state, {this.foundUser})
+  final bool? hasEventConflict;
+  SearchParticipantRetrieved(ParticipantsState state,
+      {this.foundUser, this.hasEventConflict})
       : super.fromState(state);
 
   @override
-  List<Object?> get props => [foundUser];
+  List<Object?> get props => [foundUser, hasEventConflict];
 }
 
 class SearchParticipantError extends ParticipantsState {

@@ -41,6 +41,8 @@ abstract class BaseUserInvitesRepository {
   Future<void> promoteUserGroupInvite(Group group, UserInvite toPromote);
 
   Future<void> editUserGroupInvites(Group group);
+  Future<bool> hasEventInviteConflict(
+      String email, DateTime? startDateTime, DateTime? endDateTime);
 
   // accept/invite/maybe
   Future<void> acceptInvite(

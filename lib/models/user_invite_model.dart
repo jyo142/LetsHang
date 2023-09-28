@@ -70,12 +70,14 @@ class UserInvite extends Invite {
       {HangUserPreview? user,
       InviteStatus? status,
       InviteType? type,
-      InviteTitle? title}) {
+      InviteTitle? title,
+      HangUserPreview? invitingUser}) {
     return UserInvite(
         user: user ?? this.user,
         status: status ?? this.status,
         type: type ?? this.type,
-        title: title ?? this.title);
+        title: title ?? this.title,
+        invitingUser: invitingUser ?? this.invitingUser);
   }
 
   @override

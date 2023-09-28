@@ -9,6 +9,7 @@ import 'package:letshang/models/invite.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/screens/event_participants_screen.dart';
+import 'package:letshang/screens/events/event_discussions_screen.dart';
 import 'package:letshang/widgets/avatars/attendees_avatar.dart';
 import 'package:letshang/widgets/avatars/user_avatar.dart';
 import 'package:letshang/widgets/cards/user_event_card.dart';
@@ -31,7 +32,17 @@ class EventDetailsScreen extends StatelessWidget {
           child: _EventDetailsView(curEvent: curEvent)),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: LHButton(buttonText: 'Discussions', onPressed: () {}),
+        child: LHButton(
+            buttonText: 'Discussions',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => EventDiscussionsScreen(
+                    hangEventId: curEvent.id,
+                  ),
+                ),
+              );
+            }),
       ),
     );
   }

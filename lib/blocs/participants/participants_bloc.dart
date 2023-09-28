@@ -8,6 +8,8 @@ import 'package:letshang/models/hang_user_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:letshang/models/user_invite_model.dart';
+import 'package:letshang/repositories/discussions/base_discussions_repository.dart';
+import 'package:letshang/repositories/discussions/discussions_repository.dart';
 import 'package:letshang/repositories/group/base_group_repository.dart';
 import 'package:letshang/repositories/group/group_repository.dart';
 import 'package:letshang/repositories/hang_event/base_hang_event_repository.dart';
@@ -24,6 +26,7 @@ part 'participants_state.dart';
 
 class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
   final BaseHangEventRepository _hangEventRepository;
+  final BaseDiscussionsRepository _discussionsRepository;
   final BaseUserRepository _userRepository;
   final BaseUserInvitesRepository _userInvitesRepository;
   final BaseGroupRepository _groupRepository;
@@ -33,6 +36,7 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
   // constructor
   ParticipantsBloc({required this.curUser, this.curEvent, this.curGroup})
       : _hangEventRepository = HangEventRepository(),
+        _discussionsRepository = DiscussionsRepository(),
         _userRepository = UserRepository(),
         _userInvitesRepository = UserInvitesRepository(),
         _groupRepository = GroupRepository(),
@@ -200,7 +204,16 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
           return SearchParticipantError(state,
               errorMessage: "User is already part of this event");
         } else {
-          return SearchParticipantRetrieved(state, foundUser: retValUser);
+          bool hasEventConflict = false;
+          if (curEvent != null) {
+            hasEventConflict =
+                await _userInvitesRepository.hasEventInviteConflict(
+                    retValUser.email!,
+                    curEvent!.eventStartDate,
+                    curEvent!.eventEndDate);
+          }
+          return SearchParticipantRetrieved(state,
+              foundUser: retValUser, hasEventConflict: hasEventConflict);
         }
       }
     } catch (e) {
@@ -245,6 +258,8 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
       HangEvent savingEvent =
           curEvent!.copyWith(currentStage: HangEventStage.complete);
       await _hangEventRepository.editHangEvent(savingEvent);
+      await _discussionsRepository.addUsersToEventGroupDiscussion(
+          savingEvent.id, allInvitedUsers.map((e) => e.user).toList());
       return SendAllInvitesSuccess(state);
     } catch (e) {
       return SendAllInvitesError(state,
