@@ -19,6 +19,9 @@ class DiscussionsBloc extends Bloc<DiscussionsEvent, DiscussionsState> {
         super(DiscussionsState(
             discussionsStateStatus: DiscussionsStateStatus.initial)) {
     on<LoadEventDiscussions>((event, emit) async {
+      emit(state.copyWith(
+          discussionsStateStatus:
+              DiscussionsStateStatus.loadingEventDiscussions));
       emit(await _mapLoadEventDiscussions(event.eventId));
     });
   }

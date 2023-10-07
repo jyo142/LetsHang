@@ -11,6 +11,7 @@ class AddPeopleBottomModal extends StatelessWidget {
   // or just add the invitee to a list
   final Function onInviteeAdded;
   final String submitPeopleButtonName;
+
   const AddPeopleBottomModal(
       {Key? key,
       required this.onInviteeAdded,

@@ -33,7 +33,7 @@ class DiscussionView extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           elevation: 0,
-          backgroundColor: const Color(0xFFCCCCCC),
+          backgroundColor: const Color(0xFFECEEF4),
           centerTitle: true,
           leading: IconButton(
             icon: const Icon(
@@ -41,13 +41,13 @@ class DiscussionView extends StatelessWidget {
               color: Color(0xFF9BADBD),
             ),
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context, true);
             },
           ),
           title: const Text('Discussion'),
           titleTextStyle: Theme.of(context).textTheme.headline4,
         ),
-        backgroundColor: const Color(0xFFCCCCCC),
+        backgroundColor: const Color(0xFFECEEF4),
         body: SafeArea(
             child: Padding(
                 padding: const EdgeInsets.only(
@@ -65,6 +65,7 @@ class DiscussionView extends StatelessWidget {
                         Flexible(
                           flex: 9,
                           child: ListView.builder(
+                              reverse: true,
                               itemCount: state.discussionMessages.length,
                               itemBuilder: (BuildContext context, int index) {
                                 return MessageCard(

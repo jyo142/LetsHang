@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:letshang/models/discussions/discussion_message.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/utils/firebase_utils.dart';
 
@@ -9,6 +10,7 @@ class DiscussionModel extends Equatable {
   final String discussionId;
   final bool isMainGroupDiscussion;
   final List<HangUserPreview> discussionMembers;
+  final DiscussionMessage? lastMessage;
   final String? eventId;
 
   const DiscussionModel(
@@ -16,6 +18,7 @@ class DiscussionModel extends Equatable {
       required this.discussionId,
       required this.isMainGroupDiscussion,
       required this.discussionMembers,
+      this.lastMessage,
       this.eventId});
 
   DiscussionModel.withId(String id, DiscussionModel discussionsModel)
@@ -24,6 +27,7 @@ class DiscussionModel extends Equatable {
           discussionId: discussionsModel.discussionId,
           isMainGroupDiscussion: discussionsModel.isMainGroupDiscussion,
           discussionMembers: discussionsModel.discussionMembers,
+          lastMessage: discussionsModel.lastMessage,
           eventId: discussionsModel.eventId,
         );
 
@@ -32,6 +36,7 @@ class DiscussionModel extends Equatable {
     String? discussionId,
     bool? isMainGroupDiscussion,
     List<HangUserPreview>? discussionMembers,
+    DiscussionMessage? lastMessage,
     String? eventId,
   }) {
     return DiscussionModel(
@@ -40,6 +45,7 @@ class DiscussionModel extends Equatable {
       isMainGroupDiscussion:
           isMainGroupDiscussion ?? this.isMainGroupDiscussion,
       discussionMembers: discussionMembers ?? this.discussionMembers,
+      lastMessage: lastMessage ?? this.lastMessage,
       eventId: eventId ?? this.eventId,
     );
   }
@@ -56,6 +62,8 @@ class DiscussionModel extends Equatable {
       discussionMembers: (map['discussionMembers'] as List<dynamic>)
           .map((member) => HangUserPreview.fromMap(member))
           .toList(),
+      lastMessage: map.getFromMap(
+          "lastMessage", (key) => DiscussionMessage.fromMap(key)),
       eventId: map['eventId'],
     );
 
@@ -69,6 +77,7 @@ class DiscussionModel extends Equatable {
       'isMainGroupDiscussion': isMainGroupDiscussion,
       'discussionMembers':
           discussionMembers.map((member) => member.toDocument()).toList(),
+      'lastMessage': lastMessage?.toDocument(),
       'eventId': eventId,
     };
     return retVal;
@@ -80,6 +89,7 @@ class DiscussionModel extends Equatable {
         discussionId,
         isMainGroupDiscussion,
         discussionMembers,
+        lastMessage,
         eventId,
       ];
 }

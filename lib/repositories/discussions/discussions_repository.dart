@@ -25,7 +25,30 @@ class DiscussionsRepository extends BaseDiscussionsRepository {
         .doc("eventDiscussions")
         .get();
     if (docSnapshot.exists) {
-      return EventDiscussionsModel.fromSnapshot(docSnapshot);
+      EventDiscussionsModel retVal =
+          EventDiscussionsModel.fromSnapshot(docSnapshot);
+
+      // for each discussion get the most recent message as a "preview"
+      List<DiscussionModel> discussionsWithLastMessage =
+          await Future.wait(retVal.eventDiscussions.map((e) async {
+        final lastMessageQuerySnapshot = await _firebaseFirestore
+            .collection('discussions')
+            .doc(e.discussionId)
+            .collection('messages')
+            .orderBy('creationDate', descending: true)
+            .limit(1)
+            .get();
+        if (lastMessageQuerySnapshot.docs.isNotEmpty) {
+          DocumentSnapshot lastMessageSnapshot =
+              lastMessageQuerySnapshot.docs.first;
+          DiscussionMessage lastMessage =
+              DiscussionMessage.fromSnapshot(lastMessageSnapshot);
+          return e.copyWith(lastMessage: lastMessage);
+        }
+        return e;
+      }).toList());
+
+      return retVal.copyWith(eventDiscussions: discussionsWithLastMessage);
     }
     return null;
   }

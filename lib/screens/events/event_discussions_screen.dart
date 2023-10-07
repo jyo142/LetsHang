@@ -1,24 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:letshang/blocs/app/app_bloc.dart';
-import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/discussions/discussions_bloc.dart';
-import 'package:letshang/blocs/edit_groups/edit_group_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:letshang/blocs/participants/participants_bloc.dart';
-import 'package:letshang/models/group_model.dart';
-import 'package:letshang/models/hang_user_preview_model.dart';
-import 'package:letshang/models/invite.dart';
-import 'package:letshang/repositories/group/group_repository.dart';
-import 'package:letshang/repositories/user/user_repository.dart';
-import 'package:letshang/screens/groups/add_member_dialog.dart';
-import 'package:letshang/screens/groups/view_all_members.dart';
-import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/cards/discussion_card.dart';
-import 'package:letshang/widgets/cards/user_event_card.dart';
-import 'package:letshang/widgets/hang_event_participants/add_people_bottom_modal.dart';
-import 'package:letshang/widgets/lh_button.dart';
-import 'package:letshang/widgets/lh_text_form_field.dart';
-import 'package:letshang/widgets/member_card.dart';
 
 class EventDiscussionsScreen extends StatelessWidget {
   final String hangEventId;
@@ -48,7 +31,7 @@ class EventDiscussionsView extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           elevation: 0,
-          backgroundColor: const Color(0xFFCCCCCC),
+          backgroundColor: const Color(0xFFECEEF4),
           centerTitle: true,
           leading: IconButton(
             icon: const Icon(
@@ -62,7 +45,7 @@ class EventDiscussionsView extends StatelessWidget {
           title: const Text('Event Discussions'),
           titleTextStyle: Theme.of(context).textTheme.headline4,
         ),
-        backgroundColor: const Color(0xFFCCCCCC),
+        backgroundColor: const Color(0xFFECEEF4),
         body: SafeArea(
             child: Padding(
                 padding: const EdgeInsets.only(
@@ -80,8 +63,12 @@ class EventDiscussionsView extends StatelessWidget {
                             .eventDiscussionsModel!.eventDiscussions.length,
                         itemBuilder: (BuildContext context, int index) {
                           return DiscussionCard(
-                              discussion: state.eventDiscussionsModel!
-                                  .eventDiscussions[index]);
+                            discussion: state
+                                .eventDiscussionsModel!.eventDiscussions[index],
+                            onRefresh: () => context
+                                .read<DiscussionsBloc>()
+                                .add(LoadEventDiscussions(hangEventId)),
+                          );
                         },
                       );
                     } else {

@@ -1,35 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:letshang/blocs/app/app_bloc.dart';
-import 'package:letshang/blocs/app/app_state.dart';
-import 'package:letshang/blocs/notifications/notifications_bloc.dart';
 import 'package:letshang/models/discussions/discussion_model.dart';
-import 'package:letshang/models/notifications_model.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/screens/discussions/discussion_screen.dart';
-import 'package:letshang/screens/invitations/event_invitation_screen.dart';
-import 'package:letshang/screens/invitations/group_invitation_screen.dart';
-import 'package:letshang/widgets/lh_button.dart';
 
 class DiscussionCard extends StatelessWidget {
   final DiscussionModel discussion;
-
-  const DiscussionCard({
-    Key? key,
-    required this.discussion,
-  }) : super(key: key);
+  Function? onRefresh;
+  DiscussionCard({Key? key, required this.discussion, this.onRefresh})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-        onTap: () {
-          Navigator.of(context).push(
+        onTap: () async {
+          final bool? shouldRefresh = await Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => DiscussionScreen(
                 discussionId: discussion.discussionId,
               ),
             ),
           );
+          if (shouldRefresh != null && shouldRefresh && onRefresh != null) {
+            onRefresh!();
+          }
         },
         child: Container(
             width: double.infinity,
@@ -40,92 +33,67 @@ class DiscussionCard extends StatelessWidget {
             child: Column(
               children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    CircleAvatar(
-                      radius: 15,
-                      backgroundColor: const Color(0xFFEBF1F3),
-                      child: Text(
-                        'Hello',
-                        style: Theme.of(context).textTheme.bodyText2!.merge(
-                            const TextStyle(
-                                fontSize: 9, color: Color(0xFFAFBDC6))),
+                    Flexible(
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 15,
+                            backgroundColor: const Color(0xFFEBF1F3),
+                            child: Text(
+                              'H',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyText2!
+                                  .merge(const TextStyle(
+                                      fontSize: 9, color: Color(0xFFAFBDC6))),
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          if (discussion.lastMessage != null) ...[
+                            Flexible(
+                                child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (discussion.isMainGroupDiscussion) ...[
+                                  Text("Main event discussion",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyText2),
+                                ] else ...[
+                                  Text(
+                                      discussion.discussionMembers
+                                          .map((e) => e.name)
+                                          .join(", "),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyText2),
+                                ],
+                                Text(discussion.lastMessage!.messageContent,
+                                    overflow: TextOverflow.ellipsis,
+                                    style:
+                                        Theme.of(context).textTheme.bodyText2),
+                              ],
+                            ))
+                          ],
+                        ],
                       ),
                     ),
-                    Flexible(
-                        child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("This is a test message",
-                            style: Theme.of(context).textTheme.bodyText2),
-                        Text(
-                            DateFormat('MMMM d, yyyy hh:mm a').format(
-                              DateTime.now(),
-                            ),
-                            style: Theme.of(context).textTheme.bodyText2),
-                      ],
-                    ))
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Text(
+                        DateFormat('hh:mm a').format(
+                          DateTime.now(),
+                        ),
+                        style: Theme.of(context).textTheme.bodyText2)
                   ],
                 ),
-                // Row(
-                //   children: [
-                //     LHButton(
-                //       buttonText: 'Accept',
-                //       onPressed: () {},
-                //       isDisabled: false,
-                //     ),
-                //     SizedBox(
-                //       width: 5,
-                //     ),
-                //     LHButton(
-                //       buttonText: 'Decline',
-                //       onPressed: () {},
-                //       isDisabled: false,
-                //       buttonStyle: ButtonStyle(
-                //         backgroundColor: MaterialStateProperty.all(
-                //           Color(0xFFffe8ea),
-                //         ),
-                //         foregroundColor: MaterialStateProperty.all(
-                //           Color(0xFFFF4D53),
-                //         ),
-                //         shape: MaterialStateProperty.all(
-                //           RoundedRectangleBorder(
-                //             borderRadius: BorderRadius.circular(10),
-                //           ),
-                //         ),
-                //       ),
-                //     ),
-                //     SizedBox(
-                //       width: 5,
-                //     ),
-                //     LHButton(
-                //       buttonText: 'Pending',
-                //       onPressed: () {},
-                //       isDisabled: false,
-                //       buttonStyle: ButtonStyle(
-                //         backgroundColor: MaterialStateProperty.all(
-                //           Color(0xFFffefdc),
-                //         ),
-                //         foregroundColor: MaterialStateProperty.all(
-                //           Color(0xFFFFA32F),
-                //         ),
-                //         shape: MaterialStateProperty.all(
-                //           RoundedRectangleBorder(
-                //             borderRadius: BorderRadius.circular(10),
-                //           ),
-                //         ),
-                //       ),
-                //     ),
-                //   ],
-                // ),
-                // Row(
-                //   children: [
-                //     LHButton(
-                //       buttonText: 'View Details',
-                //       onPressed: () {},
-                //       isDisabled: false,
-                //     ),
-                //   ],
-                // )
               ],
             )));
   }
