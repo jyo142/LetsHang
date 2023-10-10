@@ -8,7 +8,7 @@ class LHAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       elevation: 0,
-      backgroundColor: const Color(0xFFCCCCCC),
+      backgroundColor: const Color(0xFFECEEF4),
       centerTitle: true,
       leading: IconButton(
         icon: const Icon(

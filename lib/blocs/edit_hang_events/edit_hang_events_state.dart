@@ -12,8 +12,8 @@ class EditHangEventsState extends Equatable {
   final HangUserPreview eventOwner;
   final String eventName;
   final String eventDescription;
-  final DateTime? eventStartDate;
-  final DateTime? eventEndDate;
+  final DateTime? eventStartDateTime;
+  final DateTime? eventEndDateTime;
   final TimeOfDay? eventStartTime;
   final bool limitGuestCount;
   final int? maxGuestCount;
@@ -29,8 +29,8 @@ class EditHangEventsState extends Equatable {
     required this.eventOwner,
     this.eventName = '',
     this.eventDescription = '',
-    this.eventStartDate,
-    this.eventEndDate,
+    this.eventStartDateTime,
+    this.eventEndDateTime,
     this.eventStartTime,
     this.limitGuestCount = false,
     this.maxGuestCount = 0,
@@ -55,8 +55,8 @@ class EditHangEventsState extends Equatable {
             eventOwner: state.eventOwner,
             eventName: state.eventName,
             eventDescription: state.eventDescription,
-            eventStartDate: state.eventStartDate,
-            eventEndDate: state.eventEndDate,
+            eventStartDateTime: state.eventStartDateTime,
+            eventEndDateTime: state.eventEndDateTime,
             eventStartTime: state.eventStartTime,
             limitGuestCount: state.limitGuestCount,
             maxGuestCount: state.maxGuestCount,
@@ -71,8 +71,8 @@ class EditHangEventsState extends Equatable {
       HangUserPreview? eventOwner,
       String? eventName,
       String? eventDescription,
-      DateTime? eventStartDate,
-      DateTime? eventEndDate,
+      DateTime? eventStartDateTime,
+      DateTime? eventEndDateTime,
       TimeOfDay? eventStartTime,
       bool? limitGuestCount,
       int? maxGuestCount,
@@ -86,12 +86,12 @@ class EditHangEventsState extends Equatable {
         eventOwner: eventOwner ?? this.eventOwner,
         eventName: eventName ?? this.eventName,
         eventDescription: eventDescription ?? this.eventDescription,
-        eventStartDate: eventStartDate ?? this.eventStartDate,
+        eventStartDateTime: eventStartDateTime ?? this.eventStartDateTime,
         eventStartTime: eventStartTime ?? this.eventStartTime,
         limitGuestCount: limitGuestCount ?? this.limitGuestCount,
         maxGuestCount: maxGuestCount ?? this.maxGuestCount,
         hangEventType: hangEventType ?? this.hangEventType,
-        eventEndDate: eventEndDate ?? this.eventEndDate,
+        eventEndDateTime: eventEndDateTime ?? this.eventEndDateTime,
         photoUrl: photoUrl ?? this.photoUrl,
         searchEventInvitee: searchEventInvitee ?? this.searchEventInvitee,
         searchEventInviteeBy: searchEventInviteeBy ?? this.searchEventInviteeBy,
@@ -138,8 +138,8 @@ class EditHangEventsState extends Equatable {
         eventOwner,
         eventName,
         eventDescription,
-        eventStartDate,
-        eventEndDate,
+        eventStartDateTime,
+        eventEndDateTime,
         eventStartTime,
         limitGuestCount,
         maxGuestCount,

@@ -48,18 +48,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: const Color(0xFFCCCCCC),
         body: BlocProvider(
-          create: (context) => ProfileBloc(
-              userRepository: UserRepository(),
-              email: (context.read<AppBloc>().state as AppAuthenticated)
-                  .user
-                  .email!)
-            ..add(LoadProfile()),
-          child: SafeArea(
-            child: _profileInformation(),
-          ),
-        ));
+      create: (context) => ProfileBloc(
+          userRepository: UserRepository(),
+          email:
+              (context.read<AppBloc>().state as AppAuthenticated).user.email!)
+        ..add(LoadProfile()),
+      child: SafeArea(
+        child: _profileInformation(),
+      ),
+    ));
   }
 
   Widget _profileInformation() {

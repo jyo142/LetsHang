@@ -140,7 +140,7 @@ class _EventInvitationContent extends StatelessWidget {
                                       const SizedBox(width: 10.0),
                                       Text(
                                         DateFormat('MM/dd/yyyy')
-                                            .format(event.eventStartDate!),
+                                            .format(event.eventStartDateTime!),
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodyText1,
@@ -155,7 +155,7 @@ class _EventInvitationContent extends StatelessWidget {
                                       const SizedBox(width: 10.0),
                                       Text(
                                         DateFormat('h:mm a')
-                                            .format(event.eventStartDate!),
+                                            .format(event.eventStartDateTime!),
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodyText1,

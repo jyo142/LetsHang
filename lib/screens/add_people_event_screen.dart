@@ -27,7 +27,7 @@ class AddPeopleEventScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: const Color(0xFFCCCCCC),
+        backgroundColor: const Color(0xFFECEEF4),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(
@@ -41,7 +41,6 @@ class AddPeopleEventScreen extends StatelessWidget {
         title: const Text('Add People'),
         titleTextStyle: Theme.of(context).textTheme.headline4,
       ),
-      backgroundColor: const Color(0xFFCCCCCC),
       body: BlocProvider(
           create: (context) => ParticipantsBloc(
               curUser: HangUserPreview.fromUser(

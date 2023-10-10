@@ -56,8 +56,8 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
           status: curEventInvite.status,
           type: curEventInvite.type,
           title: curEventInvite.title,
-          eventStartDateTime: newEvent.eventStartDate,
-          eventEndDateTime: newEvent.eventEndDate));
+          eventStartDateTime: newEvent.eventStartDateTime,
+          eventEndDateTime: newEvent.eventEndDateTime));
     }
     return retValInvites;
   }
@@ -205,8 +205,8 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         status: toAdd.status,
         type: toAdd.type,
         title: toAdd.title,
-        eventStartDateTime: hangEvent.eventStartDate,
-        eventEndDateTime: hangEvent.eventEndDate);
+        eventStartDateTime: hangEvent.eventStartDateTime,
+        eventEndDateTime: hangEvent.eventEndDateTime);
 
     if (eventInviteDocumentSnap.exists) {
       throw Exception("User is already invited to this event");
@@ -230,8 +230,8 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
           status: ui.status,
           type: ui.type,
           title: ui.title,
-          eventStartDateTime: event.eventStartDate,
-          eventEndDateTime: event.eventEndDate);
+          eventStartDateTime: event.eventStartDateTime,
+          eventEndDateTime: event.eventEndDateTime);
 
       if (eventInviteDocumentSnap.exists) {}
       transaction.set(eventInviteRef, newEventInvite.toDocument());
@@ -302,8 +302,8 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         type: curHangEventInvite.type,
         title: InviteTitle.admin,
         invitingUser: curHangEventInvite.invitingUser,
-        eventStartDateTime: curHangEventInvite.event.eventStartDate,
-        eventEndDateTime: curHangEventInvite.event.eventEndDate);
+        eventStartDateTime: curHangEventInvite.event.eventStartDateTime,
+        eventEndDateTime: curHangEventInvite.event.eventEndDateTime);
 
     transaction.update(eventInviteRef, newHangEventInvite.toDocument());
   }

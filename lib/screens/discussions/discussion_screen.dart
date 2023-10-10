@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/discussions/discussion_messages_bloc.dart';
@@ -33,7 +34,7 @@ class DiscussionView extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           elevation: 0,
-          backgroundColor: const Color(0xFFECEEF4),
+          backgroundColor: mainTheme.backgroundColor,
           centerTitle: true,
           leading: IconButton(
             icon: const Icon(

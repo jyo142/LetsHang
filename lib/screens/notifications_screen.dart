@@ -20,7 +20,7 @@ class _NotificationsView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: const Color(0xFFCCCCCC),
+        backgroundColor: const Color(0xFFECEEF4),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(
@@ -34,7 +34,6 @@ class _NotificationsView extends StatelessWidget {
         title: const Text('Notifications'),
         titleTextStyle: Theme.of(context).textTheme.headline4,
       ),
-      backgroundColor: const Color(0xFFCCCCCC),
       body: SafeArea(child: BlocBuilder<NotificationsBloc, NotificationsState>(
           builder: (context, state) {
         if (state.notificationStateStatus ==

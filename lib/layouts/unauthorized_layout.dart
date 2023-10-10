@@ -10,7 +10,7 @@ class UnAuthorizedLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Color(0xFFCCCCCC),
+        backgroundColor: const Color(0xFFECEEF4),
         body: SafeArea(
             child: LayoutBuilder(
                 builder: (context, constraints) => SingleChildScrollView(

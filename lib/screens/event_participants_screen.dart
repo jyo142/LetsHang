@@ -21,7 +21,6 @@ class EventParticipantsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFCCCCCC),
       body: BlocProvider(
           create: (context) => ParticipantsBloc(
               curUser: HangUserPreview.fromUser(

@@ -41,25 +41,24 @@ class MyApp extends StatelessWidget {
         title: 'Flutter Demo',
         theme: mainTheme,
         home: Scaffold(
-            backgroundColor: const Color(0xFFCCCCCC),
             body: StreamBuilder(
-              stream: FirebaseAuth.instance.authStateChanges(),
-              builder: ((context, snapshot) {
-                if (snapshot.hasData) {
-                  context.read<AppBloc>().add(AppUserAuthReturned(
-                      userEmail: (snapshot.data as User).email!));
-                  return BlocBuilder<AppBloc, AppState>(
-                    builder: (context, state) {
-                      if (state is AppAuthenticated) {
-                        return const AppScreen();
-                      }
-                      return const Center(child: CircularProgressIndicator());
-                    },
-                  );
-                }
-                return const UnAuthorizedScreen();
-              }),
-            )),
+          stream: FirebaseAuth.instance.authStateChanges(),
+          builder: ((context, snapshot) {
+            if (snapshot.hasData) {
+              context.read<AppBloc>().add(AppUserAuthReturned(
+                  userEmail: (snapshot.data as User).email!));
+              return BlocBuilder<AppBloc, AppState>(
+                builder: (context, state) {
+                  if (state is AppAuthenticated) {
+                    return const AppScreen();
+                  }
+                  return const Center(child: CircularProgressIndicator());
+                },
+              );
+            }
+            return const UnAuthorizedScreen();
+          }),
+        )),
       ),
     );
   }

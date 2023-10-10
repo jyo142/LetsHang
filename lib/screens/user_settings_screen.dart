@@ -56,7 +56,7 @@ class _UserSettingsView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: const Color(0xFFCCCCCC),
+        backgroundColor: const Color(0xFFECEEF4),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(
@@ -70,7 +70,6 @@ class _UserSettingsView extends StatelessWidget {
         title: const Text('Settings'),
         titleTextStyle: Theme.of(context).textTheme.headline4,
       ),
-      backgroundColor: const Color(0xFFCCCCCC),
       body: SafeArea(child: BlocBuilder<UserSettingsBloc, UserSettingsState>(
           builder: (context, state) {
         if (state.errorMessage != null) {

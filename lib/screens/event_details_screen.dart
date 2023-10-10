@@ -59,7 +59,7 @@ class _EventDetailsView extends StatelessWidget {
     double width = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFCCCCCC),
+      backgroundColor: Colors.white,
       body: SafeArea(
           child: Container(
         height: fullHeight,
@@ -146,9 +146,9 @@ class _EventDetailsView extends StatelessWidget {
                                     Padding(
                                       padding: const EdgeInsets.only(left: 15),
                                       child: Text(
-                                          curEvent.eventStartDate != null
+                                          curEvent.eventStartDateTime != null
                                               ? DateFormat('MM/dd/yyyy').format(
-                                                  curEvent.eventStartDate!)
+                                                  curEvent.eventStartDateTime!)
                                               : 'Undecided',
                                           style: Theme.of(context)
                                               .textTheme
@@ -165,9 +165,9 @@ class _EventDetailsView extends StatelessWidget {
                                     Padding(
                                       padding: const EdgeInsets.only(left: 15),
                                       child: Text(
-                                          curEvent.eventEndDate != null
+                                          curEvent.eventEndDateTime != null
                                               ? DateFormat('hh:mm a').format(
-                                                  curEvent.eventEndDate!)
+                                                  curEvent.eventEndDateTime!)
                                               : 'Undecided',
                                           style: Theme.of(context)
                                               .textTheme

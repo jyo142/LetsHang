@@ -37,8 +37,8 @@ class GoogleApiService {
         Event(
             summary: hangEvent.eventName,
             description: hangEvent.eventDescription,
-            start: EventDateTime(dateTime: hangEvent.eventStartDate),
-            end: EventDateTime(dateTime: hangEvent.eventStartDate)),
+            start: EventDateTime(dateTime: hangEvent.eventStartDateTime),
+            end: EventDateTime(dateTime: hangEvent.eventEndDateTime)),
         "primary");
   }
 }

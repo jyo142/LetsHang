@@ -32,7 +32,23 @@ class GroupsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: const Color(0xFFCCCCCC),
+        floatingActionButton: FloatingActionButton(
+            heroTag: "createGroupBtn",
+            backgroundColor: const Color(0xFF0287BF),
+            onPressed: () async {
+              final shouldRefresh = await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const EditGroupsScreen(),
+                ),
+              );
+              if (shouldRefresh != null && shouldRefresh) {
+                context.read<GroupOverviewBloc>().add(LoadGroupInvites(
+                    userId: (context.read<AppBloc>().state as AppAuthenticated)
+                        .user
+                        .id!));
+              }
+            },
+            child: const Icon(Icons.add)),
         body: SafeArea(
             child: Padding(
                 padding: const EdgeInsets.only(
@@ -50,12 +66,6 @@ class GroupsView extends StatelessWidget {
                           Flexible(
                               flex: 10,
                               child: _groupListView(state.groupsForUser)),
-                          Flexible(
-                              flex: 1,
-                              child: Container(
-                                margin: EdgeInsets.only(top: 10),
-                                child: _createGroupButton(context),
-                              ))
                         ]);
                       }
                     }
@@ -79,28 +89,7 @@ class GroupsView extends StatelessWidget {
           style: Theme.of(context).textTheme.headline6,
         ),
       ),
-      Container(
-          margin: const EdgeInsets.only(top: 50),
-          child: _createGroupButton(context))
     ]);
-  }
-
-  Widget _createGroupButton(BuildContext context) {
-    return LHButton(
-        buttonText: 'Create Group',
-        onPressed: () async {
-          final shouldRefresh = await Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const EditGroupsScreen(),
-            ),
-          );
-          if (shouldRefresh != null && shouldRefresh) {
-            context.read<GroupOverviewBloc>().add(LoadGroupInvites(
-                userId: (context.read<AppBloc>().state as AppAuthenticated)
-                    .user
-                    .id!));
-          }
-        });
   }
 
   Widget _groupListView(List<GroupInvite> groupInvites) {

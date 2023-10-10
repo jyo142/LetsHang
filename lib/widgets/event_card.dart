@@ -49,9 +49,9 @@ class EventCard extends StatelessWidget {
                 ],
               ),
               Text(
-                  curEvent.eventStartDate != null
+                  curEvent.eventStartDateTime != null
                       ? DateFormat('MM/dd/yyyy, hh:mm a')
-                          .format(curEvent.eventStartDate!)
+                          .format(curEvent.eventStartDateTime!)
                       : 'Undecided',
                   style: Theme.of(context).textTheme.bodyText2)
             ],

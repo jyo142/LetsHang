@@ -28,7 +28,7 @@ class EditEventScreen extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           elevation: 0,
-          backgroundColor: const Color(0xFFCCCCCC),
+          backgroundColor: const Color(0xFFECEEF4),
           centerTitle: true,
           leading: IconButton(
             icon: const Icon(
@@ -42,7 +42,6 @@ class EditEventScreen extends StatelessWidget {
           title: const Text('Create Event'),
           titleTextStyle: Theme.of(context).textTheme.headline4,
         ),
-        backgroundColor: const Color(0xFFCCCCCC),
         body: BlocProvider(
             create: (context) => EditHangEventsBloc(
                 hangEventRepository: HangEventRepository(),
@@ -253,12 +252,12 @@ class _EditEventScreenState extends State<_EditEventScreenView> {
                               return InkWell(
                                   onTap: () {
                                     _selectStartDate(
-                                        context, state.eventStartDate);
+                                        context, state.eventStartDateTime);
                                   },
                                   child: LHTextFormField(
-                                    labelText: state.eventStartDate != null
+                                    labelText: state.eventStartDateTime != null
                                         ? DateFormat('MM/dd/yyyy')
-                                            .format(state.eventStartDate!)
+                                            .format(state.eventStartDateTime!)
                                         : 'Date',
                                     backgroundColor: Colors.white,
                                     enabled: false,

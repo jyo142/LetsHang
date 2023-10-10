@@ -209,8 +209,8 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
             hasEventConflict =
                 await _userInvitesRepository.hasEventInviteConflict(
                     retValUser.email!,
-                    curEvent!.eventStartDate,
-                    curEvent!.eventEndDate);
+                    curEvent!.eventStartDateTime,
+                    curEvent!.eventEndDateTime);
           }
           return SearchParticipantRetrieved(state,
               foundUser: retValUser, hasEventConflict: hasEventConflict);

@@ -19,7 +19,7 @@ class LHMainAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext mainAppBarContext) {
     return AppBar(
       elevation: 0,
-      backgroundColor: const Color(0xFFCCCCCC),
+      backgroundColor: const Color(0xFFECEEF4),
       centerTitle: true,
       leading: Container(
         margin: const EdgeInsets.only(left: 15),

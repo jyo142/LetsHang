@@ -41,8 +41,8 @@ class EditHangEventsBloc
             eventName: existingHangEvent?.eventName ?? '',
             eventOwner: existingHangEvent?.eventOwner ?? creatingUser,
             eventDescription: existingHangEvent?.eventDescription ?? '',
-            eventStartDate: existingHangEvent?.eventStartDate,
-            eventEndDate: existingHangEvent?.eventEndDate,
+            eventStartDateTime: existingHangEvent?.eventStartDateTime,
+            eventEndDateTime: existingHangEvent?.eventEndDateTime,
             eventUserInvitees: existingHangEvent?.userInvites != null
                 ? {
                     for (var member in existingHangEvent!.userInvites)
@@ -63,7 +63,7 @@ class EditHangEventsBloc
       emit(state.copyWith(eventDescription: event.eventDescription));
     });
     on<EventStartDateChanged>((event, emit) {
-      emit(state.copyWith(eventStartDate: event.eventStartDate));
+      emit(state.copyWith(eventStartDateTime: event.eventStartDate));
     });
     on<EventStartTimeChanged>((event, emit) {
       emit(state.copyWith(eventStartTime: event.eventStartTime));
@@ -93,7 +93,7 @@ class EditHangEventsBloc
           event.eventEndTime.hour,
           event.eventEndTime.minute);
 
-      emit(state.copyWith(eventEndDate: newEventEndDateTime));
+      emit(state.copyWith(eventEndDateTime: newEventEndDateTime));
     });
     on<EventSearchByInviteeChanged>((event, emit) {
       emit(state.copyWith(searchEventInviteeBy: event.searchEventInviteeBy));
@@ -139,8 +139,8 @@ class EditHangEventsBloc
           eventOwner: creatingUser,
           eventName: state.eventName,
           eventDescription: state.eventDescription,
-          eventStartDate: state.eventStartDate,
-          eventEndDate: state.eventEndDate,
+          eventStartDateTime: state.eventStartDateTime,
+          eventEndDateTime: state.eventEndDateTime,
           currentStage: HangEventStage.addingUsers);
       HangEvent retvalHangEvent;
       if (existingHangEvent != null) {
@@ -179,8 +179,8 @@ class EditHangEventsBloc
           eventOwner: creatingUser,
           eventName: state.eventName,
           eventDescription: state.eventDescription,
-          eventStartDate: state.eventStartDate,
-          eventEndDate: state.eventEndDate,
+          eventStartDateTime: state.eventStartDateTime,
+          eventEndDateTime: state.eventEndDateTime,
           userInvites: resultEventUserInvitees);
       if (existingHangEvent != null) {
         // this event is being edited if an id is present

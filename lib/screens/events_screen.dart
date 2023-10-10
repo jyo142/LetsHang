@@ -4,6 +4,7 @@ import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:letshang/widgets/events/past_events_view.dart';
 import 'package:letshang/widgets/events/upcoming_events_view.dart';
 
@@ -45,7 +46,15 @@ class _EventsViewState extends State<EventsView> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFCCCCCC),
+      floatingActionButton: FloatingActionButton(
+          heroTag: "createGroupBtn",
+          backgroundColor: const Color(0xFF0287BF),
+          onPressed: () async {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => const EditEventScreen(),
+            ));
+          },
+          child: const Icon(Icons.add)),
       body: SafeArea(
           child: Padding(
               padding: const EdgeInsets.only(

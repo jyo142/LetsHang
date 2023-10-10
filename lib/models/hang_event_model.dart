@@ -12,8 +12,8 @@ class HangEvent extends HasUserInvites {
   final HangUserPreview eventOwner;
   final String eventName;
   final String eventDescription;
-  late final DateTime? eventStartDate;
-  late final DateTime? eventEndDate;
+  late final DateTime? eventStartDateTime;
+  late final DateTime? eventEndDateTime;
   final HangEventStage currentStage;
   final String? photoURL;
   HangEvent(
@@ -21,8 +21,8 @@ class HangEvent extends HasUserInvites {
       required this.eventOwner,
       this.eventName = '',
       this.eventDescription = '',
-      this.eventStartDate,
-      this.eventEndDate,
+      this.eventStartDateTime,
+      this.eventEndDateTime,
       List<UserInvite>? userInvites,
       this.currentStage = HangEventStage.started,
       this.photoURL = ''})
@@ -34,8 +34,8 @@ class HangEvent extends HasUserInvites {
             eventOwner: event.eventOwner,
             eventName: event.eventName,
             eventDescription: event.eventDescription,
-            eventEndDate: event.eventEndDate,
-            eventStartDate: event.eventStartDate,
+            eventEndDateTime: event.eventEndDateTime,
+            eventStartDateTime: event.eventStartDateTime,
             userInvites: event.userInvites,
             currentStage: event.currentStage,
             photoURL: event.photoURL);
@@ -50,8 +50,8 @@ class HangEvent extends HasUserInvites {
       HangUserPreview? eventOwner,
       String? eventName,
       String? eventDescription,
-      DateTime? eventStartDate,
-      DateTime? eventEndDate,
+      DateTime? eventStartDateTime,
+      DateTime? eventEndDateTime,
       List<UserInvite>? userInvites,
       HangEventStage? currentStage,
       String? photoUrl}) {
@@ -60,8 +60,8 @@ class HangEvent extends HasUserInvites {
         eventOwner: eventOwner ?? this.eventOwner,
         eventName: eventName ?? this.eventName,
         eventDescription: eventDescription ?? this.eventDescription,
-        eventStartDate: eventStartDate ?? this.eventStartDate,
-        eventEndDate: eventEndDate ?? this.eventEndDate,
+        eventStartDateTime: eventStartDateTime ?? this.eventStartDateTime,
+        eventEndDateTime: eventEndDateTime ?? this.eventEndDateTime,
         userInvites: userInvites ?? this.userInvites,
         currentStage: currentStage ?? this.currentStage,
         photoURL: photoURL ?? this.photoURL);
@@ -69,15 +69,15 @@ class HangEvent extends HasUserInvites {
 
   static HangEvent fromMap(Map<String, dynamic> map,
       [List<UserInvite>? userInvites]) {
-    Timestamp? startDateTimestamp = map['eventStartDate'];
-    Timestamp? endDateTimestamp = map['eventEndDate'];
+    Timestamp? startDateTimestamp = map['eventStartDateTime'];
+    Timestamp? endDateTimestamp = map['eventEndDateTime'];
     HangEvent event = HangEvent(
         id: map["id"],
         eventOwner: HangUserPreview.fromMap(map["eventOwner"]),
         eventName: map['eventName'],
         eventDescription: map['eventDescription'],
-        eventStartDate: startDateTimestamp?.toDate(),
-        eventEndDate: endDateTimestamp?.toDate(),
+        eventStartDateTime: startDateTimestamp?.toDate(),
+        eventEndDateTime: endDateTimestamp?.toDate(),
         userInvites: userInvites ?? [],
         currentStage: HangEventStage.values
             .firstWhere((e) => describeEnum(e) == map["currentStage"]),
@@ -91,10 +91,12 @@ class HangEvent extends HasUserInvites {
       'eventName': eventName,
       "eventOwner": eventOwner.toDocument(),
       'eventDescription': eventDescription,
-      'eventStartDate':
-          eventStartDate != null ? Timestamp.fromDate(eventStartDate!) : null,
-      'eventEndDate':
-          eventEndDate != null ? Timestamp.fromDate(eventEndDate!) : null,
+      'eventStartDateTime': eventStartDateTime != null
+          ? Timestamp.fromDate(eventStartDateTime!)
+          : null,
+      'eventEndDateTime': eventEndDateTime != null
+          ? Timestamp.fromDate(eventEndDateTime!)
+          : null,
       'currentStage': describeEnum(currentStage),
       'photoUrl': photoURL.toString()
     };
@@ -106,8 +108,8 @@ class HangEvent extends HasUserInvites {
         eventOwner,
         eventName,
         eventDescription,
-        eventStartDate,
-        eventEndDate,
+        eventStartDateTime,
+        eventEndDateTime,
         userInvites,
         currentStage,
         photoURL

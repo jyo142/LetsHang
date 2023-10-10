@@ -325,9 +325,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 },
               ),
-              title: Text(events[index].event.eventStartDate != null
+              title: Text(events[index].event.eventStartDateTime != null
                   ? DateFormat('MM/dd/yyyy h:mm a')
-                      .format(events[index].event.eventStartDate!)
+                      .format(events[index].event.eventStartDateTime!)
                   : 'Undecided'),
               subtitle: Text(events[index].event.eventName),
             ));
