@@ -20,7 +20,6 @@ class ViewAllGroupMembers extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const LHAppBar(screenName: 'View Group Members'),
-      backgroundColor: const Color(0xFFCCCCCC),
       body: BlocProvider(
         create: (context) => ParticipantsBloc(
             curUser: HangUserPreview.fromUser(
