@@ -16,9 +16,9 @@ class EventsScreen extends StatelessWidget {
         body: BlocProvider(
             create: (context) => HangEventOverviewBloc()
               ..add(LoadHangEvents(
-                  userEmail: (context.read<AppBloc>().state as AppAuthenticated)
+                  userId: (context.read<AppBloc>().state as AppAuthenticated)
                       .user
-                      .email!)),
+                      .id!)),
             child: const EventsView()));
   }
 }

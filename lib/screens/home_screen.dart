@@ -160,9 +160,9 @@ class _HomeScreenState extends State<HomeScreen> {
         body: BlocProvider(
             create: (context) => HangEventOverviewBloc()
               ..add(LoadHangEventsForDates(
-                  userEmail: (context.read<AppBloc>().state as AppAuthenticated)
+                  userId: (context.read<AppBloc>().state as AppAuthenticated)
                       .user
-                      .email!,
+                      .id!,
                   startDateTime: _startOfWeek,
                   endDateTime: _endOfWeek)),
             child: SafeArea(
@@ -223,11 +223,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                               focusedDay.weekday));
                                   context.read<HangEventOverviewBloc>().add(
                                       LoadHangEventsForDates(
-                                          userEmail: (context
-                                                  .read<AppBloc>()
-                                                  .state as AppAuthenticated)
+                                          userId: (context.read<AppBloc>().state
+                                                  as AppAuthenticated)
                                               .user
-                                              .email!,
+                                              .id!,
                                           startDateTime: newStartOfWeek,
                                           endDateTime: newEndOfWeek));
                                   _focusedDay = focusedDay;
@@ -319,10 +318,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                   if (shouldRefresh != null && shouldRefresh) {
                     context.read<HangEventOverviewBloc>().add(LoadHangEvents(
-                        userEmail:
+                        userId:
                             (context.read<AppBloc>().state as AppAuthenticated)
                                 .user
-                                .email!));
+                                .id!));
                   }
                 },
               ),

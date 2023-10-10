@@ -24,7 +24,7 @@ class GroupOverviewBloc extends Bloc<GroupOverviewEvent, GroupOverviewState> {
         super(GroupsLoading()) {
     on<LoadGroupInvites>((event, emit) async {
       List<GroupInvite> groups =
-          await _userInvitesRepository.getUserGroupInvites(event.email);
+          await _userInvitesRepository.getUserGroupInvites(event.userId);
       emit(GroupsRetrieved(groupsForUser: groups));
     });
     on<LoadIndividualGroup>((event, emit) async {

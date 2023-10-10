@@ -23,36 +23,42 @@ class UserRepository extends BaseUserRepository {
 
   @override
   Future<HangUser?> getUserByEmail(String email) async {
-    DocumentSnapshot docSnapshot =
-        await _firebaseFirestore.collection('users').doc(email).get();
-    if (docSnapshot.exists) {
-      return HangUser.fromSnapshot(docSnapshot);
+    QuerySnapshot querySnapshot = await _firebaseFirestore
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .get();
+    if (querySnapshot.size > 0) {
+      return HangUser.fromSnapshot(querySnapshot.docs.single);
     }
     return null;
   }
 
   @override
   Future<void> addUser(HangUser user) {
+    HangUser newUserWithId = user.copyWith(
+        id: FirebaseFirestore.instance.collection('users').doc().id);
     return _firebaseFirestore
         .collection('users')
-        .doc(user.email)
-        .set(user.toDocument());
+        .doc(newUserWithId.id)
+        .set(newUserWithId.toDocument());
   }
 
   @override
   Future<void> updateUser(HangUser user) {
     return _firebaseFirestore
         .collection('users')
-        .doc(user.email)
+        .doc(user.id)
         .set(user.toDocument());
   }
 
   @override
   Future<void> addFirebaseUser(String email, User firebaseUser) {
+    HangUser addingFirebaseUser = HangUser.fromFirebaseUser("",
+        FirebaseFirestore.instance.collection('users').doc().id, firebaseUser);
     return _firebaseFirestore
         .collection('users')
-        .doc(email)
-        .set(HangUser.fromFirebaseUser("", firebaseUser).toDocument());
+        .doc(addingFirebaseUser.id)
+        .set(addingFirebaseUser.toDocument());
   }
 
   @override

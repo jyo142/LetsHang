@@ -9,11 +9,9 @@ class UserSettingsRepository extends BaseUserSettingsRepository {
       : _firebaseFirestore = firebaseFirestore ?? FirebaseFirestore.instance;
 
   @override
-  Future<UserSettingsModel?> getUserSettings(String userEmail) async {
-    DocumentSnapshot docSnapshot = await _firebaseFirestore
-        .collection('userSettings')
-        .doc(userEmail)
-        .get();
+  Future<UserSettingsModel?> getUserSettings(String userId) async {
+    DocumentSnapshot docSnapshot =
+        await _firebaseFirestore.collection('userSettings').doc(userId).get();
     if (docSnapshot.exists) {
       return UserSettingsModel.fromSnapshot(docSnapshot);
     }
@@ -22,7 +20,7 @@ class UserSettingsRepository extends BaseUserSettingsRepository {
 
   @override
   Future<void> setUserSettings(
-      String userEmail, UserSettingsModel userSettingsModel) {
+      String userId, UserSettingsModel userSettingsModel) {
     UserSettingsModel retVal = userSettingsModel;
     if (retVal.id?.isEmpty ?? true) {
       retVal = retVal.copyWith(
@@ -30,7 +28,7 @@ class UserSettingsRepository extends BaseUserSettingsRepository {
     }
     return _firebaseFirestore
         .collection('userSettings')
-        .doc(userEmail)
+        .doc(userId)
         .set(userSettingsModel.toDocument());
   }
 }

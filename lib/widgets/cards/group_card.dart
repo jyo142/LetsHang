@@ -74,10 +74,10 @@ class GroupCard extends StatelessWidget {
                   );
                   if (shouldRefresh != null && shouldRefresh) {
                     context.read<GroupOverviewBloc>().add(LoadGroupInvites(
-                        email:
+                        userId:
                             (context.read<AppBloc>().state as AppAuthenticated)
                                 .user
-                                .email!));
+                                .id!));
                   }
                 }
                 if (result == 'view_members') {
@@ -89,10 +89,10 @@ class GroupCard extends StatelessWidget {
                   );
                   if (shouldRefresh != null && shouldRefresh) {
                     context.read<GroupOverviewBloc>().add(LoadGroupInvites(
-                        email:
+                        userId:
                             (context.read<AppBloc>().state as AppAuthenticated)
                                 .user
-                                .email!));
+                                .id!));
                   }
                 }
               },

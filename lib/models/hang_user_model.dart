@@ -12,15 +12,17 @@ extension ParseToString on SearchUserBy {
 }
 
 class HangUser extends Equatable {
+  final String? id;
   late final String? name;
-  late String userName;
+  late final String userName;
   late final String? email;
   late final String? phoneNumber;
   late final String? photoUrl;
-  late String? fcmToken;
-  late String? profilePicDownloadUrl;
+  late final String? fcmToken;
+  late final String? profilePicDownloadUrl;
   HangUser(
-      {this.name = '',
+      {this.id,
+      this.name = '',
       this.userName = '',
       this.email = '',
       this.phoneNumber = '',
@@ -28,8 +30,9 @@ class HangUser extends Equatable {
       this.fcmToken = '',
       this.profilePicDownloadUrl = ''}) {}
 
-  HangUser.fromFirebaseUser(String userName, User firebaseUser)
+  HangUser.fromFirebaseUser(String userName, String docId, User firebaseUser)
       : this(
+            id: docId,
             userName: userName,
             name: firebaseUser.displayName,
             email: firebaseUser.email,
@@ -38,6 +41,7 @@ class HangUser extends Equatable {
 
   static HangUser fromSnapshot(DocumentSnapshot snap) {
     HangUser userPreview = HangUser(
+        id: snap.getFromSnap("id"),
         name: snap.getFromSnap("name"),
         userName: snap.getFromSnap("userName")!,
         email: snap.getFromSnap("email"),
@@ -48,8 +52,31 @@ class HangUser extends Equatable {
     return userPreview;
   }
 
-  Map<String, Object> toDocument() {
+  HangUser copyWith(
+      {String? id,
+      String? name,
+      String? userName,
+      String? email,
+      String? phoneNumber,
+      String? photoUrl,
+      String? fcmToken,
+      String? profilePicDownloadUrl}) {
+    return HangUser(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      userName: userName ?? this.userName,
+      email: email ?? this.email,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      photoUrl: photoUrl ?? this.photoUrl,
+      fcmToken: fcmToken ?? this.fcmToken,
+      profilePicDownloadUrl:
+          profilePicDownloadUrl ?? this.profilePicDownloadUrl,
+    );
+  }
+
+  Map<String, Object?> toDocument() {
     final retVal = {
+      "id": id,
       'userName': userName,
       'name': name ?? "",
       'email': email ?? "",
@@ -63,6 +90,7 @@ class HangUser extends Equatable {
 
   @override
   List<Object?> get props => [
+        id,
         name,
         userName,
         email,

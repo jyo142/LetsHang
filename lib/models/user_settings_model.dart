@@ -3,13 +3,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserSettingsModel extends Equatable {
   final String? id;
-  final String userEmail;
+  final String userId;
   final bool? syncGoogleCalendar;
   final String? googleApiRefreshToken;
   final String? userTimezone;
   const UserSettingsModel(
       {this.id,
-      required this.userEmail,
+      required this.userId,
       this.syncGoogleCalendar,
       this.googleApiRefreshToken,
       this.userTimezone});
@@ -17,7 +17,7 @@ class UserSettingsModel extends Equatable {
   UserSettingsModel.withId(String id, UserSettingsModel userSettingsModel)
       : this(
             id: id,
-            userEmail: userSettingsModel.userEmail,
+            userId: userSettingsModel.userId,
             syncGoogleCalendar: userSettingsModel.syncGoogleCalendar,
             googleApiRefreshToken: userSettingsModel.googleApiRefreshToken,
             userTimezone: userSettingsModel.userTimezone);
@@ -28,12 +28,12 @@ class UserSettingsModel extends Equatable {
 
   UserSettingsModel copyWith(
       {String? id,
-      String? userEmail,
+      String? userId,
       bool? syncGoogleCalendar,
       String? googleApiRefreshToken,
       String? userTimezone}) {
     return UserSettingsModel(
-        userEmail: userEmail ?? this.userEmail,
+        userId: userId ?? this.userId,
         syncGoogleCalendar: syncGoogleCalendar ?? this.syncGoogleCalendar,
         googleApiRefreshToken:
             googleApiRefreshToken ?? this.googleApiRefreshToken,
@@ -43,7 +43,7 @@ class UserSettingsModel extends Equatable {
   static UserSettingsModel fromMap(Map<String, dynamic> map) {
     UserSettingsModel userSettingsModel = UserSettingsModel(
         id: map['id'],
-        userEmail: map["userEmail"],
+        userId: map["userId"],
         syncGoogleCalendar: map.containsKey('syncGoogleCalendar')
             ? map['syncGoogleCalendar']
             : null,
@@ -59,7 +59,7 @@ class UserSettingsModel extends Equatable {
   Map<String, Object?> toDocument() {
     return {
       'id': id,
-      'userEmail': userEmail,
+      'userId': userId,
       'syncGoogleCalendar': syncGoogleCalendar,
       'googleApiRefreshToken': googleApiRefreshToken,
       'userTimezone': userTimezone
@@ -68,5 +68,5 @@ class UserSettingsModel extends Equatable {
 
   @override
   List<Object?> get props =>
-      [id, userEmail, syncGoogleCalendar, googleApiRefreshToken, userTimezone];
+      [id, userId, syncGoogleCalendar, googleApiRefreshToken, userTimezone];
 }

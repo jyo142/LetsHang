@@ -1,5 +1,5 @@
 import * as admin from "firebase-admin";
-import { QueryDocumentSnapshot } from "firebase-functions/v2/firestore";
+import { DocumentSnapshot } from "firebase-functions/v2/firestore";
 import { info, error } from "firebase-functions/logger";
 import { db } from ".";
 
@@ -8,20 +8,20 @@ export interface NotificationsMetadata {
   eventId?: string;
 }
 export const addNotification = async (
-  userEmail: string,
+  userId: string,
   content: string,
   metadata?: NotificationsMetadata,
   initiatedUserData?: any,
-  expirationDate?: number,
+  expirationDate?: number
 ) => {
   const pendingNotificationCollectionRef = db
     .collection("notifications")
-    .doc(userEmail)
+    .doc(userId)
     .collection("pendingNotifications");
   info(initiatedUserData);
   await pendingNotificationCollectionRef.add({
     id: pendingNotificationCollectionRef.doc().id,
-    userEmail,
+    userId,
     content,
     createdDate: admin.firestore.Timestamp.fromDate(new Date()),
     expirationDate,
@@ -34,17 +34,17 @@ export const addNotification = async (
 };
 
 export const sendNotification = async (
-  curUserSnapshot: QueryDocumentSnapshot,
+  curUserSnapshot: DocumentSnapshot,
   notificationTitle: string,
-  notificationBody: string,
+  notificationBody: string
 ) => {
   info(`PENDING : sending notifiation to user ${curUserSnapshot.get("email")}`);
   const userFCMToken = curUserSnapshot.get("fcmToken");
   if (userFCMToken == null) {
     error(
       `User does not have a fcm token, cannot send a notification. user : ${curUserSnapshot.get(
-        "email",
-      )}`,
+        "email"
+      )}`
     );
   } else {
     const payload = {
@@ -59,7 +59,7 @@ export const sendNotification = async (
       .messaging()
       .sendToDevice([curUserSnapshot.get("fcmToken")], payload);
     info(
-      `SUCCESS : sending notifiation to user ${curUserSnapshot.get("email")}`,
+      `SUCCESS : sending notifiation to user ${curUserSnapshot.get("email")}`
     );
   }
 };

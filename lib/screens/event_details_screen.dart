@@ -26,9 +26,9 @@ class EventDetailsScreen extends StatelessWidget {
       body: BlocProvider(
           create: (context) => HangEventOverviewBloc()
             ..add(LoadHangEvents(
-                userEmail: (context.read<AppBloc>().state as AppAuthenticated)
+                userId: (context.read<AppBloc>().state as AppAuthenticated)
                     .user
-                    .email!)),
+                    .id!)),
           child: _EventDetailsView(curEvent: curEvent)),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),

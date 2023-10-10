@@ -25,11 +25,11 @@ class HangEventOverviewBloc
         _hangEventRepository = HangEventRepository(),
         super(HangEventsLoading()) {
     on<LoadHangEvents>((event, emit) async {
-      emit(await _mapLoadHangEventsToState(email: event.userEmail));
+      emit(await _mapLoadHangEventsToState(userId: event.userId));
     });
     on<LoadHangEventsForDates>((event, emit) async {
       emit(await _mapLoadHangEventsToState(
-          email: event.userEmail,
+          userId: event.userId,
           startDateTime: event.startDateTime,
           endDateTime: event.endDateTime));
     });
@@ -47,16 +47,16 @@ class HangEventOverviewBloc
   }
 
   Future<HangEventOverviewState> _mapLoadHangEventsToState(
-      {required String email,
+      {required String userId,
       DateTime? startDateTime,
       DateTime? endDateTime}) async {
     List<HangEventInvite> eventsForUser = [];
     if (startDateTime == null && endDateTime == null) {
       eventsForUser =
-          await _userInvitesRepository.getAllUserEventInvites(email);
+          await _userInvitesRepository.getAllUserEventInvites(userId);
     } else {
       eventsForUser = await _userInvitesRepository.getUserEventInvitesByRange(
-          email, startDateTime!, endDateTime!);
+          userId, startDateTime!, endDateTime!);
     }
 
     return HangEventsRetrieved(hangEvents: eventsForUser);

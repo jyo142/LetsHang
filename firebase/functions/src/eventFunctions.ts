@@ -6,14 +6,13 @@ import {
 import { error, info } from "firebase-functions/logger";
 import { db } from ".";
 import { addNotification, sendNotification } from "./notificationUtils";
-import { QuerySnapshot } from "firebase-admin/firestore";
 import { getStatusTitleDescription } from "./inviteStatusUtils";
 import { OAuth2Client } from "googleapis-common";
 import { calendar } from "@googleapis/calendar";
 import { getAccessTokenFromRefreshToken } from "./services/googleAuthService";
 
 export const onUserInvitedToEvent = onDocumentCreated(
-  "/hangEvents/{eventId}/invites/{email}",
+  "/hangEvents/{eventId}/invites/{userId}",
   async (snap) => {
     if (!snap.data) {
       info("No data");
@@ -29,15 +28,14 @@ export const onUserInvitedToEvent = onDocumentCreated(
       .get();
     const userSnapshot = await db
       .collection("users")
-      .where("email", "==", snap.params.email)
+      .doc(snap.params.userId)
       .get();
 
-    if (eventSnapshot.exists && !userSnapshot.empty) {
-      const curUserSnapshot = userSnapshot.docs[0];
+    if (eventSnapshot.exists && userSnapshot.exists) {
       await sendNotification(
-        curUserSnapshot,
+        userSnapshot,
         "New Event Invitation",
-        `Hello ${curUserSnapshot.get(
+        `Hello ${userSnapshot.get(
           "name",
         )}, you have been invited to the event :  ${eventSnapshot.get(
           "eventName",
@@ -45,7 +43,7 @@ export const onUserInvitedToEvent = onDocumentCreated(
       );
 
       await addNotification(
-        snap.params.email,
+        snap.params.userId,
         `You have been invited to the event : ${eventSnapshot.get(
           "eventName",
         )}`,
@@ -55,14 +53,14 @@ export const onUserInvitedToEvent = onDocumentCreated(
       );
     } else {
       error(
-        `Unable to send notification to user ${snap.params.email} for event ${snap.params.eventId}`,
+        `Unable to send notification to user ${snap.params.userId} for event ${snap.params.eventId}`,
       );
     }
   },
 );
 
 export const onUserEventInviteChanged = onDocumentUpdated(
-  "/hangEvents/{eventId}/invites/{email}",
+  "/hangEvents/{eventId}/invites/{userId}",
   async (snap) => {
     const newUserInviteData = snap.data?.after;
     const oldUserInviteData = snap.data?.before;
@@ -90,7 +88,7 @@ export const onUserEventInviteChanged = onDocumentUpdated(
       .get();
     const userSnapshot = await db
       .collection("users")
-      .where("email", "==", snap.params.email)
+      .doc(snap.params.userId)
       .get();
 
     if (isTitleDifferent) {
@@ -98,7 +96,7 @@ export const onUserEventInviteChanged = onDocumentUpdated(
         eventSnapshot,
         userSnapshot,
         newUserInviteTitle,
-        snap.params.email,
+        snap.params.userId,
         snap.params.eventId,
         newUserInviteData?.get("invitingUser"),
       );
@@ -113,7 +111,7 @@ export const onUserEventInviteChanged = onDocumentUpdated(
       );
 
       if (newUserInviteStatus === "accepted") {
-        await sendGoogleCalendarInvite(snap.params.email, eventSnapshot);
+        await sendGoogleCalendarInvite(snap.params.userId, eventSnapshot);
       }
     }
   },
@@ -121,22 +119,21 @@ export const onUserEventInviteChanged = onDocumentUpdated(
 
 const handleUserPromotionEvent = async (
   eventSnapshot: DocumentSnapshot,
-  userSnapshot: QuerySnapshot,
+  userSnapshot: DocumentSnapshot,
   newUserInviteTitle: string,
-  email: string,
+  userId: string,
   eventId: string,
   invitingUser?: any,
 ) => {
   if (
     eventSnapshot.exists &&
-    !userSnapshot.empty &&
+    userSnapshot.exists &&
     newUserInviteTitle === "admin"
   ) {
-    const curUserSnapshot = userSnapshot.docs[0];
     await sendNotification(
-      curUserSnapshot,
+      userSnapshot,
       "Event Admin Promotion",
-      `Hello ${curUserSnapshot.get(
+      `Hello ${userSnapshot.get(
         "name",
       )}, you have been promoted to admin for the event : ${eventSnapshot.get(
         "eventName",
@@ -144,7 +141,7 @@ const handleUserPromotionEvent = async (
     );
 
     await addNotification(
-      email,
+      userId,
       `You have been promoted to admin for the event : ${eventSnapshot.get(
         "eventName",
       )}`,
@@ -153,18 +150,18 @@ const handleUserPromotionEvent = async (
       eventSnapshot.get("eventEndDate"),
     );
   } else {
-    error(`Unable to send notification to user ${email} for event ${eventId}`);
+    error(`Unable to send notification to user ${userId} for event ${eventId}`);
   }
 };
 
 const sendGoogleCalendarInvite = async (
-  userEmail: string,
+  userId: string,
   eventSnapshot: DocumentSnapshot,
 ) => {
   info("Sending google calendar invite");
   const userSettingsSnapshot = await db
     .collection("userSettings")
-    .doc(userEmail)
+    .doc(userId)
     .get();
   // Set the access token obtained after authentication
   const refreshToken = userSettingsSnapshot.get("googleApiRefreshToken");
@@ -211,28 +208,27 @@ const sendGoogleCalendarInvite = async (
 
 const handleUserStatusChange = async (
   eventSnapshot: DocumentSnapshot,
-  userSnapshot: QuerySnapshot,
+  userSnapshot: DocumentSnapshot,
   newUserStatus: string,
   eventId: string,
   invitingUser?: any,
 ) => {
   const eventOwner = eventSnapshot.get("eventOwner");
-  if (eventSnapshot.exists && !userSnapshot.empty) {
-    const curUserSnapshot = userSnapshot.docs[0];
+  if (eventSnapshot.exists && userSnapshot.exists) {
     const titleDescription = getStatusTitleDescription(
       "Event",
       newUserStatus,
-      curUserSnapshot,
+      userSnapshot,
       eventSnapshot.get("eventName"),
     );
     await sendNotification(
-      curUserSnapshot,
+      userSnapshot,
       titleDescription.title,
       titleDescription.description,
     );
 
     await addNotification(
-      eventOwner.email,
+      eventOwner.userId,
       titleDescription.description,
       {
         eventId: eventId,

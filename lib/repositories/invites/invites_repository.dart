@@ -17,10 +17,10 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       : _firebaseFirestore = firebaseFirestore ?? FirebaseFirestore.instance;
 
   @override
-  Future<List<HangEventInvite>> getAllUserEventInvites(String email) async {
+  Future<List<HangEventInvite>> getAllUserEventInvites(String userId) async {
     QuerySnapshot eventInviteSnapshot = await _firebaseFirestore
         .collection("userInvites")
-        .doc(email)
+        .doc(userId)
         .collection("eventInvites")
         .get();
 
@@ -64,10 +64,10 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
 
   @override
   Future<List<HangEventInvite>> getUserEventInvitesByRange(
-      String email, DateTime startDateTime, DateTime endDateTime) async {
+      String userId, DateTime startDateTime, DateTime endDateTime) async {
     QuerySnapshot rangeEventInviteQuerySnapshot = await _firebaseFirestore
         .collection("userInvites")
-        .doc(email)
+        .doc(userId)
         .collection("eventInvites")
         .where('eventStartDateTime',
             isGreaterThanOrEqualTo: Timestamp.fromDate(startDateTime))
@@ -77,7 +77,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
 
     QuerySnapshot draftInviteQuerySnapshot = await _firebaseFirestore
         .collection("userInvites")
-        .doc(email)
+        .doc(userId)
         .collection("eventInvites")
         .where('eventStartDateTime', isNull: true)
         .get();
@@ -115,7 +115,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       }
       await Future.wait(userInvites.map((ui) async {
         DocumentReference dbEventsUserInvitesRef =
-            dbEventsRef.collection('invites').doc(ui.user.email);
+            dbEventsRef.collection('invites').doc(ui.user.userId);
         final dbEventsUserInvitesSnap =
             await transaction.get(dbEventsUserInvitesRef);
         if (!dbEventsUserInvitesSnap.exists) {
@@ -143,7 +143,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       }
 
       DocumentReference dbEventsUserInvitesRef =
-          dbEventsRef.collection('invites').doc(userInvite.user.email);
+          dbEventsRef.collection('invites').doc(userInvite.user.userId);
 
       final eventsUserInvitesSnap =
           await transaction.get(dbEventsUserInvitesRef);
@@ -195,7 +195,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       HangEvent hangEvent, UserInvite toAdd, Transaction transaction) async {
     DocumentReference eventInviteRef = _firebaseFirestore
         .collection("userInvites")
-        .doc(toAdd.user.email)
+        .doc(toAdd.user.userId)
         .collection("eventInvites")
         .doc(hangEvent.id);
     final eventInviteDocumentSnap = await transaction.get(eventInviteRef);
@@ -242,7 +242,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       HangEvent event, UserInvite toRemove, Transaction transaction) async {
     DocumentReference eventInviteRef = _firebaseFirestore
         .collection("userInvites")
-        .doc(toRemove.user.email)
+        .doc(toRemove.user.userId)
         .collection("eventInvites")
         .doc(event.id);
     final eventInviteDocumentSnap = await transaction.get(eventInviteRef);
@@ -285,7 +285,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       HangEvent event, UserInvite toPromote, Transaction transaction) async {
     DocumentReference eventInviteRef = _firebaseFirestore
         .collection("userInvites")
-        .doc(toPromote.user.email)
+        .doc(toPromote.user.userId)
         .collection("eventInvites")
         .doc(event.id);
     final eventInviteDocumentSnap = await transaction.get(eventInviteRef);
@@ -321,7 +321,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
             "Unable to promote user in event. Event cannot be retrieved.");
       }
       final dbEventUserInvitesRef =
-          dbEventsRef.collection('invites').doc(toPromote.user.email);
+          dbEventsRef.collection('invites').doc(toPromote.user.userId);
       final userInviteSnap = await transaction.get(dbEventUserInvitesRef);
       if (!userInviteSnap.exists) {
         throw Exception(
@@ -341,10 +341,10 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
   }
 
   @override
-  Future<List<GroupInvite>> getUserGroupInvites(String email) async {
+  Future<List<GroupInvite>> getUserGroupInvites(String userId) async {
     QuerySnapshot groupInviteQuerySnapshot = await _firebaseFirestore
         .collection("userInvites")
-        .doc(email)
+        .doc(userId)
         .collection("groupInvites")
         .get();
 
@@ -388,7 +388,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       Group group, UserInvite toAdd, Transaction transaction) async {
     DocumentReference groupInviteRef = _firebaseFirestore
         .collection("userInvites")
-        .doc(toAdd.user.email)
+        .doc(toAdd.user.userId)
         .collection("groupInvites")
         .doc(group.id);
     final groupInviteDocumentSnap = await transaction.get(groupInviteRef);
@@ -432,12 +432,11 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       Group group, UserInvite toRemove, Transaction transaction) async {
     DocumentReference groupInviteRef = _firebaseFirestore
         .collection("userInvites")
-        .doc(toRemove.user.email)
+        .doc(toRemove.user.userId)
         .collection("groupInvites")
         .doc(group.id);
     final groupInviteDocumentSnap = await transaction.get(groupInviteRef);
 
-    List<GroupInvite> retValGroups = [];
     if (!groupInviteDocumentSnap.exists) {
       throw Exception(
           "User cannot be removed from group. User is not part of the group");
@@ -449,7 +448,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       Group group, UserInvite toPromote, Transaction transaction) async {
     DocumentReference groupInviteRef = _firebaseFirestore
         .collection("userInvites")
-        .doc(toPromote.user.email)
+        .doc(toPromote.user.userId)
         .collection("groupInvites")
         .doc(group.id);
     final groupInviteDocumentSnap = await transaction.get(groupInviteRef);
@@ -506,7 +505,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       }
 
       DocumentReference dbGroupUserInvitesRef =
-          dbGroupRef.collection('invites').doc(userInvite.user.email);
+          dbGroupRef.collection('invites').doc(userInvite.user.userId);
 
       final groupUserInvitesSnap = await transaction.get(dbGroupUserInvitesRef);
       if (groupUserInvitesSnap.exists) {
@@ -533,7 +532,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       }
       await Future.wait(userInvites.map((ui) async {
         DocumentReference dbGroupsUserInvitesRef =
-            dbGroupRef.collection('invites').doc(ui.user.email);
+            dbGroupRef.collection('invites').doc(ui.user.userId);
         final dbEventsUserInvitesSnap =
             await transaction.get(dbGroupsUserInvitesRef);
         if (!dbEventsUserInvitesSnap.exists) {
@@ -557,7 +556,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
             "Unable to add users to group. Group cannot be retrieved.");
       }
       DocumentReference dbGroupUserInvitesRef =
-          dbGroupRef.collection('invites').doc(toPromote.user.email);
+          dbGroupRef.collection('invites').doc(toPromote.user.userId);
 
       // before promoting the user, make sure that they are part of the event
       final groupUserInvitesSnap = await transaction.get(dbGroupUserInvitesRef);
@@ -623,7 +622,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       }
 
       DocumentReference dbGroupUserInvitesRef =
-          dbGroupRef.collection('invites').doc(toRemoveUserInvite.user.email);
+          dbGroupRef.collection('invites').doc(toRemoveUserInvite.user.userId);
 
       final groupUserInvitesSnap = await transaction.get(dbGroupUserInvitesRef);
       if (!groupUserInvitesSnap.exists) {
@@ -659,7 +658,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       }
 
       DocumentReference dbEventsUserInvitesRef =
-          dbEventsRef.collection('invites').doc(toRemoveUserInvite.user.email);
+          dbEventsRef.collection('invites').doc(toRemoveUserInvite.user.userId);
 
       final eventsUserInvitesSnap =
           await transaction.get(dbEventsUserInvitesRef);
@@ -684,10 +683,10 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
   }
 
   @override
-  Future<UserEventMetadata> getUserEventMetadata(String email) async {
+  Future<UserEventMetadata> getUserEventMetadata(String userId) async {
     QuerySnapshot eventInviteQuerySnapshot = await _firebaseFirestore
         .collection("userInvites")
-        .doc(email)
+        .doc(userId)
         .collection("eventInvites")
         .get();
 
@@ -699,7 +698,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         .toList();
 
     return UserEventMetadata(
-        userEmail: email,
+        userId: userId,
         numEventsOrganized: eventInvites
             .where((element) => element.title == InviteTitle.organizer)
             .length,
@@ -708,14 +707,14 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
 
   @override
   Future<bool> hasEventInviteConflict(
-      String email, DateTime? startDateTime, DateTime? endDateTime) async {
+      String userId, DateTime? startDateTime, DateTime? endDateTime) async {
     // check if the new dates is in between an event in the db
     bool hasInBetweenDates = false;
     bool hasContainsDates = false;
     if (startDateTime != null) {
       QuerySnapshot inBetweenDates = await _firebaseFirestore
           .collection("userInvites")
-          .doc(email)
+          .doc(userId)
           .collection("eventInvites")
           .where('eventEndDateTime',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDateTime))
@@ -736,7 +735,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       // check if the new dates contains an event in the db
       QuerySnapshot containsDates = await _firebaseFirestore
           .collection("userInvites")
-          .doc(email)
+          .doc(userId)
           .collection("eventInvites")
           .where('eventStartDateTime',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDateTime))
@@ -750,33 +749,33 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
 
   @override
   Future<void> acceptInvite(
-      InviteType inviteType, String email, String entityId) async {
+      InviteType inviteType, String userId, String entityId) async {
     await _firebaseFirestore.runTransaction((transaction) async {
       await changeInviteStatus(
-          email, entityId, inviteType, InviteStatus.accepted, transaction);
+          userId, entityId, inviteType, InviteStatus.accepted, transaction);
     });
   }
 
   @override
   Future<void> rejectInvite(
-      InviteType inviteType, String email, String entityId) async {
+      InviteType inviteType, String userId, String entityId) async {
     await _firebaseFirestore.runTransaction((transaction) async {
       await changeInviteStatus(
-          email, entityId, inviteType, InviteStatus.rejected, transaction);
+          userId, entityId, inviteType, InviteStatus.rejected, transaction);
     });
   }
 
   @override
   Future<void> maybeInvite(
-      InviteType inviteType, String email, String entityId) async {
+      InviteType inviteType, String userId, String entityId) async {
     await _firebaseFirestore.runTransaction((transaction) async {
       await changeInviteStatus(
-          email, entityId, inviteType, InviteStatus.pending, transaction);
+          userId, entityId, inviteType, InviteStatus.pending, transaction);
     });
   }
 
   Future<void> changeInviteStatus(
-      String email,
+      String userId,
       String id,
       InviteType inviteType,
       InviteStatus newInviteStatus,
@@ -787,7 +786,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         inviteType == InviteType.event ? 'events' : 'groups';
     DocumentReference dbUserGroupInvitesRef = _firebaseFirestore
         .collection('userInvites')
-        .doc(email)
+        .doc(userId)
         .collection(inviteCollection)
         .doc(id);
     DocumentSnapshot dbGroupInvitesSnap =
@@ -807,12 +806,12 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       toDocumentResult = updateEventInvite.toDocument();
     }
     await updateEntityUserInviteStatus(
-        email, id, userInviteCollection, newInviteStatus, transaction);
+        userId, id, userInviteCollection, newInviteStatus, transaction);
     transaction.update(dbUserGroupInvitesRef, toDocumentResult);
   }
 
   Future<void> updateEntityUserInviteStatus(
-    String email,
+    String userId,
     String id,
     String userInviteCollection,
     InviteStatus inviteStatus,
@@ -822,7 +821,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         .collection(userInviteCollection)
         .doc(id)
         .collection('invites')
-        .doc(email);
+        .doc(userId);
     DocumentSnapshot dbUserInvitesSnap =
         await transaction.get(dbGroupUserInvitesRef);
     UserInvite dbUserInvite = UserInvite.fromSnapshot(dbUserInvitesSnap);

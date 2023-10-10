@@ -43,23 +43,23 @@ class InvitationsBloc extends Bloc<InvitationsEvent, InvitationsState> {
           invitationsEvent as StatusChangeInvitation;
       if (invitationsEvent is AcceptInvitation) {
         await _invitesRepository.acceptInvite(invitationsEvent.inviteType,
-            invitationsEvent.email, invitationsEvent.entityId);
+            invitationsEvent.userId, invitationsEvent.entityId);
         finalMessage =
             'Successfully accepted the invitiation for the ${describeEnum(statusChangeInvitationEvent.inviteType)}';
       } else if (invitationsEvent is RejectInvitation) {
         await _invitesRepository.rejectInvite(invitationsEvent.inviteType,
-            invitationsEvent.email, invitationsEvent.entityId);
+            invitationsEvent.userId, invitationsEvent.entityId);
         finalMessage =
             'Successfully rejected the invitiation for the ${describeEnum(statusChangeInvitationEvent.inviteType)}';
       } else {
         await _invitesRepository.maybeInvite(invitationsEvent.inviteType,
-            invitationsEvent.email, invitationsEvent.entityId);
+            invitationsEvent.userId, invitationsEvent.entityId);
         finalMessage =
             'Successfully responded as tentative to the invitiation for the ${describeEnum(statusChangeInvitationEvent.inviteType)}';
       }
       // remove the notification
       await _notificationsRepository.removeNotificationForUser(
-          statusChangeInvitationEvent.email,
+          statusChangeInvitationEvent.userId,
           statusChangeInvitationEvent.notificationId);
       return InvitationStatusChangedSuccess(successMessage: finalMessage);
     } catch (e) {

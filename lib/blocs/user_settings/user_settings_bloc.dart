@@ -20,7 +20,7 @@ class UserSettingsBloc extends Bloc<UserSettingsEvent, UserSettingsState> {
         super(const UserSettingsState(
             userSettingsStateStatus: UserSettingsStateStatus.initial)) {
     on<SetUser>((event, emit) async {
-      emit(state.copyWith(userEmail: event.userEmail));
+      emit(state.copyWith(userId: event.userId));
     });
     on<LoadUserSettings>((event, emit) async {
       _validateUserSettings(emit);
@@ -28,7 +28,7 @@ class UserSettingsBloc extends Bloc<UserSettingsEvent, UserSettingsState> {
         userSettingsStateStatus: UserSettingsStateStatus.userSettingsLoading,
       ));
       UserSettingsModel? curUserSettings =
-          await _userSettingsRepository.getUserSettings(state.userEmail!);
+          await _userSettingsRepository.getUserSettings(state.userId!);
       emit(state.copyWith(
           userSettingsStateStatus:
               UserSettingsStateStatus.userSettingsRetrieved,
@@ -45,12 +45,12 @@ class UserSettingsBloc extends Bloc<UserSettingsEvent, UserSettingsState> {
         if (googleAuthResult != null) {
           String? userTimezone = await _getUserTimezone();
           UserSettingsModel? curUserSettings =
-              await _userSettingsRepository.getUserSettings(state.userEmail!);
-          curUserSettings ??= UserSettingsModel(userEmail: state.userEmail!);
+              await _userSettingsRepository.getUserSettings(state.userId!);
+          curUserSettings ??= UserSettingsModel(userId: state.userId!);
           curUserSettings = curUserSettings.copyWith(
               syncGoogleCalendar: true, userTimezone: userTimezone);
           await _userSettingsRepository.setUserSettings(
-              state.userEmail!, curUserSettings);
+              state.userId!, curUserSettings);
           emit(state.copyWith(
               userSettingsStateStatus:
                   UserSettingsStateStatus.settingsChangedSuccess));
@@ -62,7 +62,7 @@ class UserSettingsBloc extends Bloc<UserSettingsEvent, UserSettingsState> {
           await FirebaseFunctions.instance
               .httpsCallable('userSettingsFunctions-getUserToken')
               .call(
-            {"code": googleAuthResult.serverAuthCode},
+            {"userId": state.userId, "code": googleAuthResult.serverAuthCode},
           );
           await FirebaseFunctions.instance
               .httpsCallable('googleCalendarFunctions-getCalendarEvents')
@@ -90,7 +90,7 @@ class UserSettingsBloc extends Bloc<UserSettingsEvent, UserSettingsState> {
           syncGoogleCalendar: false,
         );
         await _userSettingsRepository.setUserSettings(
-            state.userEmail!, newUserSettings);
+            state.userId!, newUserSettings);
         emit(state.copyWith(
             userSettingsStateStatus:
                 UserSettingsStateStatus.settingsChangedSuccess));
@@ -108,7 +108,7 @@ class UserSettingsBloc extends Bloc<UserSettingsEvent, UserSettingsState> {
   }
 
   void _validateUserSettings(Emitter<UserSettingsState> emit) {
-    if (state.userEmail?.isEmpty ?? false) {
+    if (state.userId?.isEmpty ?? false) {
       emit(state.copyWith(
           userSettingsStateStatus: UserSettingsStateStatus.error,
           errorMessage: "Unable to use user settings"));

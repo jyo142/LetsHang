@@ -69,7 +69,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   Future<AppState> mapAuthenticatedUser(HangUser curUser) async {
     final fcmToken = await FirebaseMessaging.instance.getToken();
-    await _userRepository.updateFCMToken(curUser.email!, fcmToken);
+    await _userRepository.updateFCMToken(curUser.id!, fcmToken);
     return AppAuthenticated(user: curUser);
   }
 }

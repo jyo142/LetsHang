@@ -1,9 +1,9 @@
-import { QueryDocumentSnapshot } from "firebase-functions/v2/firestore";
+import { DocumentSnapshot } from "firebase-functions/v2/firestore";
 
 export const getStatusTitleDescription = (
   inviteType: "Group" | "Event",
   newUserStatus: string,
-  curUserSnapshot: QueryDocumentSnapshot,
+  curUserSnapshot: DocumentSnapshot,
   inviteTypeName: string,
 ) => {
   switch (newUserStatus) {

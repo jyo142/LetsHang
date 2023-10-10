@@ -9,12 +9,12 @@ abstract class GroupOverviewEvent extends Equatable {
 }
 
 class LoadGroupInvites extends GroupOverviewEvent {
-  final String email;
+  final String userId;
 
-  const LoadGroupInvites({required this.email});
+  const LoadGroupInvites({required this.userId});
 
   @override
-  List<Object> get props => [email];
+  List<Object> get props => [userId];
 }
 
 class LoadIndividualGroup extends GroupOverviewEvent {

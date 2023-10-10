@@ -11,10 +11,10 @@ class NotificationsRepository extends BaseNotificationsRepository {
 
   @override
   Future<List<NotificationsModel>> getPendingNotificationsForUser(
-      String userEmail) async {
+      String userId) async {
     QuerySnapshot pendingNotificationsSnapshot = await _firebaseFirestore
         .collection("notifications")
-        .doc(userEmail)
+        .doc(userId)
         .collection("pendingNotifications")
         .get();
 
@@ -30,10 +30,10 @@ class NotificationsRepository extends BaseNotificationsRepository {
 
   @override
   Future<void> removeNotificationForUser(
-      String userEmail, String notificationId) async {
+      String userId, String notificationId) async {
     await _firebaseFirestore
         .collection("notifications")
-        .doc(userEmail)
+        .doc(userId)
         .collection("pendingNotifications")
         .doc(notificationId)
         .delete();
@@ -41,15 +41,15 @@ class NotificationsRepository extends BaseNotificationsRepository {
 
   @override
   Future<NotificationsModel> addNotificationForUser(
-      String userEmail, String notificationContent) async {
+      String userId, String notificationContent) async {
     NotificationsModel savingNotification = NotificationsModel(
         id: FirebaseFirestore.instance.collection('groups').doc().id,
-        userEmail: userEmail,
+        userId: userId,
         content: notificationContent,
         createdDate: DateTime.now());
     await _firebaseFirestore
         .collection('notifications')
-        .doc(userEmail)
+        .doc(userId)
         .collection("pendingNotifications")
         .doc(savingNotification.id)
         .set(savingNotification.toDocument());
@@ -58,11 +58,11 @@ class NotificationsRepository extends BaseNotificationsRepository {
 
   @override
   Future<void> markNotificationAsReadForUser(
-      String userEmail, String notificationId) async {
+      String userId, String notificationId) async {
     // move the notifcation from pending collection to read collection
     DocumentReference notificationReference = _firebaseFirestore
         .collection("notifications")
-        .doc(userEmail)
+        .doc(userId)
         .collection("pendingNotifications")
         .doc(notificationId);
     DocumentSnapshot notificationSnap = await notificationReference.get();
@@ -75,7 +75,7 @@ class NotificationsRepository extends BaseNotificationsRepository {
 
       await _firebaseFirestore
           .collection('notifications')
-          .doc(userEmail)
+          .doc(userId)
           .collection("readNotifications")
           .doc(notificationId)
           .set(currentNotification.toDocument());

@@ -6,11 +6,10 @@ import {
 import { error, info } from "firebase-functions/logger";
 import { db } from ".";
 import { addNotification, sendNotification } from "./notificationUtils";
-import { QuerySnapshot } from "firebase-admin/firestore";
 import { getStatusTitleDescription } from "./inviteStatusUtils";
 
 export const onUserInvitedToGroup = onDocumentCreated(
-  "/groups/{groupId}/invites/{email}",
+  "/groups/{groupId}/invites/{userId}",
   async (snap) => {
     if (!snap.data) {
       info("No data");
@@ -26,34 +25,33 @@ export const onUserInvitedToGroup = onDocumentCreated(
       .get();
     const userSnapshot = await db
       .collection("users")
-      .where("email", "==", snap.params.email)
+      .doc(snap.params.userId)
       .get();
 
-    if (groupSnapshot.exists && !userSnapshot.empty) {
-      const curUserSnapshot = userSnapshot.docs[0];
+    if (groupSnapshot.exists && userSnapshot.exists) {
       await sendNotification(
-        curUserSnapshot,
+        userSnapshot,
         "New Group Invitation",
-        `Hello ${curUserSnapshot.get(
+        `Hello ${userSnapshot.get(
           "name",
         )}, you have been invited to the group :  ${groupSnapshot.get("name")}`,
       );
       await addNotification(
-        snap.params.email,
+        snap.params.userId,
         `You have been invited to the group : ${groupSnapshot.get("name")}`,
         { groupId: snap.params.groupId },
         snap.data.get("invitingUser"),
       );
     } else {
       error(
-        `Unable to send notification to user ${snap.params.email} for group ${snap.params.groupId}`,
+        `Unable to send notification to user ${snap.params.userId} for group ${snap.params.groupId}`,
       );
     }
   },
 );
 
 export const onUserGroupInviteChanged = onDocumentUpdated(
-  "/groups/{groupId}/invites/{email}",
+  "/groups/{groupId}/invites/{userId}",
   async (snap) => {
     const newUserInviteData = snap.data?.after;
     const oldUserInviteData = snap.data?.before;
@@ -81,7 +79,7 @@ export const onUserGroupInviteChanged = onDocumentUpdated(
       .get();
     const userSnapshot = await db
       .collection("users")
-      .where("email", "==", snap.params.email)
+      .doc(snap.params.userId)
       .get();
 
     if (isTitleDifferent) {
@@ -89,7 +87,7 @@ export const onUserGroupInviteChanged = onDocumentUpdated(
         groupSnapshot,
         userSnapshot,
         newUserInviteTitle,
-        snap.params.email,
+        snap.params.userId,
         snap.params.groupId,
         newUserInviteData?.get("invitingUser"),
       );
@@ -108,29 +106,28 @@ export const onUserGroupInviteChanged = onDocumentUpdated(
 
 const handleUserPromotionGroup = async (
   groupSnapshot: DocumentSnapshot,
-  userSnapshot: QuerySnapshot,
+  userSnapshot: DocumentSnapshot,
   newUserInviteTitle: string,
-  email: string,
+  userId: string,
   groupId: string,
   invitingUser?: any,
 ) => {
   if (
     groupSnapshot.exists &&
-    !userSnapshot.empty &&
+    userSnapshot.exists &&
     newUserInviteTitle === "admin"
   ) {
-    const curUserSnapshot = userSnapshot.docs[0];
     await sendNotification(
-      curUserSnapshot,
+      userSnapshot,
       "Group Admin Promotion",
-      `Hello ${curUserSnapshot.get(
+      `Hello ${userSnapshot.get(
         "name",
       )}, you have been promoted to admin for the group : ${groupSnapshot.get(
         "name",
       )}`,
     );
     await addNotification(
-      email,
+      userId,
       `You have been promoted to admin for the group : ${groupSnapshot.get(
         "name",
       )}`,
@@ -138,34 +135,33 @@ const handleUserPromotionGroup = async (
       invitingUser,
     );
   } else {
-    error(`Unable to send notification to user ${email} for event ${groupId}`);
+    error(`Unable to send notification to user ${userId} for event ${groupId}`);
   }
 };
 
 const handleUserStatusChange = async (
   groupSnapshot: DocumentSnapshot,
-  userSnapshot: QuerySnapshot,
+  userSnapshot: DocumentSnapshot,
   newUserStatus: string,
   groupId: string,
   invitingUser?: DocumentSnapshot,
 ) => {
   const groupOwner = groupSnapshot.get("groupOwner");
-  if (groupSnapshot.exists && !userSnapshot.empty) {
-    const curUserSnapshot = userSnapshot.docs[0];
+  if (groupSnapshot.exists && userSnapshot.exists) {
     const titleDescription = getStatusTitleDescription(
       "Group",
       newUserStatus,
-      curUserSnapshot,
+      userSnapshot,
       groupSnapshot.get("name"),
     );
     await sendNotification(
-      curUserSnapshot,
+      userSnapshot,
       titleDescription.title,
       titleDescription.description,
     );
 
     await addNotification(
-      groupOwner.email,
+      groupOwner.userId,
       titleDescription.description,
       { groupId },
       invitingUser,

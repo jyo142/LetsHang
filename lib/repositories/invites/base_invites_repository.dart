@@ -7,13 +7,13 @@ import 'package:letshang/models/user_event_metadata.dart';
 import 'package:letshang/models/user_invite_model.dart';
 
 abstract class BaseUserInvitesRepository {
-  Future<List<HangEventInvite>> getAllUserEventInvites(String email);
+  Future<List<HangEventInvite>> getAllUserEventInvites(String userId);
   Future<List<HangEventInvite>> getUserEventInvitesByRange(
-      String email, DateTime startDateTime, DateTime endDateTime);
-  Future<UserEventMetadata> getUserEventMetadata(String email);
+      String userId, DateTime startDateTime, DateTime endDateTime);
+  Future<UserEventMetadata> getUserEventMetadata(String userId);
 
   // this method gets all the group invites for a user
-  Future<List<GroupInvite>> getUserGroupInvites(String email);
+  Future<List<GroupInvite>> getUserGroupInvites(String userId);
 
   // event invites
   // this method creates all the user invites for an event
@@ -42,13 +42,13 @@ abstract class BaseUserInvitesRepository {
 
   Future<void> editUserGroupInvites(Group group);
   Future<bool> hasEventInviteConflict(
-      String email, DateTime? startDateTime, DateTime? endDateTime);
+      String userId, DateTime? startDateTime, DateTime? endDateTime);
 
   // accept/invite/maybe
   Future<void> acceptInvite(
-      InviteType inviteType, String email, String entityId);
+      InviteType inviteType, String userId, String entityId);
   Future<void> rejectInvite(
-      InviteType inviteType, String email, String entityId);
+      InviteType inviteType, String userId, String entityId);
   Future<void> maybeInvite(
-      InviteType inviteType, String email, String entityId);
+      InviteType inviteType, String userId, String entityId);
 }

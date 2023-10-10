@@ -5,7 +5,7 @@ import 'package:letshang/utils/firebase_utils.dart';
 
 class NotificationsModel extends Equatable {
   final String id;
-  final String userEmail;
+  final String userId;
   final String content;
   final DateTime createdDate;
   final DateTime? expirationDate;
@@ -15,7 +15,7 @@ class NotificationsModel extends Equatable {
   final String? initiatedUserPhotoUrl;
   const NotificationsModel(
       {required this.id,
-      required this.userEmail,
+      required this.userId,
       required this.content,
       required this.createdDate,
       this.expirationDate,
@@ -27,7 +27,7 @@ class NotificationsModel extends Equatable {
   NotificationsModel.withId(String id, NotificationsModel notificationsModel)
       : this(
             id: id,
-            userEmail: notificationsModel.userEmail,
+            userId: notificationsModel.userId,
             content: notificationsModel.content,
             createdDate: notificationsModel.createdDate,
             expirationDate: notificationsModel.expirationDate,
@@ -46,7 +46,7 @@ class NotificationsModel extends Equatable {
         map.containsKey("expirationDate") ? map['expirationDate'] : null;
     NotificationsModel notification = NotificationsModel(
         id: map['id'],
-        userEmail: map["userEmail"],
+        userId: map["userId"],
         content: map['content'],
         createdDate: createdDateTimestamp.toDate(),
         expirationDate: expirationDateTimestamp?.toDate(),
@@ -65,7 +65,7 @@ class NotificationsModel extends Equatable {
   Map<String, Object?> toDocument() {
     Map<String, Object?> retVal = {
       'id': id,
-      'userEmail': userEmail,
+      'userId': userId,
       'content': content,
       "createdDate": Timestamp.fromDate(createdDate),
       'eventId': eventId,
@@ -82,7 +82,7 @@ class NotificationsModel extends Equatable {
   @override
   List<Object?> get props => [
         id,
-        userEmail,
+        userId,
         content,
         eventId,
         groupId,

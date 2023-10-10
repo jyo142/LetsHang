@@ -51,8 +51,7 @@ class _InvitationLayoutView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userEmail =
-        (context.read<AppBloc>().state as AppAuthenticated).user.email!;
+    final userId = (context.read<AppBloc>().state as AppAuthenticated).user.id!;
     final isNotificationExpired = notification.expirationDate != null &&
         notification.expirationDate!.isBefore(DateTime.now());
     return SafeArea(
@@ -82,7 +81,7 @@ class _InvitationLayoutView extends StatelessWidget {
                   Navigator.pop(context, true);
                   context
                       .read<NotificationsBloc>()
-                      .add(LoadPendingNotifications(userEmail));
+                      .add(LoadPendingNotifications(userId));
                   MessageService.showSuccessMessage(
                       content: state.successMessage, context: context);
                 }
@@ -137,7 +136,7 @@ class _InvitationLayoutView extends StatelessWidget {
                             onTap: () async {
                               context.read<InvitationsBloc>().add(
                                   MaybeInvitation(
-                                      email: userEmail,
+                                      userId: userId,
                                       notificationId: notification.id,
                                       entityId: entityId,
                                       inviteType: inviteType));
@@ -154,7 +153,7 @@ class _InvitationLayoutView extends StatelessWidget {
                             onTap: () async {
                               context.read<InvitationsBloc>().add(
                                   AcceptInvitation(
-                                      email: userEmail,
+                                      userId: userId,
                                       notificationId: notification.id,
                                       entityId: entityId,
                                       inviteType: inviteType));
@@ -171,7 +170,7 @@ class _InvitationLayoutView extends StatelessWidget {
                             onTap: () async {
                               context.read<InvitationsBloc>().add(
                                   RejectInvitation(
-                                      email: userEmail,
+                                      userId: userId,
                                       notificationId: notification.id,
                                       entityId: entityId,
                                       inviteType: inviteType));

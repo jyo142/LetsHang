@@ -13,22 +13,22 @@ enum UserSettingsStateStatus {
 
 class UserSettingsState extends Equatable {
   const UserSettingsState(
-      {this.userEmail,
+      {this.userId,
       required this.userSettingsStateStatus,
       this.userSettings,
       this.errorMessage});
-  final String? userEmail;
+  final String? userId;
   final UserSettingsModel? userSettings;
   final UserSettingsStateStatus userSettingsStateStatus;
   final String? errorMessage;
 
   UserSettingsState copyWith(
-      {String? userEmail,
+      {String? userId,
       UserSettingsModel? userSettings,
       UserSettingsStateStatus? userSettingsStateStatus,
       String? errorMessage}) {
     return UserSettingsState(
-        userEmail: userEmail ?? this.userEmail,
+        userId: userId ?? this.userId,
         userSettings: userSettings ?? this.userSettings,
         userSettingsStateStatus:
             userSettingsStateStatus ?? this.userSettingsStateStatus,
@@ -37,5 +37,5 @@ class UserSettingsState extends Equatable {
 
   @override
   List<Object?> get props =>
-      [userEmail, userSettingsStateStatus, userSettings, errorMessage];
+      [userId, userSettingsStateStatus, userSettings, errorMessage];
 }

@@ -14,7 +14,7 @@ export const getUserToken = onCall(
     }
     const userSettingsDocRef = db
       .collection("userSettings")
-      .doc(request.auth!.token.email!);
+      .doc(request.data.userId);
 
     const doesUserSettingsExist = (await userSettingsDocRef.get()).exists;
     if (!doesUserSettingsExist) {
@@ -33,5 +33,5 @@ export const getUserToken = onCall(
     userSettingsDocRef.update({
       googleApiRefreshToken: refreshToken,
     });
-  },
+  }
 );

@@ -8,12 +8,12 @@ abstract class UserSettingsEvent extends Equatable {
 }
 
 class SetUser extends UserSettingsEvent {
-  final String userEmail;
+  final String userId;
 
-  const SetUser(this.userEmail);
+  const SetUser(this.userId);
 
   @override
-  List<Object> get props => [userEmail];
+  List<Object> get props => [userId];
 }
 
 class LoadUserSettings extends UserSettingsEvent {}

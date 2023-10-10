@@ -8,19 +8,19 @@ abstract class NotificationsEvent extends Equatable {
 }
 
 class LoadPendingNotifications extends NotificationsEvent {
-  final String userEmail;
+  final String userId;
 
-  const LoadPendingNotifications(this.userEmail);
+  const LoadPendingNotifications(this.userId);
 
   @override
-  List<Object> get props => [userEmail];
+  List<Object> get props => [userId];
 }
 
 class MarkNotificationAsRead extends NotificationsEvent {
-  final String userEmail;
+  final String userId;
   final String notificationId;
 
-  const MarkNotificationAsRead(this.userEmail, this.notificationId);
+  const MarkNotificationAsRead(this.userId, this.notificationId);
 
   @override
   List<Object> get props => [notificationId];

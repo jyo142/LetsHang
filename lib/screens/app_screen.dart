@@ -24,11 +24,11 @@ class AppScreen extends StatefulWidget {
 class _AppScreenState extends State {
   @override
   Widget build(BuildContext context) {
-    context.read<UserSettingsBloc>().add(SetUser(
-        (context.read<AppBloc>().state as AppAuthenticated).user.email!));
+    context.read<UserSettingsBloc>().add(
+        SetUser((context.read<AppBloc>().state as AppAuthenticated).user.id!));
     context.read<UserSettingsBloc>().add(LoadUserSettings());
     context.read<NotificationsBloc>().add(LoadPendingNotifications(
-        (context.read<AppBloc>().state as AppAuthenticated).user.email!));
+        (context.read<AppBloc>().state as AppAuthenticated).user.id!));
     return MultiBlocProvider(
       providers: [
         BlocProvider(
