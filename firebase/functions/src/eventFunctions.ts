@@ -32,6 +32,16 @@ export const onUserInvitedToEvent = onDocumentCreated(
       .get();
 
     if (eventSnapshot.exists && userSnapshot.exists) {
+      const newNotification = await addNotification(
+        snap.params.userId,
+        `You have been invited to the event : ${eventSnapshot.get(
+          "eventName",
+        )}`,
+        { eventId: snap.params.eventId },
+        snap.data.get("invitingUser"),
+        eventSnapshot.get("eventEndDate"),
+      );
+
       await sendNotification(
         userSnapshot,
         "New Event Invitation",
@@ -40,16 +50,10 @@ export const onUserInvitedToEvent = onDocumentCreated(
         )}, you have been invited to the event :  ${eventSnapshot.get(
           "eventName",
         )}`,
-      );
-
-      await addNotification(
-        snap.params.userId,
-        `You have been invited to the event : ${eventSnapshot.get(
-          "eventName",
-        )}`,
-        { eventId: snap.params.eventId },
-        snap.data.get("invitingUser"),
-        eventSnapshot.get("eventEndDate"),
+        newNotification.id,
+        snap.params.eventId,
+        "Event",
+        "Invitation",
       );
     } else {
       error(
@@ -130,6 +134,15 @@ const handleUserPromotionEvent = async (
     userSnapshot.exists &&
     newUserInviteTitle === "admin"
   ) {
+    const newNotification = await addNotification(
+      userId,
+      `You have been promoted to admin for the event : ${eventSnapshot.get(
+        "eventName",
+      )}`,
+      { eventId: eventId },
+      invitingUser,
+      eventSnapshot.get("eventEndDate"),
+    );
     await sendNotification(
       userSnapshot,
       "Event Admin Promotion",
@@ -138,16 +151,10 @@ const handleUserPromotionEvent = async (
       )}, you have been promoted to admin for the event : ${eventSnapshot.get(
         "eventName",
       )}`,
-    );
-
-    await addNotification(
-      userId,
-      `You have been promoted to admin for the event : ${eventSnapshot.get(
-        "eventName",
-      )}`,
-      { eventId: eventId },
-      invitingUser,
-      eventSnapshot.get("eventEndDate"),
+      newNotification.id,
+      eventId,
+      "Event",
+      "Promotion",
     );
   } else {
     error(`Unable to send notification to user ${userId} for event ${eventId}`);
@@ -221,13 +228,7 @@ const handleUserStatusChange = async (
       userSnapshot,
       eventSnapshot.get("eventName"),
     );
-    await sendNotification(
-      userSnapshot,
-      titleDescription.title,
-      titleDescription.description,
-    );
-
-    await addNotification(
+    const newNotification = await addNotification(
       eventOwner.userId,
       titleDescription.description,
       {
@@ -235,6 +236,16 @@ const handleUserStatusChange = async (
       },
       invitingUser,
       eventSnapshot.get("eventEndDate"),
+    );
+
+    await sendNotification(
+      userSnapshot,
+      titleDescription.title,
+      titleDescription.description,
+      newNotification.id,
+      eventId,
+      "Event",
+      "",
     );
   } else {
     error(

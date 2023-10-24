@@ -1,13 +1,20 @@
+import 'dart:convert';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:letshang/main.dart';
+import 'package:letshang/screens/invitations/event_invitation_notification_screen.dart';
+import 'package:letshang/screens/notifications_screen.dart';
 
 class PushNotificationService {
   static final FirebaseMessaging firebaseMessageService =
       FirebaseMessaging.instance;
 
   /// Create a [AndroidNotificationChannel] for heads up notifications
-  static late AndroidNotificationChannel channel;
+  static late AndroidNotificationChannel androidChannel;
 
   /// Initialize the [FlutterLocalNotificationsPlugin] package.
   static late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
@@ -21,19 +28,66 @@ class PushNotificationService {
     // If you're going to use other Firebase services in the background, such as Firestore,
     // make sure you call `initializeApp` before using other Firebase services.
     await Firebase.initializeApp();
-    print('Handling a background message ${message.messageId}');
   }
 
-  static Future initialize() async {
+  static void handleMessage(RemoteMessage? message) {
+    if (message == null) return;
+    final dataMap = message.data;
+    final entityType =
+        dataMap.containsKey("entityType") ? dataMap["entityType"] : null;
+    final notificationType = dataMap.containsKey("notificationType")
+        ? dataMap["notificationType"]
+        : null;
+    if (notificationType != null && notificationType == "Invitation") {
+      if (entityType != null) {
+        if (entityType == "Event") {
+          navigatorKey.currentState?.push(MaterialPageRoute(
+            builder: (context) => EventInvitationNotificationScreen(
+              userId: dataMap["userId"],
+              eventId: dataMap["entityId"],
+              notificationId: dataMap["notificationId"],
+            ),
+          ));
+        }
+        if (entityType == "Group") {
+          navigatorKey.currentState?.push(MaterialPageRoute(
+            builder: (context) => EventInvitationNotificationScreen(
+              userId: dataMap["userId"],
+              eventId: dataMap["entityId"],
+              notificationId: dataMap["notificationId"],
+            ),
+          ));
+        }
+      }
+    }
+  }
+
+  static Future initializeLocalNotifications() async {
+    const iOS = DarwinInitializationSettings();
+    const android = AndroidInitializationSettings("@drawable/ic_launcher");
+    const settings = InitializationSettings(android: android, iOS: iOS);
+    await flutterLocalNotificationsPlugin.initialize(settings,
+        onDidReceiveNotificationResponse: (payload) {
+      final message = RemoteMessage.fromMap(jsonDecode(payload.payload!));
+      handleMessage(message);
+    });
+    final platform =
+        flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    await platform?.createNotificationChannel(androidChannel);
+  }
+
+  static Future initializePushNotifications() async {
     // Set the background messaging handler early on, as a named top-level function
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-    channel = const AndroidNotificationChannel(
+    FirebaseMessaging.instance.getInitialMessage().then(handleMessage);
+    FirebaseMessaging.onMessageOpenedApp.listen(handleMessage);
+    androidChannel = const AndroidNotificationChannel(
       'high_importance_channel', // id
       'High Importance Notifications', // title
       description:
           'This channel is used for important notifications.', // description
-      importance: Importance.high,
+      importance: Importance.max,
     );
 
     flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -45,7 +99,7 @@ class PushNotificationService {
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
+        ?.createNotificationChannel(androidChannel);
 
     /// Update the iOS foreground notification presentation options to allow
     /// heads up notifications.
@@ -56,30 +110,31 @@ class PushNotificationService {
       sound: true,
     );
 
-    NotificationSettings settings =
-        await firebaseMessageService.requestPermission(
-            alert: true, badge: true, provisional: false, sound: true);
-
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
       if (notification != null && android != null) {
         flutterLocalNotificationsPlugin.show(
-          notification.hashCode,
-          notification.title,
-          notification.body,
-          NotificationDetails(
-            android: AndroidNotificationDetails(
-              channel.id,
-              channel.name,
-              channelDescription: channel.description,
-              // TODO add a proper drawable resource to android, for now using
-              //      one that already exists in example app.
-              icon: 'launch_background',
+            notification.hashCode,
+            notification.title,
+            notification.body,
+            NotificationDetails(
+              android: AndroidNotificationDetails(
+                androidChannel.id,
+                androidChannel.name,
+                channelDescription: androidChannel.description,
+                icon: '@drawable/ic_launcher',
+              ),
             ),
-          ),
-        );
+            payload: jsonEncode(message.toMap()));
       }
     });
+  }
+
+  static Future initialize() async {
+    await firebaseMessageService.requestPermission(
+        alert: true, badge: true, provisional: false, sound: true);
+    initializePushNotifications();
+    initializeLocalNotifications();
   }
 }

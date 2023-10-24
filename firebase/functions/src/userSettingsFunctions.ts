@@ -33,5 +33,5 @@ export const getUserToken = onCall(
     userSettingsDocRef.update({
       googleApiRefreshToken: refreshToken,
     });
-  }
+  },
 );

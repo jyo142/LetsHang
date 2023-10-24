@@ -29,18 +29,22 @@ export const onUserInvitedToGroup = onDocumentCreated(
       .get();
 
     if (groupSnapshot.exists && userSnapshot.exists) {
+      const newNotification = await addNotification(
+        snap.params.userId,
+        `You have been invited to the group : ${groupSnapshot.get("name")}`,
+        { groupId: snap.params.groupId },
+        snap.data.get("invitingUser"),
+      );
       await sendNotification(
         userSnapshot,
         "New Group Invitation",
         `Hello ${userSnapshot.get(
           "name",
         )}, you have been invited to the group :  ${groupSnapshot.get("name")}`,
-      );
-      await addNotification(
-        snap.params.userId,
-        `You have been invited to the group : ${groupSnapshot.get("name")}`,
-        { groupId: snap.params.groupId },
-        snap.data.get("invitingUser"),
+        newNotification.id,
+        snap.params.groupId,
+        "Group",
+        "Invitation",
       );
     } else {
       error(
@@ -117,6 +121,14 @@ const handleUserPromotionGroup = async (
     userSnapshot.exists &&
     newUserInviteTitle === "admin"
   ) {
+    const newNotification = await addNotification(
+      userId,
+      `You have been promoted to admin for the group : ${groupSnapshot.get(
+        "name",
+      )}`,
+      { groupId },
+      invitingUser,
+    );
     await sendNotification(
       userSnapshot,
       "Group Admin Promotion",
@@ -125,14 +137,10 @@ const handleUserPromotionGroup = async (
       )}, you have been promoted to admin for the group : ${groupSnapshot.get(
         "name",
       )}`,
-    );
-    await addNotification(
-      userId,
-      `You have been promoted to admin for the group : ${groupSnapshot.get(
-        "name",
-      )}`,
-      { groupId },
-      invitingUser,
+      newNotification.id,
+      groupId,
+      "Group",
+      "Promotion",
     );
   } else {
     error(`Unable to send notification to user ${userId} for event ${groupId}`);
@@ -154,17 +162,20 @@ const handleUserStatusChange = async (
       userSnapshot,
       groupSnapshot.get("name"),
     );
-    await sendNotification(
-      userSnapshot,
-      titleDescription.title,
-      titleDescription.description,
-    );
-
-    await addNotification(
+    const newNotification = await addNotification(
       groupOwner.userId,
       titleDescription.description,
       { groupId },
       invitingUser,
+    );
+    await sendNotification(
+      userSnapshot,
+      titleDescription.title,
+      titleDescription.description,
+      newNotification.id,
+      groupId,
+      "Group",
+      "",
     );
   } else {
     error(

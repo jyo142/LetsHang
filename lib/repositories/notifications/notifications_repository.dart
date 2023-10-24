@@ -29,6 +29,21 @@ class NotificationsRepository extends BaseNotificationsRepository {
   }
 
   @override
+  Future<NotificationsModel?> getNotificationDetails(
+      String userId, String notificationId) async {
+    DocumentSnapshot docSnapshot = await _firebaseFirestore
+        .collection('notifications')
+        .doc(userId)
+        .collection("pendingNotifications")
+        .doc(notificationId)
+        .get();
+    if (docSnapshot.exists) {
+      return NotificationsModel.fromSnapshot(docSnapshot);
+    }
+    return null;
+  }
+
+  @override
   Future<void> removeNotificationForUser(
       String userId, String notificationId) async {
     await _firebaseFirestore

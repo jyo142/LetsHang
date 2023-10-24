@@ -15,13 +15,14 @@ class InvitationLayout extends StatelessWidget {
   final String entityId;
   final NotificationsModel notification;
   final InviteType inviteType;
-
+  final Function? onStatusChangedSuccess;
   const InvitationLayout(
       {Key? key,
       required this.entityId,
       required this.notification,
       required this.inviteType,
-      required this.invitationContent})
+      required this.invitationContent,
+      this.onStatusChangedSuccess})
       : super(key: key);
 
   @override
@@ -33,6 +34,7 @@ class InvitationLayout extends StatelessWidget {
           notification: notification,
           inviteType: inviteType,
           invitationContent: invitationContent,
+          onStatusChangedSuccess: onStatusChangedSuccess,
         ));
   }
 }
@@ -42,12 +44,14 @@ class _InvitationLayoutView extends StatelessWidget {
   final String entityId;
   final NotificationsModel notification;
   final InviteType inviteType;
+  final Function? onStatusChangedSuccess;
 
   const _InvitationLayoutView(
       {required this.entityId,
       required this.notification,
       required this.inviteType,
-      required this.invitationContent});
+      required this.invitationContent,
+      this.onStatusChangedSuccess});
 
   @override
   Widget build(BuildContext context) {
@@ -78,10 +82,15 @@ class _InvitationLayoutView extends StatelessWidget {
               listener: (context, state) {
                 if (state is InvitationStatusChangedSuccess) {
                   // after the invite is sent go back to participants screen
-                  Navigator.pop(context, true);
-                  context
-                      .read<NotificationsBloc>()
-                      .add(LoadPendingNotifications(userId));
+                  if (onStatusChangedSuccess != null) {
+                    onStatusChangedSuccess!();
+                  } else {
+                    Navigator.pop(context, true);
+                    context
+                        .read<NotificationsBloc>()
+                        .add(LoadPendingNotifications(userId));
+                  }
+
                   MessageService.showSuccessMessage(
                       content: state.successMessage, context: context);
                 }
@@ -92,6 +101,10 @@ class _InvitationLayoutView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: const [CircularProgressIndicator()],
                   );
+                }
+                if (state is InvitationStatusChangedError) {
+                  MessageService.showErrorMessage(
+                      content: state.errorMessage, context: context);
                 }
                 return Container(
                   color: Colors.white,

@@ -16,6 +16,17 @@ class LoadPendingNotifications extends NotificationsEvent {
   List<Object> get props => [userId];
 }
 
+class LoadNotificationDetail extends NotificationsEvent {
+  final String userId;
+  final String notificationId;
+
+  const LoadNotificationDetail(
+      {required this.userId, required this.notificationId});
+
+  @override
+  List<Object> get props => [userId, notificationId];
+}
+
 class MarkNotificationAsRead extends NotificationsEvent {
   final String userId;
   final String notificationId;

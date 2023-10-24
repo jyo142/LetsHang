@@ -23,6 +23,12 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
       await _markNotificationAsRead(event.userId, event.notificationId);
       emit(state);
     });
+    on<LoadNotificationDetail>((event, emit) async {
+      emit(state.copyWith(
+          notificationStateStatus:
+              NotificationStateStatus.loadingNotificationDetails));
+      emit(await _getNotificationDetails(event.userId, event.notificationId));
+    });
   }
 
   Future<NotificationsState> _mapPendingNotificationsState(
@@ -39,6 +45,28 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
       return state.copyWith(
           notificationStateStatus: NotificationStateStatus.error,
           errorMessage: 'Unable to get notifications for user.');
+    }
+  }
+
+  Future<NotificationsState> _getNotificationDetails(
+      String userId, String notificationId) async {
+    try {
+      NotificationsModel? retrievedNotification = await _notificationsRepository
+          .getNotificationDetails(userId, notificationId);
+
+      if (retrievedNotification == null) {
+        return state.copyWith(
+            notificationStateStatus: NotificationStateStatus.error,
+            errorMessage: 'Notification not found');
+      }
+      return state.copyWith(
+          notificationStateStatus:
+              NotificationStateStatus.notificationDetailsRetrieved,
+          currentNotificationDetails: retrievedNotification);
+    } catch (_) {
+      return state.copyWith(
+          notificationStateStatus: NotificationStateStatus.error,
+          errorMessage: 'Unable to get notification details');
     }
   }
 

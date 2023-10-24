@@ -41,7 +41,7 @@ class GroupsView extends StatelessWidget {
                   builder: (context) => const EditGroupsScreen(),
                 ),
               );
-              if (shouldRefresh != null && shouldRefresh) {
+              if (context.mounted && shouldRefresh != null && shouldRefresh) {
                 context.read<GroupOverviewBloc>().add(LoadGroupInvites(
                     userId: (context.read<AppBloc>().state as AppAuthenticated)
                         .user

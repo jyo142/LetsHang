@@ -8,6 +8,7 @@ import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/screens/app_screen.dart';
 import 'package:letshang/screens/event_participants_screen.dart';
 import 'package:letshang/screens/events/event_discussions_screen.dart';
 import 'package:letshang/widgets/avatars/attendees_avatar.dart';
@@ -75,6 +76,15 @@ class _EventDetailsView extends StatelessWidget {
                 height: fullHeight * .2,
                 width: width,
               ),
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.arrow_back,
+                color: Color(0xFF9BADBD),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
             ),
             Positioned(
                 top: 145,

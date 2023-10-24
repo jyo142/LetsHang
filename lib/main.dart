@@ -15,6 +15,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'blocs/user_settings/user_settings_bloc.dart';
 
+final navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   await AuthenticationService.initializeFirebase();
   await PushNotificationService.initialize();
@@ -40,6 +41,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: mainTheme,
+        navigatorKey: navigatorKey,
         home: Scaffold(
             body: StreamBuilder(
           stream: FirebaseAuth.instance.authStateChanges(),

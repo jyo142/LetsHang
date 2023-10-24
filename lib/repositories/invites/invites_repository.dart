@@ -783,7 +783,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
     final inviteCollection =
         inviteType == InviteType.event ? 'eventInvites' : 'groupInvites';
     final userInviteCollection =
-        inviteType == InviteType.event ? 'events' : 'groups';
+        inviteType == InviteType.event ? 'hangEvents' : 'groups';
     DocumentReference dbUserGroupInvitesRef = _firebaseFirestore
         .collection('userInvites')
         .doc(userId)
