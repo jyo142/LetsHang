@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:letshang/blocs/app/app_bloc.dart';
+import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/screens/edit_event_screen.dart';
@@ -10,6 +12,9 @@ class UpcomingEventsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.read<HangEventOverviewBloc>().add(LoadUpcomingEvents(
+        userId: (context.read<AppBloc>().state as AppAuthenticated).user.id!));
+
     return BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
       builder: (context, state) {
         if (state is HangEventsLoading) {

@@ -15,11 +15,7 @@ class EventsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         body: BlocProvider(
-            create: (context) => HangEventOverviewBloc()
-              ..add(LoadHangEvents(
-                  userId: (context.read<AppBloc>().state as AppAuthenticated)
-                      .user
-                      .id!)),
+            create: (context) => HangEventOverviewBloc(),
             child: const EventsView()));
   }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:letshang/blocs/app/app_bloc.dart';
+import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/widgets/events/event_list_card_view.dart';
@@ -8,6 +10,8 @@ class PastEventsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.read<HangEventOverviewBloc>().add(LoadPastEvents(
+        userId: (context.read<AppBloc>().state as AppAuthenticated).user.id!));
     return BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
       builder: (context, state) {
         if (state is HangEventsLoading) {

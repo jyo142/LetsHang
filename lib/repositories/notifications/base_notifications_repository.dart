@@ -1,3 +1,4 @@
+import 'package:letshang/models/invite.dart';
 import 'package:letshang/models/notifications_model.dart';
 
 abstract class BaseNotificationsRepository {
@@ -10,4 +11,6 @@ abstract class BaseNotificationsRepository {
   Future<void> markNotificationAsReadForUser(
       String userId, String notificationId);
   Future<void> removeNotificationForUser(String userId, String notificationId);
+  Future<void> removeEntityNotificationForUser(
+      String userId, String entityId, InviteType entityType);
 }

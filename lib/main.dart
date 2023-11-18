@@ -3,6 +3,7 @@ import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_event.dart';
 import 'package:letshang/blocs/app/app_state.dart';
+import 'package:letshang/blocs/app_metadata/app_metadata_bloc.dart';
 import 'package:letshang/blocs/notifications/notifications_bloc.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:letshang/screens/app_screen.dart';
@@ -36,7 +37,10 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => NotificationsBloc()),
         BlocProvider(
           create: (context) => UserSettingsBloc(),
-        )
+        ),
+        BlocProvider(
+          create: (context) => AppMetadataBloc(),
+        ),
       ],
       child: MaterialApp(
         title: 'Flutter Demo',

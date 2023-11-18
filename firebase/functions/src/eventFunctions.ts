@@ -40,6 +40,7 @@ export const onUserInvitedToEvent = onDocumentCreated(
         { eventId: snap.params.eventId },
         snap.data.get("invitingUser"),
         eventSnapshot.get("eventEndDate"),
+        "invitation",
       );
 
       await sendNotification(
@@ -142,6 +143,7 @@ const handleUserPromotionEvent = async (
       { eventId: eventId },
       invitingUser,
       eventSnapshot.get("eventEndDate"),
+      "promotion",
     );
     await sendNotification(
       userSnapshot,

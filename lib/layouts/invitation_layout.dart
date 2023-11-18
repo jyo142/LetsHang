@@ -13,15 +13,15 @@ import 'package:letshang/services/message_service.dart';
 class InvitationLayout extends StatelessWidget {
   final Widget invitationContent;
   final String entityId;
-  final NotificationsModel notification;
   final InviteType inviteType;
+  final NotificationsModel? notification;
   final Function? onStatusChangedSuccess;
   const InvitationLayout(
       {Key? key,
       required this.entityId,
-      required this.notification,
       required this.inviteType,
       required this.invitationContent,
+      this.notification,
       this.onStatusChangedSuccess})
       : super(key: key);
 
@@ -42,22 +42,22 @@ class InvitationLayout extends StatelessWidget {
 class _InvitationLayoutView extends StatelessWidget {
   final Widget invitationContent;
   final String entityId;
-  final NotificationsModel notification;
   final InviteType inviteType;
+  final NotificationsModel? notification;
   final Function? onStatusChangedSuccess;
 
   const _InvitationLayoutView(
       {required this.entityId,
-      required this.notification,
       required this.inviteType,
       required this.invitationContent,
+      this.notification,
       this.onStatusChangedSuccess});
 
   @override
   Widget build(BuildContext context) {
     final userId = (context.read<AppBloc>().state as AppAuthenticated).user.id!;
-    final isNotificationExpired = notification.expirationDate != null &&
-        notification.expirationDate!.isBefore(DateTime.now());
+    final isNotificationExpired = notification?.expirationDate != null &&
+        notification!.expirationDate!.isBefore(DateTime.now());
     return SafeArea(
         child: Stack(
       children: [
@@ -80,7 +80,8 @@ class _InvitationLayoutView extends StatelessWidget {
             alignment: Alignment.bottomCenter,
             child: BlocConsumer<InvitationsBloc, InvitationsState>(
               listener: (context, state) {
-                if (state is InvitationStatusChangedSuccess) {
+                if (state.invitationsStateStatus ==
+                    InvitationsStateStatus.invitationStatusChangedSuccess) {
                   // after the invite is sent go back to participants screen
                   if (onStatusChangedSuccess != null) {
                     onStatusChangedSuccess!();
@@ -92,19 +93,22 @@ class _InvitationLayoutView extends StatelessWidget {
                   }
 
                   MessageService.showSuccessMessage(
-                      content: state.successMessage, context: context);
+                      content: state.invitationStatusChangedSuccessMessage!,
+                      context: context);
                 }
               },
               builder: (context, state) {
-                if (state is InvitationStatusChangedLoading) {
+                if (state.invitationsStateStatus ==
+                    InvitationsStateStatus.invitationStatusChangedLoading) {
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: const [CircularProgressIndicator()],
                   );
                 }
-                if (state is InvitationStatusChangedError) {
+                if (state.invitationsStateStatus ==
+                    InvitationsStateStatus.error) {
                   MessageService.showErrorMessage(
-                      content: state.errorMessage, context: context);
+                      content: state.errorMessage!, context: context);
                 }
                 return Container(
                   color: Colors.white,
@@ -113,16 +117,18 @@ class _InvitationLayoutView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (isNotificationExpired) ...[
-                          Opacity(
-                            // on Tap function used and call back function os defined here
-                            opacity: .5,
-                            child: SvgPicture.asset(
-                              'assets/images/thought_cloud.svg',
-                              semanticsLabel: 'Thought Cloud Image',
-                              height: 100,
-                              width: 100,
+                          if (inviteType != InviteType.group) ...[
+                            Opacity(
+                              // on Tap function used and call back function os defined here
+                              opacity: .5,
+                              child: SvgPicture.asset(
+                                'assets/images/thought_cloud.svg',
+                                semanticsLabel: 'Thought Cloud Image',
+                                height: 100,
+                                width: 100,
+                              ),
                             ),
-                          ),
+                          ],
                           Opacity(
                             // on Tap function used and call back function os defined here
                             opacity: .5,
@@ -144,30 +150,32 @@ class _InvitationLayoutView extends StatelessWidget {
                             ),
                           ),
                         ] else ...[
-                          InkWell(
-                            // on Tap function used and call back function os defined here
-                            onTap: () async {
-                              context.read<InvitationsBloc>().add(
-                                  MaybeInvitation(
-                                      userId: userId,
-                                      notificationId: notification.id,
-                                      entityId: entityId,
-                                      inviteType: inviteType));
-                            },
-                            child: SvgPicture.asset(
-                              'assets/images/thought_cloud.svg',
-                              semanticsLabel: 'Thought Cloud Image',
-                              height: 100,
-                              width: 100,
+                          if (inviteType != InviteType.group) ...[
+                            InkWell(
+                              // on Tap function used and call back function os defined here
+                              onTap: () async {
+                                context.read<InvitationsBloc>().add(
+                                    MaybeInvitation(
+                                        userId: userId,
+                                        notificationId: notification?.id,
+                                        entityId: entityId,
+                                        inviteType: inviteType));
+                              },
+                              child: SvgPicture.asset(
+                                'assets/images/thought_cloud.svg',
+                                semanticsLabel: 'Thought Cloud Image',
+                                height: 100,
+                                width: 100,
+                              ),
                             ),
-                          ),
+                          ],
                           InkWell(
                             // on Tap function used and call back function os defined here
                             onTap: () async {
                               context.read<InvitationsBloc>().add(
                                   AcceptInvitation(
                                       userId: userId,
-                                      notificationId: notification.id,
+                                      notificationId: notification?.id,
                                       entityId: entityId,
                                       inviteType: inviteType));
                             },
@@ -184,7 +192,7 @@ class _InvitationLayoutView extends StatelessWidget {
                               context.read<InvitationsBloc>().add(
                                   RejectInvitation(
                                       userId: userId,
-                                      notificationId: notification.id,
+                                      notificationId: notification?.id,
                                       entityId: entityId,
                                       inviteType: inviteType));
                             },

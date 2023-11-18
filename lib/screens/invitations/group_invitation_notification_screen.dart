@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
+import 'package:letshang/blocs/group_overview/group_overview_bloc.dart';
 import 'package:letshang/blocs/notifications/notifications_bloc.dart';
 import 'package:letshang/layouts/invitation_layout.dart';
 import 'package:letshang/models/invite.dart';
-import 'package:letshang/screens/invitations/event_invitation_content.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/screens/invitations/group_invitation_content.dart';
 
 /// This screen is used to view invitation notifications. I.E. when user clicks on a
 /// push notification
-class EventInvitationNotificationScreen extends StatelessWidget {
+class GroupInvitationNotificationScreen extends StatelessWidget {
   final String userId;
-  final String eventId;
+  final String groupId;
   final String notificationId;
 
-  const EventInvitationNotificationScreen(
+  const GroupInvitationNotificationScreen(
       {Key? key,
       required this.userId,
-      required this.eventId,
+      required this.groupId,
       required this.notificationId})
       : super(key: key);
 
@@ -25,18 +25,19 @@ class EventInvitationNotificationScreen extends StatelessWidget {
     return Scaffold(
         body: MultiBlocProvider(providers: [
       BlocProvider(
-          create: (context) => HangEventOverviewBloc()
-            ..add(LoadIndividualEvent(eventId: eventId))),
+          create: (context) =>
+              GroupOverviewBloc()..add(LoadIndividualGroup(groupId: groupId)),
+          child: GroupInvitationNotificationScreenView()),
       BlocProvider(
           create: (context) => NotificationsBloc()
             ..add(LoadNotificationDetail(
                 userId: userId, notificationId: notificationId)))
-    ], child: const EventInvitationNotificationScreenView()));
+    ], child: const GroupInvitationNotificationScreenView()));
   }
 }
 
-class EventInvitationNotificationScreenView extends StatelessWidget {
-  const EventInvitationNotificationScreenView({Key? key}) : super(key: key);
+class GroupInvitationNotificationScreenView extends StatelessWidget {
+  const GroupInvitationNotificationScreenView({Key? key}) : super(key: key);
 
   Widget _errorContainer(BuildContext context, String errorMessage) {
     return Container(
@@ -53,32 +54,31 @@ class EventInvitationNotificationScreenView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(child:
-        BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
-            builder: (context, eventOverviewState) {
+    return SafeArea(child: BlocBuilder<GroupOverviewBloc, GroupOverviewState>(
+        builder: (context, groupOverviewState) {
       return BlocBuilder<NotificationsBloc, NotificationsState>(
         builder: (context, notificationsState) {
-          if (eventOverviewState is IndividualEventLoading ||
+          if (groupOverviewState is IndividualGroupLoading ||
               notificationsState.notificationStateStatus ==
                   NotificationStateStatus.pendingUserNotificationsLoading) {
             return const CircularProgressIndicator();
           }
-          if (eventOverviewState is IndividualEventRetrieved &&
+          if (groupOverviewState is IndividualGroupRetrieved &&
               notificationsState.notificationStateStatus ==
                   NotificationStateStatus.notificationDetailsRetrieved) {
             return InvitationLayout(
-                entityId: eventOverviewState.hangEvent.id,
+                entityId: groupOverviewState.group.id,
                 notification: notificationsState.currentNotificationDetails!,
                 inviteType: InviteType.event,
-                invitationContent: EventInvitationContent(
+                invitationContent: GroupInvitationContent(
                     notification:
                         notificationsState.currentNotificationDetails!,
-                    event: eventOverviewState.hangEvent));
+                    group: groupOverviewState.group));
           }
           return Column(
             children: [
-              if (eventOverviewState is IndividualEventRetrievedError) ...[
-                _errorContainer(context, eventOverviewState.errorMessage)
+              if (groupOverviewState is IndividualGroupRetrievedError) ...[
+                _errorContainer(context, groupOverviewState.errorMessage)
               ],
               if (notificationsState.notificationStateStatus ==
                   NotificationStateStatus.error) ...[

@@ -10,8 +10,6 @@ import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:letshang/screens/unauthorized_screen.dart';
 import 'package:letshang/services/authentication_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:letshang/widgets/appbar/lh_main_app_bar.dart';
-import 'package:letshang/widgets/lh_bottom_nav_bar.dart';
 import 'package:letshang/widgets/lh_button.dart';
 import 'package:letshang/widgets/profile_pic.dart';
 

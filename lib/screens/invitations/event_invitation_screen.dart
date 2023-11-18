@@ -9,10 +9,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class EventInvitationScreen extends StatelessWidget {
   final String eventId;
-  final NotificationsModel notification;
+  final NotificationsModel? notification;
 
   const EventInvitationScreen(
-      {Key? key, required this.eventId, required this.notification})
+      {Key? key, required this.eventId, this.notification})
       : super(key: key);
 
   @override
@@ -30,10 +30,9 @@ class EventInvitationScreen extends StatelessWidget {
 
 class _EventInvitationScreenView extends StatelessWidget {
   final String eventId;
-  final NotificationsModel notification;
+  final NotificationsModel? notification;
 
-  const _EventInvitationScreenView(
-      {required this.eventId, required this.notification});
+  const _EventInvitationScreenView({required this.eventId, this.notification});
 
   @override
   Widget build(BuildContext context) {

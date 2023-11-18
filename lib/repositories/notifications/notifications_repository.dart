@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+import 'package:letshang/models/invite.dart';
 import 'package:letshang/models/notifications_model.dart';
 import 'package:letshang/repositories/notifications/base_notifications_repository.dart';
 import 'package:letshang/utils/firebase_utils.dart';
@@ -94,6 +96,41 @@ class NotificationsRepository extends BaseNotificationsRepository {
           .collection("readNotifications")
           .doc(notificationId)
           .set(currentNotification.toDocument());
+    }
+  }
+
+  @override
+  Future<void> removeEntityNotificationForUser(
+      String userId, String entityId, InviteType entityType) async {
+    QuerySnapshot notificationSnapshots;
+    if (entityType == InviteType.event) {
+      notificationSnapshots = await _firebaseFirestore
+          .collection("notifications")
+          .doc(userId)
+          .collection("pendingNotifications")
+          .where('notificationType',
+              isEqualTo: describeEnum(NotificationType.invitation))
+          .where('eventId', isEqualTo: entityId)
+          .get();
+    } else {
+      // group
+      notificationSnapshots = await _firebaseFirestore
+          .collection("notifications")
+          .doc(userId)
+          .collection("pendingNotifications")
+          .where('notificationType',
+              isEqualTo: describeEnum(NotificationType.invitation))
+          .where('groupId', isEqualTo: entityId)
+          .get();
+    }
+
+    for (QueryDocumentSnapshot doc in notificationSnapshots.docs) {
+      await _firebaseFirestore
+          .collection("notifications")
+          .doc(userId)
+          .collection("pendingNotifications")
+          .doc(doc.id)
+          .delete();
     }
   }
 }

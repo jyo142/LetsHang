@@ -3,10 +3,12 @@ import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/participants/participants_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/models/bottom_nav_bar.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:letshang/models/user_invite_model.dart';
+import 'package:letshang/screens/app_screen.dart';
 import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:letshang/screens/events_screen.dart';
 import 'package:letshang/services/message_service.dart';
@@ -151,9 +153,11 @@ class _AddPeopleEventScreenView extends StatelessWidget {
                   // after the invite is sent go back to participants screen
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => EventsScreen(),
+                      builder: (context) => AppScreen(),
                     ),
                   );
+                  BottomNavigationBarHelper.navigateToTabScreen(
+                      context, BottomScreenName.events);
                   MessageService.showSuccessMessage(
                       content: "Event saved successfully", context: context);
                 }

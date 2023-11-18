@@ -1,29 +1,47 @@
 part of 'invitations_bloc.dart';
 
+enum InvitationsStateStatus {
+  initial,
+  invitationStatusChangedLoading,
+  invitationStatusChangedSuccess,
+  pendingInvitationsLoading,
+  pendingInvitationsRetrieved,
+  error
+}
+
 @immutable
 class InvitationsState extends Equatable {
-  const InvitationsState();
+  final PendingInvites? allPendingInvites;
+  final String? errorMessage;
+  final InvitationsStateStatus invitationsStateStatus;
+  final String? invitationStatusChangedSuccessMessage;
+  const InvitationsState(
+      {this.allPendingInvites,
+      required this.invitationsStateStatus,
+      this.errorMessage,
+      this.invitationStatusChangedSuccessMessage});
+
+  InvitationsState copyWith({
+    PendingInvites? allPendingInvites,
+    InvitationsStateStatus? invitationsStateStatus,
+    String? invitationStatusChangedSuccessMessage,
+    String? errorMessage,
+  }) {
+    return InvitationsState(
+        allPendingInvites: allPendingInvites ?? this.allPendingInvites,
+        invitationsStateStatus:
+            invitationsStateStatus ?? this.invitationsStateStatus,
+        invitationStatusChangedSuccessMessage:
+            invitationStatusChangedSuccessMessage ??
+                this.invitationStatusChangedSuccessMessage,
+        errorMessage: errorMessage ?? this.errorMessage);
+  }
 
   @override
-  List<Object> get props => [];
-}
-
-class InvitationStatusChangedLoading extends InvitationsState {}
-
-class InvitationStatusChangedError extends InvitationsState {
-  final String errorMessage;
-
-  const InvitationStatusChangedError({required this.errorMessage});
-
-  @override
-  List<Object> get props => [errorMessage];
-}
-
-class InvitationStatusChangedSuccess extends InvitationsState {
-  final String successMessage;
-
-  const InvitationStatusChangedSuccess({required this.successMessage});
-
-  @override
-  List<Object> get props => [successMessage];
+  List<Object?> get props => [
+        allPendingInvites,
+        invitationsStateStatus,
+        invitationStatusChangedSuccessMessage,
+        errorMessage
+      ];
 }

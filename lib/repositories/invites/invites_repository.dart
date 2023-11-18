@@ -1,11 +1,13 @@
 import 'dart:collection';
 
+import 'package:googleapis/photoslibrary/v1.dart';
 import 'package:letshang/models/event_invite.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:letshang/models/group_invite.dart';
 import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/invite.dart';
+import 'package:letshang/models/pending_invites.dart';
 import 'package:letshang/models/user_event_metadata.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/repositories/invites/base_invites_repository.dart';
@@ -60,6 +62,62 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
           eventEndDateTime: newEvent.eventEndDateTime));
     }
     return retValInvites;
+  }
+
+  @override
+  Future<List<HangEventInvite>> getUpcomingDraftEventInvites(
+      String userId) async {
+    QuerySnapshot rangeEventInviteQuerySnapshot = await _firebaseFirestore
+        .collection("userInvites")
+        .doc(userId)
+        .collection("eventInvites")
+        .where('eventStartDateTime', isGreaterThanOrEqualTo: DateTime.now())
+        .get();
+
+    QuerySnapshot draftInviteQuerySnapshot = await _firebaseFirestore
+        .collection("userInvites")
+        .doc(userId)
+        .collection("eventInvites")
+        .where('eventStartDateTime', isNull: true)
+        .get();
+
+    final allRangeDocSnapshots =
+        rangeEventInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
+    final allDraftDocSnapshots =
+        draftInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
+
+    List<HangEventInvite> eventInvites = allRangeDocSnapshots
+        .map((doc) => HangEventInvite.fromMap(doc as Map<String, dynamic>))
+        .toList();
+    List<HangEventInvite> draftEventInvites = allDraftDocSnapshots
+        .map((doc) => HangEventInvite.fromMap(doc as Map<String, dynamic>))
+        .toList();
+
+    List<HangEventInvite> draftUpcomingHangEvents = [
+      ...eventInvites,
+      ...draftEventInvites
+    ];
+
+    return draftUpcomingHangEvents;
+  }
+
+  @override
+  Future<List<HangEventInvite>> getPastEventInvites(String userId) async {
+    QuerySnapshot rangeEventInviteQuerySnapshot = await _firebaseFirestore
+        .collection("userInvites")
+        .doc(userId)
+        .collection("eventInvites")
+        .where('eventStartDateTime', isLessThan: DateTime.now())
+        .get();
+
+    final allRangeDocSnapshots =
+        rangeEventInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
+
+    List<HangEventInvite> pastEventInvites = allRangeDocSnapshots
+        .map((doc) => HangEventInvite.fromMap(doc as Map<String, dynamic>))
+        .toList();
+
+    return pastEventInvites;
   }
 
   @override
@@ -772,6 +830,78 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       await changeInviteStatus(
           userId, entityId, inviteType, InviteStatus.pending, transaction);
     });
+  }
+
+  @override
+  Future<PendingInvites> getAllPendingInvites(String userId) async {
+    QuerySnapshot allPendingEventInvites = await _firebaseFirestore
+        .collection("userInvites")
+        .doc(userId)
+        .collection("eventInvites")
+        .where('eventStartDate',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(DateTime.now()))
+        .where('status', isEqualTo: "pending")
+        .get();
+
+    QuerySnapshot allPendingGroupInvites = await _firebaseFirestore
+        .collection("userInvites")
+        .doc(userId)
+        .collection("groupInvites")
+        .where('status', isEqualTo: "pending")
+        .get();
+
+    final allPendingEventInviteSnapshots =
+        allPendingEventInvites.docs.map((doc) => doc.data()).toList();
+    List<HangEventInvite> eventInvites = allPendingEventInviteSnapshots
+        .map((doc) => HangEventInvite.fromMap(doc as Map<String, dynamic>))
+        .toList();
+
+    final allPendingGroupInviteSnapshots =
+        allPendingGroupInvites.docs.map((doc) => doc.data()).toList();
+    List<GroupInvite> groupInvites = allPendingGroupInviteSnapshots
+        .map((doc) => GroupInvite.fromMap(doc as Map<String, dynamic>))
+        .toList();
+
+    return PendingInvites(
+        eventInvites: eventInvites, groupInvites: groupInvites);
+  }
+
+  @override
+  Future<List<HangEventInvite>> getEventPendingInvites(String userId) async {
+    QuerySnapshot allPendingEventInvites = await _firebaseFirestore
+        .collection("userInvites")
+        .doc(userId)
+        .collection("eventInvites")
+        .where('eventStartDate',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(DateTime.now()))
+        .where('status', isEqualTo: "pending")
+        .get();
+
+    final allPendingEventInviteSnapshots =
+        allPendingEventInvites.docs.map((doc) => doc.data()).toList();
+    List<HangEventInvite> eventInvites = allPendingEventInviteSnapshots
+        .map((doc) => HangEventInvite.fromMap(doc as Map<String, dynamic>))
+        .toList();
+
+    return eventInvites;
+  }
+
+  @override
+  Future<List<GroupInvite>> getGroupPendingInvites(String userId) async {
+    QuerySnapshot allPendingGroupInvites = await _firebaseFirestore
+        .collection("userInvites")
+        .doc(userId)
+        .collection("groupInvites")
+        .where('status', isEqualTo: "pending")
+        .get();
+
+    final allPendingGroupInviteSnapshots =
+        allPendingGroupInvites.docs.map((doc) => doc.data()).toList();
+    List<GroupInvite> groupInvites = allPendingGroupInviteSnapshots
+        .map((doc) => GroupInvite.fromMap(doc as Map<String, dynamic>))
+        .toList();
+
+    return groupInvites;
   }
 
   Future<void> changeInviteStatus(

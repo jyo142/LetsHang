@@ -8,6 +8,28 @@ abstract class HangEventOverviewEvent extends Equatable {
   List<Object> get props => [];
 }
 
+class LoadUpcomingEvents extends HangEventOverviewEvent {
+  final String userId;
+
+  const LoadUpcomingEvents({
+    required this.userId,
+  });
+
+  @override
+  List<Object> get props => [userId];
+}
+
+class LoadPastEvents extends HangEventOverviewEvent {
+  final String userId;
+
+  const LoadPastEvents({
+    required this.userId,
+  });
+
+  @override
+  List<Object> get props => [userId];
+}
+
 class LoadHangEvents extends HangEventOverviewEvent {
   final String userId;
 

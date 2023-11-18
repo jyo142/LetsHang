@@ -27,6 +27,12 @@ class HangEventOverviewBloc
     on<LoadHangEvents>((event, emit) async {
       emit(await _mapLoadHangEventsToState(userId: event.userId));
     });
+    on<LoadUpcomingEvents>((event, emit) async {
+      emit(await _mapLoadUpcomingDraftHangEventsToState(userId: event.userId));
+    });
+    on<LoadPastEvents>((event, emit) async {
+      emit(await _mapLoadPastHangEventsToState(userId: event.userId));
+    });
     on<LoadHangEventsForDates>((event, emit) async {
       emit(await _mapLoadHangEventsToState(
           userId: event.userId,
@@ -44,6 +50,22 @@ class HangEventOverviewBloc
             errorMessage: "Unable to find event"));
       }
     });
+  }
+
+  Future<HangEventOverviewState> _mapLoadUpcomingDraftHangEventsToState(
+      {required String userId}) async {
+    List<HangEventInvite> eventsForUser =
+        await _userInvitesRepository.getUpcomingDraftEventInvites(userId);
+
+    return HangEventsRetrieved(hangEvents: eventsForUser);
+  }
+
+  Future<HangEventOverviewState> _mapLoadPastHangEventsToState(
+      {required String userId}) async {
+    List<HangEventInvite> eventsForUser =
+        await _userInvitesRepository.getPastEventInvites(userId);
+
+    return HangEventsRetrieved(hangEvents: eventsForUser);
   }
 
   Future<HangEventOverviewState> _mapLoadHangEventsToState(

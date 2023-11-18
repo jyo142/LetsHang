@@ -34,6 +34,8 @@ export const onUserInvitedToGroup = onDocumentCreated(
         `You have been invited to the group : ${groupSnapshot.get("name")}`,
         { groupId: snap.params.groupId },
         snap.data.get("invitingUser"),
+        undefined,
+        "invitation",
       );
       await sendNotification(
         userSnapshot,
@@ -128,6 +130,8 @@ const handleUserPromotionGroup = async (
       )}`,
       { groupId },
       invitingUser,
+      undefined,
+      "promotion",
     );
     await sendNotification(
       userSnapshot,

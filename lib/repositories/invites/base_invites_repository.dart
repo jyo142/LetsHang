@@ -3,11 +3,15 @@ import 'package:letshang/models/group_invite.dart';
 import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/invite.dart';
+import 'package:letshang/models/pending_invites.dart';
 import 'package:letshang/models/user_event_metadata.dart';
 import 'package:letshang/models/user_invite_model.dart';
 
 abstract class BaseUserInvitesRepository {
   Future<List<HangEventInvite>> getAllUserEventInvites(String userId);
+  Future<List<HangEventInvite>> getUpcomingDraftEventInvites(String userId);
+  Future<List<HangEventInvite>> getPastEventInvites(String userId);
+
   Future<List<HangEventInvite>> getUserEventInvitesByRange(
       String userId, DateTime startDateTime, DateTime endDateTime);
   Future<UserEventMetadata> getUserEventMetadata(String userId);
@@ -51,4 +55,9 @@ abstract class BaseUserInvitesRepository {
       InviteType inviteType, String userId, String entityId);
   Future<void> maybeInvite(
       InviteType inviteType, String userId, String entityId);
+
+  // pending invites
+  Future<PendingInvites> getAllPendingInvites(String userId);
+  Future<List<GroupInvite>> getGroupPendingInvites(String userId);
+  Future<List<HangEventInvite>> getEventPendingInvites(String userId);
 }

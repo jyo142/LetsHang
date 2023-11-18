@@ -1,23 +1,22 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
-import 'package:letshang/blocs/user_settings/user_settings_bloc.dart';
+import 'package:letshang/blocs/invitations/invitations_bloc.dart';
 import 'package:letshang/models/event_invite.dart';
+import 'package:letshang/models/group_invite.dart';
+import 'package:letshang/models/invite.dart';
 import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:letshang/services/authentication_service.dart';
+import 'package:letshang/screens/invitations/all_pending_invitations.dart';
 import 'package:letshang/services/message_service.dart';
-import 'package:letshang/widgets/appbar/lh_main_app_bar.dart';
-import 'package:letshang/widgets/lh_button.dart';
+import 'package:letshang/widgets/cards/invitations/event_invitation_card.dart';
+import 'package:letshang/widgets/cards/invitations/group_invitation_card.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
 
 /// Example event class.
 class Event {
@@ -43,8 +42,8 @@ final _kEventSource = Map.fromIterable(List.generate(50, (index) => index),
         item % 4 + 1, (index) => Event('Event $item | ${index + 1}')))
   ..addAll({
     kToday: [
-      Event('Today\'s Event 1'),
-      Event('Today\'s Event 2'),
+      const Event('Today\'s Event 1'),
+      const Event('Today\'s Event 2'),
     ],
   });
 
@@ -116,11 +115,6 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
   }
 
-  Future<void> _prompt() async {
-    User? user = await AuthenticationService.signInWithGoogle();
-    final ee = 2;
-  }
-
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     if (!isSameDay(_selectedDay, selectedDay)) {
       setState(() {
@@ -157,7 +151,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: BlocProvider(
+        body: MultiBlocProvider(
+            providers: [
+          BlocProvider(
             create: (context) => HangEventOverviewBloc()
               ..add(LoadHangEventsForDates(
                   userId: (context.read<AppBloc>().state as AppAuthenticated)
@@ -165,80 +161,188 @@ class _HomeScreenState extends State<HomeScreen> {
                       .id!,
                   startDateTime: _startOfWeek,
                   endDateTime: _endOfWeek)),
+          ),
+          BlocProvider(
+            create: (context) => InvitationsBloc()
+              ..add(LoadAllPendingInvites(
+                userId: (context.read<AppBloc>().state as AppAuthenticated)
+                    .user
+                    .id!,
+              )),
+          ),
+        ],
             child: SafeArea(
                 child: Padding(
-                    padding: const EdgeInsets.only(
-                        left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
-                    child: BlocBuilder<HangEventOverviewBloc,
-                        HangEventOverviewState>(
-                      builder: (context, state) {
-                        if (state is HangEventsLoading) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        }
-                        if (state is HangEventsRetrieved) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              TableCalendar<HangEventInvite>(
-                                firstDay: kFirstDay,
-                                lastDay: kLastDay,
-                                focusedDay: _focusedDay,
-                                selectedDayPredicate: (day) =>
-                                    isSameDay(_selectedDay, day),
-                                rangeStartDay: _rangeStart,
-                                rangeEndDay: _rangeEnd,
-                                calendarFormat: CalendarFormat.week,
-                                rangeSelectionMode: _rangeSelectionMode,
-                                eventLoader: (DateTime date) {
-                                  return state.dateToEvents[
-                                          DateFormat('MM/dd/yyyy')
-                                              .format(date)] ??
-                                      [];
-                                },
-                                startingDayOfWeek: StartingDayOfWeek.monday,
-                                calendarStyle: CalendarStyle(
-                                  // Use `CalendarStyle` to customize the UI
-                                  outsideDaysVisible: false,
-                                ),
-                                onDaySelected: _onDaySelected,
-                                onRangeSelected: _onRangeSelected,
-                                headerStyle: HeaderStyle(
-                                  titleCentered: true,
-                                  formatButtonVisible: false,
-                                ),
-                                onFormatChanged: (format) {
-                                  if (_calendarFormat != format) {
-                                    setState(() {
-                                      _calendarFormat = format;
-                                    });
-                                  }
-                                },
-                                onPageChanged: (focusedDay) {
-                                  DateTime newStartOfWeek = focusedDay.subtract(
-                                      Duration(days: focusedDay.weekday - 1));
-                                  DateTime newEndOfWeek = focusedDay.add(
-                                      Duration(
-                                          days: DateTime.daysPerWeek -
-                                              focusedDay.weekday));
-                                  context.read<HangEventOverviewBloc>().add(
-                                      LoadHangEventsForDates(
-                                          userId: (context.read<AppBloc>().state
-                                                  as AppAuthenticated)
-                                              .user
-                                              .id!,
-                                          startDateTime: newStartOfWeek,
-                                          endDateTime: newEndOfWeek));
-                                  _focusedDay = focusedDay;
-                                },
-                              ),
-                              ..._upcomingEvents(context),
-                            ],
-                          );
-                        }
-                        return SizedBox();
-                      },
-                    )))));
+              padding: const EdgeInsets.only(
+                  left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
+              child: Column(children: [
+                _pendingInvitationsSection(context, InviteType.group),
+                const SizedBox(
+                  height: 10,
+                ),
+                _pendingInvitationsSection(context, InviteType.event),
+                const SizedBox(
+                  height: 10,
+                ),
+                Flexible(flex: 6, child: _homeEvents(context))
+              ]),
+            ))));
+  }
+
+  Widget _pendingInvitationsSection(
+      BuildContext context, InviteType inviteType) {
+    return BlocConsumer<InvitationsBloc, InvitationsState>(
+      listener: (context, state) {
+        if (state.invitationsStateStatus ==
+            InvitationsStateStatus.invitationStatusChangedSuccess) {
+          MessageService.showSuccessMessage(
+              content: state.invitationStatusChangedSuccessMessage!,
+              context: context);
+        }
+      },
+      builder: (context, state) {
+        final hasEventInvites =
+            state.allPendingInvites?.eventInvites?.isNotEmpty ?? false;
+        final hasGroupInvites =
+            state.allPendingInvites?.groupInvites?.isNotEmpty ?? false;
+        final inviteTypeInvites = inviteType == InviteType.event
+            ? state.allPendingInvites?.eventInvites
+            : state.allPendingInvites?.groupInvites;
+        final sectionName = inviteType == InviteType.event ? "Event" : "Group";
+        final flexValue = hasEventInvites && hasGroupInvites ? 3 : 2;
+        if (state.invitationsStateStatus ==
+            InvitationsStateStatus.pendingInvitationsLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (state.invitationsStateStatus ==
+            InvitationsStateStatus.pendingInvitationsRetrieved) {
+          if (inviteTypeInvites?.isNotEmpty ?? false) {
+            return Flexible(
+              flex: flexValue,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Pending $sectionName Invitations (${inviteTypeInvites!.length})",
+                    style: Theme.of(context).textTheme.headline5,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Flexible(
+                      child: ListView.builder(
+                          itemCount: inviteTypeInvites.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final curInviteType = inviteTypeInvites[index];
+                            if (inviteType == InviteType.event) {
+                              return EventInvitationCard(
+                                  invitation: curInviteType as HangEventInvite);
+                            } else {
+                              return GroupInvitationCard(
+                                invitation: curInviteType as GroupInvite,
+                              );
+                            }
+                          })),
+                  InkWell(
+                    // on Tap function used and call back function os defined here
+                    onTap: () async {
+                      final bool? shouldRefresh =
+                          await Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                AllPendingInvitations(inviteType: inviteType)),
+                      );
+                      if (shouldRefresh != null && shouldRefresh) {
+                        context
+                            .read<InvitationsBloc>()
+                            .add(LoadAllPendingInvites(
+                              userId: (context.read<AppBloc>().state
+                                      as AppAuthenticated)
+                                  .user
+                                  .id!,
+                            ));
+                      }
+                    },
+                    child: Text(
+                      'View All $sectionName Invitations',
+                      style: Theme.of(context).textTheme.linkText,
+                    ),
+                  )
+                ],
+              ),
+            );
+          }
+        }
+        return const SizedBox();
+      },
+    );
+  }
+
+  Widget _homeEvents(BuildContext context) {
+    return BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
+      builder: (context, state) {
+        if (state is HangEventsLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (state is HangEventsRetrieved) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TableCalendar<HangEventInvite>(
+                firstDay: kFirstDay,
+                lastDay: kLastDay,
+                focusedDay: _focusedDay,
+                selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                rangeStartDay: _rangeStart,
+                rangeEndDay: _rangeEnd,
+                calendarFormat: CalendarFormat.week,
+                rangeSelectionMode: _rangeSelectionMode,
+                eventLoader: (DateTime date) {
+                  return state.dateToEvents[
+                          DateFormat('MM/dd/yyyy').format(date)] ??
+                      [];
+                },
+                startingDayOfWeek: StartingDayOfWeek.monday,
+                calendarStyle: const CalendarStyle(
+                  // Use `CalendarStyle` to customize the UI
+                  outsideDaysVisible: false,
+                ),
+                onDaySelected: _onDaySelected,
+                onRangeSelected: _onRangeSelected,
+                headerStyle: const HeaderStyle(
+                  titleCentered: true,
+                  formatButtonVisible: false,
+                ),
+                onFormatChanged: (format) {
+                  if (_calendarFormat != format) {
+                    setState(() {
+                      _calendarFormat = format;
+                    });
+                  }
+                },
+                onPageChanged: (focusedDay) {
+                  DateTime newStartOfWeek = focusedDay
+                      .subtract(Duration(days: focusedDay.weekday - 1));
+                  DateTime newEndOfWeek = focusedDay.add(Duration(
+                      days: DateTime.daysPerWeek - focusedDay.weekday));
+                  context.read<HangEventOverviewBloc>().add(
+                      LoadHangEventsForDates(
+                          userId: (context.read<AppBloc>().state
+                                  as AppAuthenticated)
+                              .user
+                              .id!,
+                          startDateTime: newStartOfWeek,
+                          endDateTime: newEndOfWeek));
+                  _focusedDay = focusedDay;
+                },
+              ),
+              ..._upcomingEvents(context),
+            ],
+          );
+        }
+        return const SizedBox();
+      },
+    );
   }
 
   List<Widget> _upcomingEvents(BuildContext context) {

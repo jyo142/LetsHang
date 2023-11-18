@@ -14,6 +14,7 @@ export const addNotification = async (
   metadata?: NotificationsMetadata,
   initiatedUserData?: any,
   expirationDate?: number,
+  notificationType?: string,
 ): Promise<DocumentReference> => {
   const pendingNotificationCollectionRef = db
     .collection("notifications")
@@ -26,6 +27,7 @@ export const addNotification = async (
     userId,
     content,
     createdDate: admin.firestore.Timestamp.fromDate(new Date()),
+    notificationType,
     ...metadata,
   };
   if (expirationDate) {

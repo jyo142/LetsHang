@@ -3,13 +3,9 @@ import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/group_overview/group_overview_bloc.dart';
 import 'package:letshang/models/group_invite.dart';
-import 'package:letshang/repositories/group/group_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:letshang/screens/edit_groups_screen.dart';
 import 'package:letshang/widgets/cards/group_card.dart';
-import 'package:letshang/widgets/appbar/lh_main_app_bar.dart';
-import 'package:letshang/widgets/lh_button.dart';
 
 class GroupsScreen extends StatelessWidget {
   const GroupsScreen({Key? key}) : super(key: key);

@@ -12,10 +12,10 @@ import 'package:intl/intl.dart';
 
 class EventInvitationContent extends StatelessWidget {
   final HangEvent event;
-  final NotificationsModel notification;
-
+  final NotificationsModel? notification;
+  final bool? showHomeIcon;
   const EventInvitationContent(
-      {Key? key, required this.event, required this.notification})
+      {Key? key, required this.event, this.notification, this.showHomeIcon})
       : super(key: key);
 
   @override
@@ -25,14 +25,17 @@ class EventInvitationContent extends StatelessWidget {
             entityId: event.id,
             notification: notification,
             inviteType: InviteType.event,
-            invitationContent: _EventInvitationContentView(event: event)));
+            invitationContent: _EventInvitationContentView(
+              event: event,
+              showHomeIcon: showHomeIcon,
+            )));
   }
 }
 
 class _EventInvitationContentView extends StatelessWidget {
   final HangEvent event;
-
-  const _EventInvitationContentView({required this.event});
+  final bool? showHomeIcon;
+  const _EventInvitationContentView({required this.event, this.showHomeIcon});
 
   @override
   Widget build(BuildContext context) {
@@ -52,19 +55,31 @@ class _EventInvitationContentView extends StatelessWidget {
                   ),
                   width: width,
                 ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.home,
-                    color: Color(0xFF9BADBD),
+                if (showHomeIcon ?? false) ...[
+                  IconButton(
+                    icon: const Icon(
+                      Icons.home,
+                      color: Color(0xFF9BADBD),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const AppScreen(),
+                        ),
+                      );
+                    },
                   ),
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const AppScreen(),
-                      ),
-                    );
-                  },
-                ),
+                ] else ...[
+                  IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Color(0xFF9BADBD),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ]
               ],
             )),
         Flexible(

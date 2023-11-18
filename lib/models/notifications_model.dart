@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:letshang/utils/firebase_utils.dart';
 
+enum NotificationType { invitation, promotion }
+
 class NotificationsModel extends Equatable {
   final String id;
   final String userId;
@@ -13,6 +15,7 @@ class NotificationsModel extends Equatable {
   final String? groupId;
   final String? initiatedUserName;
   final String? initiatedUserPhotoUrl;
+  final NotificationType? notificationType;
   const NotificationsModel(
       {required this.id,
       required this.userId,
@@ -22,7 +25,8 @@ class NotificationsModel extends Equatable {
       this.eventId,
       this.groupId,
       this.initiatedUserName,
-      this.initiatedUserPhotoUrl});
+      this.initiatedUserPhotoUrl,
+      this.notificationType});
 
   NotificationsModel.withId(String id, NotificationsModel notificationsModel)
       : this(
@@ -34,7 +38,8 @@ class NotificationsModel extends Equatable {
             eventId: notificationsModel.eventId,
             groupId: notificationsModel.groupId,
             initiatedUserName: notificationsModel.initiatedUserName,
-            initiatedUserPhotoUrl: notificationsModel.initiatedUserPhotoUrl);
+            initiatedUserPhotoUrl: notificationsModel.initiatedUserPhotoUrl,
+            notificationType: notificationsModel.notificationType);
 
   static NotificationsModel fromSnapshot(DocumentSnapshot snap) {
     return fromMap(snap.data() as Map<String, dynamic>);
@@ -45,19 +50,24 @@ class NotificationsModel extends Equatable {
     Timestamp? expirationDateTimestamp =
         map.containsKey("expirationDate") ? map['expirationDate'] : null;
     NotificationsModel notification = NotificationsModel(
-        id: map['id'],
-        userId: map["userId"],
-        content: map['content'],
-        createdDate: createdDateTimestamp.toDate(),
-        expirationDate: expirationDateTimestamp?.toDate(),
-        eventId: map.containsKey('eventId') ? map['eventId'] : null,
-        groupId: map.containsKey('groupId') ? map['groupId'] : null,
-        initiatedUserName: map.containsKey('initiatedUserName')
-            ? map['initiatedUserName']
-            : null,
-        initiatedUserPhotoUrl: map.containsKey('initiatedUserPhotoUrl')
-            ? map['initiatedUserPhotoUrl']
-            : null);
+      id: map['id'],
+      userId: map["userId"],
+      content: map['content'],
+      createdDate: createdDateTimestamp.toDate(),
+      expirationDate: expirationDateTimestamp?.toDate(),
+      eventId: map.containsKey('eventId') ? map['eventId'] : null,
+      groupId: map.containsKey('groupId') ? map['groupId'] : null,
+      initiatedUserName: map.containsKey('initiatedUserName')
+          ? map['initiatedUserName']
+          : null,
+      initiatedUserPhotoUrl: map.containsKey('initiatedUserPhotoUrl')
+          ? map['initiatedUserPhotoUrl']
+          : null,
+      notificationType: map.containsKey('notificationType')
+          ? NotificationType.values
+              .firstWhere((e) => describeEnum(e) == map['notificationType'])
+          : null,
+    );
 
     return notification;
   }
@@ -71,7 +81,8 @@ class NotificationsModel extends Equatable {
       'eventId': eventId,
       'groupId': groupId,
       'initiatedUserName': initiatedUserName,
-      'initiatedUserPhotoUrl': initiatedUserPhotoUrl
+      'initiatedUserPhotoUrl': initiatedUserPhotoUrl,
+      'notificationType': notificationType
     };
     if (expirationDate != null) {
       retVal["expirationDate"] = Timestamp.fromDate(expirationDate!);
@@ -90,5 +101,6 @@ class NotificationsModel extends Equatable {
         expirationDate,
         initiatedUserName,
         initiatedUserPhotoUrl,
+        notificationType
       ];
 }
