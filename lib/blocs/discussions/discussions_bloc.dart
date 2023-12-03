@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:letshang/blocs/user_settings/user_settings_bloc.dart';
+import 'package:letshang/models/discussions/discussion_model.dart';
 import 'package:letshang/models/discussions/event_discussions_model.dart';
 import 'package:letshang/models/notifications_model.dart';
 import 'package:letshang/repositories/discussions/base_discussions_repository.dart';
@@ -28,13 +29,13 @@ class DiscussionsBloc extends Bloc<DiscussionsEvent, DiscussionsState> {
 
   Future<DiscussionsState> _mapLoadEventDiscussions(String eventId) async {
     try {
-      EventDiscussionsModel? retrievedEventDiscussionsModel =
+      List<DiscussionModel> retrievedEventDiscussions =
           await _discussionsRepository.getEventDiscussions(eventId);
 
       return state.copyWith(
           discussionsStateStatus:
               DiscussionsStateStatus.retrievedEventDiscussions,
-          eventDiscussionsModel: retrievedEventDiscussionsModel);
+          allEventDiscussions: retrievedEventDiscussions);
     } catch (_) {
       return state.copyWith(
           discussionsStateStatus: DiscussionsStateStatus.error,

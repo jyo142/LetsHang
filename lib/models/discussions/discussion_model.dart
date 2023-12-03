@@ -2,34 +2,39 @@ import 'package:equatable/equatable.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:letshang/models/discussions/discussion_message.dart';
+import 'package:letshang/models/group_model.dart';
+import 'package:letshang/models/group_preview.dart';
+import 'package:letshang/models/hang_event_preview.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/utils/firebase_utils.dart';
 
 class DiscussionModel extends Equatable {
   final String? id;
   final String discussionId;
-  final bool isMainGroupDiscussion;
+  final bool? isMainDiscussion;
   final List<HangUserPreview> discussionMembers;
   final DiscussionMessage? lastMessage;
-  final String? eventId;
+  final HangEventPreview? event;
+  final GroupPreview? group;
 
   const DiscussionModel(
       {this.id,
       required this.discussionId,
-      required this.isMainGroupDiscussion,
+      this.isMainDiscussion,
       required this.discussionMembers,
       this.lastMessage,
-      this.eventId});
+      this.group,
+      this.event});
 
   DiscussionModel.withId(String id, DiscussionModel discussionsModel)
       : this(
-          id: id,
-          discussionId: discussionsModel.discussionId,
-          isMainGroupDiscussion: discussionsModel.isMainGroupDiscussion,
-          discussionMembers: discussionsModel.discussionMembers,
-          lastMessage: discussionsModel.lastMessage,
-          eventId: discussionsModel.eventId,
-        );
+            id: id,
+            discussionId: discussionsModel.discussionId,
+            isMainDiscussion: discussionsModel.isMainDiscussion,
+            discussionMembers: discussionsModel.discussionMembers,
+            lastMessage: discussionsModel.lastMessage,
+            group: discussionsModel.group,
+            event: discussionsModel.event);
 
   DiscussionModel copyWith({
     String? id,
@@ -37,17 +42,17 @@ class DiscussionModel extends Equatable {
     bool? isMainGroupDiscussion,
     List<HangUserPreview>? discussionMembers,
     DiscussionMessage? lastMessage,
-    String? eventId,
+    GroupPreview? group,
+    HangEventPreview? event,
   }) {
     return DiscussionModel(
-      id: id ?? this.id,
-      discussionId: discussionId ?? this.discussionId,
-      isMainGroupDiscussion:
-          isMainGroupDiscussion ?? this.isMainGroupDiscussion,
-      discussionMembers: discussionMembers ?? this.discussionMembers,
-      lastMessage: lastMessage ?? this.lastMessage,
-      eventId: eventId ?? this.eventId,
-    );
+        id: id ?? this.id,
+        discussionId: discussionId ?? this.discussionId,
+        isMainDiscussion: isMainGroupDiscussion ?? this.isMainDiscussion,
+        discussionMembers: discussionMembers ?? this.discussionMembers,
+        lastMessage: lastMessage ?? this.lastMessage,
+        group: group,
+        event: event);
   }
 
   static DiscussionModel fromSnapshot(DocumentSnapshot snap) {
@@ -58,13 +63,14 @@ class DiscussionModel extends Equatable {
     DiscussionModel notification = DiscussionModel(
       id: map['id'],
       discussionId: map['discussionId'],
-      isMainGroupDiscussion: map["isMainGroupDiscussion"],
+      isMainDiscussion: map["isMainDiscussion"],
       discussionMembers: (map['discussionMembers'] as List<dynamic>)
           .map((member) => HangUserPreview.fromMap(member))
           .toList(),
       lastMessage: map.getFromMap(
           "lastMessage", (key) => DiscussionMessage.fromMap(key)),
-      eventId: map['eventId'],
+      group: map.getFromMap("group", (key) => GroupPreview.fromMap(key)),
+      event: map.getFromMap("event", (key) => HangEventPreview.fromMap(key)),
     );
 
     return notification;
@@ -74,11 +80,12 @@ class DiscussionModel extends Equatable {
     Map<String, Object?> retVal = {
       'id': id,
       'discussionId': discussionId,
-      'isMainGroupDiscussion': isMainGroupDiscussion,
+      'isMainDiscussion': isMainDiscussion,
       'discussionMembers':
           discussionMembers.map((member) => member.toDocument()).toList(),
       'lastMessage': lastMessage?.toDocument(),
-      'eventId': eventId,
+      'group': group?.toDocument(),
+      'event': event?.toDocument()
     };
     return retVal;
   }
@@ -87,9 +94,10 @@ class DiscussionModel extends Equatable {
   List<Object?> get props => [
         id,
         discussionId,
-        isMainGroupDiscussion,
+        isMainDiscussion,
         discussionMembers,
         lastMessage,
-        eventId,
+        group,
+        event
       ];
 }

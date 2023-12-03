@@ -19,7 +19,7 @@ class LHBottomNavBar extends StatelessWidget {
     Icons.home,
     Icons.calendar_month,
     Icons.group,
-    Icons.person,
+    Icons.chat,
   ];
   @override
   Widget build(BuildContext context) {

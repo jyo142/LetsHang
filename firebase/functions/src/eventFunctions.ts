@@ -122,6 +122,120 @@ export const onUserEventInviteChanged = onDocumentUpdated(
   },
 );
 
+export const onEventDiscussionModified = onDocumentUpdated(
+  "/hangEvents/{eventId}/discussions/{eventDiscussionId}",
+  async (snap) => {
+    if (!snap.data) {
+      info("No data");
+      return;
+    }
+
+    const newDiscussionData = snap.data?.after;
+    const oldDiscussionData = snap.data?.before;
+
+    const snapData = await db
+      .collection("hangEvents")
+      .doc(snap.params.eventId)
+      .collection("discussions")
+      .doc(snap.params.eventDiscussionId)
+      .get();
+
+    if (!snapData) {
+      error("Unable to get snapshot data");
+      return;
+    }
+    // create user discussions for all users in the event discussion
+    const newDiscussionMembers = findNewDiscussionMembers(
+      oldDiscussionData.get("discussionMembers"),
+      newDiscussionData.get("discussionMembers"),
+    );
+
+    await createUserDiscussions(
+      snapData,
+      newDiscussionMembers,
+      snap.params.eventId,
+    );
+  },
+);
+
+export const onEventDiscussionCreated = onDocumentCreated(
+  "/hangEvents/{eventId}/discussions/{eventDiscussionId}",
+  async (snap) => {
+    if (!snap.data) {
+      info("No data");
+      return;
+    }
+
+    const snapData = await db
+      .collection("hangEvents")
+      .doc(snap.params.eventId)
+      .collection("discussions")
+      .doc(snap.params.eventDiscussionId)
+      .get();
+
+    if (!snapData) {
+      error("Unable to get snapshot data");
+      return;
+    }
+    const discussionMembers = await snapData.get("discussionMembers");
+    // create user discussions for all users in the event discussion
+    await createUserDiscussions(
+      snapData,
+      discussionMembers,
+      snap.params.eventId,
+    );
+  },
+);
+
+const findNewDiscussionMembers = (
+  oldDiscussionMembers: any[],
+  newDiscussionMembers: any[],
+) => {
+  const newUsers = newDiscussionMembers.filter(
+    (nm) =>
+      !oldDiscussionMembers.find((om) => om.get("userId") === nm.get("userId")),
+  );
+  return newUsers;
+};
+
+const createUserDiscussions = async (
+  eventDiscussionSnapshot: DocumentSnapshot,
+  discussionMembers: any[],
+  eventId: string,
+) => {
+  const discussionId = await eventDiscussionSnapshot.get("discussionId");
+  const eventPreviewData = eventDiscussionSnapshot.get("event");
+
+  info(discussionMembers);
+  for (const curDiscussionMember of discussionMembers) {
+    // check if every member of the discussion has their own userDiscussion
+    const userDiscussionQuerySnap = await db
+      .collection("userDiscussions")
+      .where("discussionId", "==", discussionId)
+      .get();
+    if (userDiscussionQuerySnap.empty) {
+      const newUserDiscussion = {
+        userId: curDiscussionMember.userId,
+        discussionId,
+        discussionMembers,
+        isMainDiscussion: false,
+        event: {
+          eventId: eventId,
+          eventName: eventPreviewData?.eventName,
+          eventDescription: eventPreviewData?.eventDescription,
+          photoUrl: eventPreviewData?.photoUrl,
+        },
+      };
+      info("CREATING DISCUSSION FOR USER ", curDiscussionMember.userId);
+      await db
+        .collection("userDiscussions")
+        .doc(curDiscussionMember.userId)
+        .collection("discussions")
+        .add(newUserDiscussion);
+    }
+  }
+};
+
 const handleUserPromotionEvent = async (
   eventSnapshot: DocumentSnapshot,
   userSnapshot: DocumentSnapshot,

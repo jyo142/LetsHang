@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/utils/firebase_utils.dart';
+import 'package:intl/intl.dart';
 
 class DiscussionMessage extends Equatable {
   final String? id;
@@ -58,6 +59,10 @@ class DiscussionMessage extends Equatable {
       'creationDate': Timestamp.fromDate(creationDate)
     };
     return retVal;
+  }
+
+  String toUserDateString() {
+    return '${sendingUser.userId}-${DateFormat('MMM d, yyyy h:mm a').format(creationDate)}';
   }
 
   @override

@@ -5,31 +5,32 @@ enum DiscussionMessagesStateStatus {
   loadingDiscussionMessages,
   retrievedDiscussionMessages,
   sendingDiscussionMessage,
+  typingDiscussionMessage,
   messageSentSuccessfully,
   error
 }
 
 class DiscussionMessagesState extends Equatable {
   final DiscussionMessagesStateStatus discussionMessagesStateStatus;
-  final List<DiscussionMessage> discussionMessages;
+  final List<DiscussionMessageDateGroup> messagesByDate;
   final String? currentMessage;
   final String? errorMessage;
 
   DiscussionMessagesState(
       {required this.discussionMessagesStateStatus,
-      this.discussionMessages = const [],
+      this.messagesByDate = const [],
       this.currentMessage,
       this.errorMessage});
 
   DiscussionMessagesState copyWith(
       {DiscussionMessagesStateStatus? discussionMessagesStateStatus,
-      List<DiscussionMessage>? discussionMessages,
+      List<DiscussionMessageDateGroup>? messagesByDate,
       String? currentMessage,
       String? errorMessage}) {
     return DiscussionMessagesState(
         discussionMessagesStateStatus:
             discussionMessagesStateStatus ?? this.discussionMessagesStateStatus,
-        discussionMessages: discussionMessages ?? this.discussionMessages,
+        messagesByDate: messagesByDate ?? this.messagesByDate,
         currentMessage: currentMessage ?? this.currentMessage,
         errorMessage: errorMessage ?? this.errorMessage);
   }
@@ -37,7 +38,7 @@ class DiscussionMessagesState extends Equatable {
   @override
   List<Object?> get props => [
         discussionMessagesStateStatus,
-        discussionMessages,
+        messagesByDate,
         currentMessage,
         errorMessage
       ];

@@ -26,8 +26,34 @@ class DiscussionScreen extends StatelessWidget {
   }
 }
 
-class DiscussionView extends StatelessWidget {
+class DiscussionView extends StatefulWidget {
   const DiscussionView({Key? key}) : super(key: key);
+
+  @override
+  _DiscussionViewState createState() => _DiscussionViewState();
+}
+
+class _DiscussionViewState extends State<DiscussionView> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_changed);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_changed);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  _changed() {
+    context
+        .read<DiscussionMessagesBloc>()
+        .add(DiscussionMessageChanged(_controller.text));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,8 +79,14 @@ class DiscussionView extends StatelessWidget {
             child: Padding(
                 padding: const EdgeInsets.only(
                     left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
-                child: BlocBuilder<DiscussionMessagesBloc,
+                child: BlocConsumer<DiscussionMessagesBloc,
                     DiscussionMessagesState>(
+                  listener: (context, state) {
+                    if (state.discussionMessagesStateStatus ==
+                        DiscussionMessagesStateStatus.messageSentSuccessfully) {
+                      _controller.clear();
+                    }
+                  },
                   builder: (context, state) {
                     if (state.discussionMessagesStateStatus ==
                         DiscussionMessagesStateStatus
@@ -65,14 +97,26 @@ class DiscussionView extends StatelessWidget {
                       children: [
                         Flexible(
                           flex: 9,
-                          child: ListView.builder(
-                              reverse: true,
-                              itemCount: state.discussionMessages.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                return MessageCard(
-                                  message: state.discussionMessages[index],
-                                );
-                              }),
+                          child: ListView(
+                            reverse: true,
+                            children: [
+                              for (final curGroup in state.messagesByDate)
+                                ListView.builder(
+                                    reverse: true,
+                                    physics: ClampingScrollPhysics(),
+                                    shrinkWrap: true,
+                                    itemCount:
+                                        curGroup.dateGroupMessages.length,
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      return MessageCard(
+                                        message:
+                                            curGroup.dateGroupMessages[index],
+                                        showDate: index == 0,
+                                      );
+                                    }),
+                            ],
+                          ),
                         ),
                         Row(
                           children: [
@@ -80,9 +124,7 @@ class DiscussionView extends StatelessWidget {
                               child: TextField(
                                   keyboardType: TextInputType.multiline,
                                   maxLines: null,
-                                  onChanged: (value) => context
-                                      .read<DiscussionMessagesBloc>()
-                                      .add(DiscussionMessageChanged(value)),
+                                  controller: _controller,
                                   decoration: InputDecoration(
                                     fillColor: Colors.white,
                                     filled: true,

@@ -5,44 +5,42 @@ import 'package:letshang/models/discussions/discussion_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/utils/firebase_utils.dart';
 
-class EventDiscussionsModel extends Equatable {
+class EventDiscussionModel extends Equatable {
   final String? id;
-  final List<DiscussionModel> eventDiscussions;
+  final DiscussionModel eventDiscussionModel;
   final String eventId;
 
-  const EventDiscussionsModel(
-      {this.id, required this.eventDiscussions, required this.eventId});
+  const EventDiscussionModel(
+      {this.id, required this.eventDiscussionModel, required this.eventId});
 
-  EventDiscussionsModel.withId(
-      String id, EventDiscussionsModel discussionsModel)
+  EventDiscussionModel.withId(String id, EventDiscussionModel discussionModel)
       : this(
           id: id,
-          eventDiscussions: discussionsModel.eventDiscussions,
-          eventId: discussionsModel.eventId,
+          eventDiscussionModel: discussionModel.eventDiscussionModel,
+          eventId: discussionModel.eventId,
         );
 
-  static EventDiscussionsModel fromSnapshot(DocumentSnapshot snap) {
+  static EventDiscussionModel fromSnapshot(DocumentSnapshot snap) {
     return fromMap(snap.data() as Map<String, dynamic>);
   }
 
-  EventDiscussionsModel copyWith({
+  EventDiscussionModel copyWith({
     String? id,
-    List<DiscussionModel>? eventDiscussions,
+    DiscussionModel? eventDiscussionModel,
     String? eventId,
   }) {
-    return EventDiscussionsModel(
+    return EventDiscussionModel(
       id: id ?? this.id,
-      eventDiscussions: eventDiscussions ?? this.eventDiscussions,
+      eventDiscussionModel: eventDiscussionModel ?? this.eventDiscussionModel,
       eventId: eventId ?? this.eventId,
     );
   }
 
-  static EventDiscussionsModel fromMap(Map<String, dynamic> map) {
-    EventDiscussionsModel notification = EventDiscussionsModel(
+  static EventDiscussionModel fromMap(Map<String, dynamic> map) {
+    EventDiscussionModel notification = EventDiscussionModel(
       id: map['id'],
-      eventDiscussions: (map['eventDiscussions'] as List<dynamic>)
-          .map((discussionMap) => DiscussionModel.fromMap(discussionMap))
-          .toList(),
+      eventDiscussionModel:
+          DiscussionModel.fromMap(map['eventDiscussionModel']),
       eventId: map['eventId'],
     );
 
@@ -52,9 +50,7 @@ class EventDiscussionsModel extends Equatable {
   Map<String, Object?> toDocument() {
     Map<String, Object?> retVal = {
       'id': id,
-      'eventDiscussions': eventDiscussions
-          .map((discussion) => discussion.toDocument())
-          .toList(),
+      'eventDiscussionModel': eventDiscussionModel.toDocument(),
       'eventId': eventId,
     };
     return retVal;
@@ -63,7 +59,7 @@ class EventDiscussionsModel extends Equatable {
   @override
   List<Object?> get props => [
         id,
-        eventDiscussions,
+        eventDiscussionModel,
         eventId,
       ];
 }

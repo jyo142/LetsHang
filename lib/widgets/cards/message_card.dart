@@ -12,10 +12,11 @@ import 'package:letshang/widgets/avatars/user_avatar.dart';
 
 class MessageCard extends StatelessWidget {
   final DiscussionMessage message;
-
+  final bool showDate;
   const MessageCard({
     Key? key,
     required this.message,
+    this.showDate = true,
   }) : super(key: key);
 
   @override
@@ -23,8 +24,8 @@ class MessageCard extends StatelessWidget {
     DateTime curDate = DateTime.now();
     String dateFormatted =
         DateTimeUtils.isSameDay(message.creationDate, curDate)
-            ? DateFormat('h:m a').format(message.creationDate)
-            : DateFormat('MMM d, yyyy h:m a').format(message.creationDate);
+            ? DateFormat('h:mm a').format(message.creationDate)
+            : DateFormat('MMM d, yyyy h:mm a').format(message.creationDate);
     bool isCurrentUserMessage =
         (context.read<AppBloc>().state as AppAuthenticated).user.email ==
             message.sendingUser.email;
@@ -69,11 +70,13 @@ class MessageCard extends StatelessWidget {
               SizedBox(
                 height: 5,
               ),
-              Text(
-                dateFormatted,
-                style: Theme.of(context).textTheme.bodyText2!
-                  ..merge(const TextStyle(color: Color(0xFF04152D))),
-              )
+              if (showDate) ...[
+                Text(
+                  dateFormatted,
+                  style: Theme.of(context).textTheme.bodyText2!
+                    ..merge(const TextStyle(color: Color(0xFF04152D))),
+                )
+              ]
             ],
           ),
         )

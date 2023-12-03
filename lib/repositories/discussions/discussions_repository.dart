@@ -3,7 +3,9 @@ import 'package:letshang/models/discussions/discussion_message.dart';
 import 'package:letshang/models/discussions/discussion_metadata.dart';
 import 'package:letshang/models/discussions/discussion_model.dart';
 import 'package:letshang/models/discussions/event_discussions_model.dart';
+import 'package:letshang/models/discussions/user_discussions_model.dart';
 import 'package:letshang/models/group_model.dart';
+import 'package:letshang/models/hang_event_preview.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/repositories/discussions/base_discussions_repository.dart';
@@ -17,173 +19,121 @@ class DiscussionsRepository extends BaseDiscussionsRepository {
       : _firebaseFirestore = firebaseFirestore ?? FirebaseFirestore.instance;
 
   @override
-  Future<EventDiscussionsModel?> getEventDiscussions(String eventId) async {
-    DocumentSnapshot docSnapshot = await _firebaseFirestore
+  Future<List<DiscussionModel>> getEventDiscussions(String eventId) async {
+    QuerySnapshot snapshots = await _firebaseFirestore
         .collection('hangEvents')
         .doc(eventId)
         .collection("discussions")
-        .doc("eventDiscussions")
         .get();
-    if (docSnapshot.exists) {
-      EventDiscussionsModel retVal =
-          EventDiscussionsModel.fromSnapshot(docSnapshot);
 
-      // for each discussion get the most recent message as a "preview"
-      List<DiscussionModel> discussionsWithLastMessage =
-          await Future.wait(retVal.eventDiscussions.map((e) async {
-        final lastMessageQuerySnapshot = await _firebaseFirestore
-            .collection('discussions')
-            .doc(e.discussionId)
-            .collection('messages')
-            .orderBy('creationDate', descending: true)
-            .limit(1)
-            .get();
-        if (lastMessageQuerySnapshot.docs.isNotEmpty) {
-          DocumentSnapshot lastMessageSnapshot =
-              lastMessageQuerySnapshot.docs.first;
-          DiscussionMessage lastMessage =
-              DiscussionMessage.fromSnapshot(lastMessageSnapshot);
-          return e.copyWith(lastMessage: lastMessage);
-        }
-        return e;
-      }).toList());
-
-      return retVal.copyWith(eventDiscussions: discussionsWithLastMessage);
-    }
-    return null;
+    final allEventDiscussionsSnapshots =
+        snapshots.docs.map((doc) => doc.data()).toList();
+    List<DiscussionModel> eventDiscussions = allEventDiscussionsSnapshots
+        .map((doc) => DiscussionModel.fromMap(doc as Map<String, dynamic>))
+        .toList();
+    return eventDiscussions;
   }
 
   @override
   Future<void> addEventDiscussion(
-    String eventId,
-    bool isMainGroupDiscussion,
+    HangEventPreview event,
+    bool isMainDiscussion,
     List<HangUserPreview> discussionMembers,
   ) async {
-    await _firebaseFirestore.runTransaction((transaction) async {
-      // get the document with all the event discussions
-      DocumentReference docReference = _firebaseFirestore
-          .collection('hangEvents')
-          .doc(eventId)
-          .collection("discussions")
-          .doc("eventDiscussions");
-      DocumentSnapshot docSnapshot = await transaction.get(docReference);
+    final collectionRef = _firebaseFirestore
+        .collection('hangEvents')
+        .doc(event.eventId)
+        .collection("discussions");
 
-      // create the discussion (collection of messages)
-      DiscussionMetadataModel metadataModel =
-          await createDiscussion(discussionMembers, transaction);
-      DiscussionModel retValDiscussionModel = DiscussionModel(
-          discussionId: metadataModel.id!,
-          isMainGroupDiscussion: isMainGroupDiscussion,
-          discussionMembers: discussionMembers);
-      EventDiscussionsModel eventDiscussionsModel;
-      if (!docSnapshot.exists) {
-        eventDiscussionsModel = EventDiscussionsModel(
-            eventDiscussions: [retValDiscussionModel], eventId: eventId);
-      } else {
-        eventDiscussionsModel = EventDiscussionsModel.fromSnapshot(docSnapshot);
-        eventDiscussionsModel.eventDiscussions.add(retValDiscussionModel);
-      }
-      transaction.set(docReference, eventDiscussionsModel.toDocument());
-    });
+    // create the discussion (collection of messages)
+    DiscussionMetadataModel metadataModel =
+        await createDiscussion(discussionMembers);
+
+    DiscussionModel retValDiscussionModel = DiscussionModel(
+        id: collectionRef.doc().id,
+        discussionId: metadataModel.id!,
+        isMainDiscussion: isMainDiscussion,
+        discussionMembers: discussionMembers,
+        event: event);
+
+    await collectionRef
+        .doc(retValDiscussionModel.id)
+        .set(retValDiscussionModel.toDocument());
   }
 
   @override
-  Future<void> addUsersToEventGroupDiscussion(
+  Future<void> addUsersToEventMainDiscussion(
       String eventId, List<HangUserPreview> allNewUsers) async {
-    await _firebaseFirestore.runTransaction((transaction) async {
-      DocumentReference docReference = _firebaseFirestore
-          .collection('hangEvents')
-          .doc(eventId)
-          .collection("discussions")
-          .doc("eventDiscussions");
-      DocumentSnapshot docSnapshot = await transaction.get(docReference);
-      EventDiscussionsModel eventDiscussionsModel;
-      if (!docSnapshot.exists) {
-        eventDiscussionsModel =
-            EventDiscussionsModel(eventDiscussions: [], eventId: eventId);
-      } else {
-        eventDiscussionsModel = EventDiscussionsModel.fromSnapshot(docSnapshot);
-      }
+    final collectionReference = _firebaseFirestore
+        .collection('hangEvents')
+        .doc(eventId)
+        .collection("discussions");
 
-      DiscussionModel? mainGroupDiscussion = eventDiscussionsModel
-          .eventDiscussions
-          .firstWhereOrNull((element) => element.isMainGroupDiscussion);
+    QuerySnapshot mainDiscussionQuerySnap = await collectionReference
+        .where('isMainDiscussion', isEqualTo: true)
+        .get();
 
-      if (mainGroupDiscussion == null) {
-        DiscussionMetadataModel metadataModel =
-            await createDiscussion(allNewUsers, transaction);
-        mainGroupDiscussion = DiscussionModel(
-            discussionId: metadataModel.id!,
-            isMainGroupDiscussion: true,
-            discussionMembers: allNewUsers);
-        eventDiscussionsModel.eventDiscussions.add(mainGroupDiscussion);
-      } else {
-        for (HangUserPreview curNewUser in allNewUsers) {
-          if (!mainGroupDiscussion.discussionMembers.contains(curNewUser)) {
-            mainGroupDiscussion.discussionMembers.add(curNewUser);
-          }
-        }
-      }
-
-      eventDiscussionsModel = eventDiscussionsModel.copyWith(
-          eventDiscussions: eventDiscussionsModel.eventDiscussions);
-      transaction.set(docReference, eventDiscussionsModel.toDocument());
-    });
+    Map<String, dynamic>? discussionModelMap =
+        mainDiscussionQuerySnap.docs.isNotEmpty
+            ? mainDiscussionQuerySnap.docs.first.data()! as Map<String, dynamic>
+            : null;
+    addUsersToDiscussion(collectionReference, discussionModelMap, allNewUsers);
   }
 
   @override
-  Future<void> addUserToEventGroupDiscussion(
+  Future<void> addUserToEventMainDiscussion(
       String eventId, HangUserPreview newUser) async {
-    await _firebaseFirestore.runTransaction((transaction) async {
-      DocumentReference docReference = _firebaseFirestore
-          .collection('hangEvents')
-          .doc(eventId)
-          .collection("eventInvites")
-          .doc("eventDiscussions");
-      DocumentSnapshot docSnapshot = await transaction.get(docReference);
-      EventDiscussionsModel eventDiscussionsModel;
-      if (!docSnapshot.exists) {
-        eventDiscussionsModel = EventDiscussionsModel(
-            id: "eventDiscussions", eventDiscussions: [], eventId: eventId);
-      } else {
-        eventDiscussionsModel = EventDiscussionsModel.fromSnapshot(docSnapshot);
-      }
+    final collectionReference = _firebaseFirestore
+        .collection('hangEvents')
+        .doc(eventId)
+        .collection("discussions");
 
-      DiscussionModel? mainGroupDiscussion = eventDiscussionsModel
-          .eventDiscussions
-          .firstWhereOrNull((element) => element.isMainGroupDiscussion);
+    QuerySnapshot mainDiscussionQuerySnap = await collectionReference
+        .where('isMainDiscussion', isEqualTo: true)
+        .get();
 
-      if (mainGroupDiscussion == null) {
-        DiscussionMetadataModel metadataModel =
-            await createDiscussion([newUser], transaction);
-        mainGroupDiscussion = DiscussionModel(
-            discussionId: metadataModel.id!,
-            isMainGroupDiscussion: true,
-            discussionMembers: [newUser]);
-        eventDiscussionsModel.eventDiscussions.add(mainGroupDiscussion);
-      } else {
-        if (!mainGroupDiscussion.discussionMembers.contains(newUser)) {
-          mainGroupDiscussion.discussionMembers.add(newUser);
-        }
-      }
+    Map<String, dynamic>? discussionModelMap =
+        mainDiscussionQuerySnap.docs.isNotEmpty
+            ? mainDiscussionQuerySnap.docs.first.data()! as Map<String, dynamic>
+            : null;
+    addUsersToDiscussion(collectionReference, discussionModelMap, [newUser]);
+  }
 
-      eventDiscussionsModel = eventDiscussionsModel.copyWith(
-          eventDiscussions: eventDiscussionsModel.eventDiscussions);
-      transaction.set(docReference, eventDiscussionsModel.toDocument());
-    });
+  Future<void> addUsersToDiscussion(
+      CollectionReference collectionReference,
+      Map<String, dynamic>? discussionModelMap,
+      List<HangUserPreview> allUsersToAdd) async {
+    DiscussionModel mainDiscussion;
+    if (discussionModelMap == null) {
+      // no main discussion need to create one.
+      DiscussionMetadataModel metadataModel =
+          await createDiscussion(allUsersToAdd);
+      mainDiscussion = DiscussionModel(
+          id: collectionReference.doc().id,
+          discussionId: metadataModel.id!,
+          isMainDiscussion: true,
+          discussionMembers: allUsersToAdd);
+    } else {
+      mainDiscussion = DiscussionModel.fromMap(discussionModelMap);
+      mainDiscussion.discussionMembers.addAll(allUsersToAdd);
+    }
+
+    await collectionReference
+        .doc(mainDiscussion.id)
+        .set(mainDiscussion.toDocument());
   }
 
   Future<DiscussionMetadataModel> createDiscussion(
-      List<HangUserPreview> discussionMembers, Transaction transaction) async {
+      List<HangUserPreview> discussionMembers) async {
     DiscussionMetadataModel savingMetadataModel = DiscussionMetadataModel(
         id: FirebaseFirestore.instance.collection('discussions').doc().id,
         discussionMembers: discussionMembers);
 
-    DocumentReference discussionRef = _firebaseFirestore
+    await _firebaseFirestore
         .collection('discussions')
-        .doc(savingMetadataModel.id);
+        .doc(savingMetadataModel.id)
+        .set(savingMetadataModel.toDocument());
 
-    transaction.set(discussionRef, savingMetadataModel.toDocument());
     return savingMetadataModel;
   }
 
@@ -215,5 +165,63 @@ class DiscussionsRepository extends BaseDiscussionsRepository {
         .doc(discussionId)
         .collection('messages')
         .add(newMessage.toDocument());
+  }
+
+  @override
+  Future<List<UserDiscussionsModel>> getUserDiscussions(String userId) async {
+    final userDiscussionsSnapshots = await _firebaseFirestore
+        .collection('userDiscussions')
+        .doc(userId)
+        .collection("discussions")
+        .get();
+
+    final userDiscussionDocSnapshots =
+        userDiscussionsSnapshots.docs.map((doc) => doc.data()).toList();
+    List<UserDiscussionsModel> userDiscussions =
+        await Future.wait(userDiscussionDocSnapshots.map((doc) async {
+      UserDiscussionsModel userDiscussionsModel =
+          UserDiscussionsModel.fromMap(doc as Map<String, dynamic>);
+      DiscussionMessage? lastMessage =
+          await getDiscussionLastMessage(userDiscussionsModel);
+      if (lastMessage != null) {
+        userDiscussionsModel = userDiscussionsModel.copyWithUserDiscussion(
+            lastMessage: lastMessage);
+      }
+      return userDiscussionsModel;
+    }));
+
+    return userDiscussions;
+  }
+
+  Future<DiscussionMessage?> getDiscussionLastMessage(
+      DiscussionModel discussion) async {
+    final lastMessageQuerySnapshot = await _firebaseFirestore
+        .collection('discussions')
+        .doc(discussion.discussionId)
+        .collection('messages')
+        .orderBy('creationDate', descending: true)
+        .limit(1)
+        .get();
+    if (lastMessageQuerySnapshot.docs.isNotEmpty) {
+      DocumentSnapshot lastMessageSnapshot =
+          lastMessageQuerySnapshot.docs.first;
+      DiscussionMessage lastMessage =
+          DiscussionMessage.fromSnapshot(lastMessageSnapshot);
+      return lastMessage;
+    }
+    return null;
+  }
+
+  Future<List<DiscussionModel>> getDiscussionsWithLastMessage(
+      List<DiscussionModel> allDiscussions) async {
+    List<DiscussionModel> discussionsWithLastMessage =
+        await Future.wait(allDiscussions.map((e) async {
+      DiscussionMessage? lastMessage = await getDiscussionLastMessage(e);
+      if (lastMessage != null) {
+        e.copyWith(lastMessage: lastMessage);
+      }
+      return e;
+    }).toList());
+    return discussionsWithLastMessage;
   }
 }

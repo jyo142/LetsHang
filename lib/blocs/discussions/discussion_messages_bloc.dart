@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:letshang/blocs/user_settings/user_settings_bloc.dart';
 import 'package:letshang/models/discussions/discussion_message.dart';
+import 'package:letshang/models/discussions/discussion_message_group.dart';
 import 'package:letshang/models/discussions/event_discussions_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/notifications_model.dart';
@@ -35,13 +36,14 @@ class DiscussionMessagesBloc
       );
     });
     on<DiscussionMessagesReceived>((event, emit) async {
-      emit(state.copyWith(
-          discussionMessagesStateStatus:
-              DiscussionMessagesStateStatus.retrievedDiscussionMessages,
-          discussionMessages: event.receivedDiscussionMessages));
+      await _mapDiscussionMessageReceived(
+          emit, event.receivedDiscussionMessages);
     });
     on<DiscussionMessageChanged>((event, emit) async {
-      emit(state.copyWith(currentMessage: event.newMessage));
+      emit(state.copyWith(
+          discussionMessagesStateStatus:
+              DiscussionMessagesStateStatus.typingDiscussionMessage,
+          currentMessage: event.newMessage));
     });
     on<SendDiscussionMessage>((event, emit) async {
       emit(state.copyWith(
@@ -65,6 +67,46 @@ class DiscussionMessagesBloc
           .listen((messages) {
         add(DiscussionMessagesReceived(messages));
       });
+    } catch (_) {
+      emit(state.copyWith(
+          discussionMessagesStateStatus: DiscussionMessagesStateStatus.error,
+          errorMessage: 'Unable to get messages for discussion.'));
+    }
+  }
+
+  Future<void> _mapDiscussionMessageReceived(
+      Emitter<DiscussionMessagesState> emit,
+      List<DiscussionMessage> receivedMessages) async {
+    try {
+      List<DiscussionMessageDateGroup> discussionMessageDateGroups = [];
+      // group each message by date and user
+      for (DiscussionMessage curDiscussionMessage in receivedMessages) {
+        if (discussionMessageDateGroups.isEmpty) {
+          discussionMessageDateGroups.add(DiscussionMessageDateGroup(
+              groupDateTime: curDiscussionMessage.creationDate,
+              sendingUser: curDiscussionMessage.sendingUser,
+              dateGroupMessages: [curDiscussionMessage]));
+        } else {
+          DiscussionMessageDateGroup lastDateGroup =
+              discussionMessageDateGroups.last;
+          DiscussionMessage lastGroupMessage =
+              lastDateGroup.dateGroupMessages.last;
+          if (lastGroupMessage.toUserDateString() ==
+              curDiscussionMessage.toUserDateString()) {
+            lastDateGroup.dateGroupMessages.add(curDiscussionMessage);
+          } else {
+            discussionMessageDateGroups.add(DiscussionMessageDateGroup(
+                groupDateTime: lastGroupMessage.creationDate,
+                sendingUser: lastGroupMessage.sendingUser,
+                dateGroupMessages: [curDiscussionMessage]));
+          }
+        }
+      }
+
+      emit(state.copyWith(
+          discussionMessagesStateStatus:
+              DiscussionMessagesStateStatus.retrievedDiscussionMessages,
+          messagesByDate: discussionMessageDateGroups));
     } catch (_) {
       emit(state.copyWith(
           discussionMessagesStateStatus: DiscussionMessagesStateStatus.error,

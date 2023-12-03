@@ -6,6 +6,7 @@ import 'package:letshang/models/discussions/discussion_metadata.dart';
 import 'package:letshang/models/discussions/discussion_model.dart';
 import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/hang_event_model.dart';
+import 'package:letshang/models/hang_event_preview.dart';
 import 'package:letshang/models/hang_user_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/invite.dart';
@@ -158,8 +159,8 @@ class EditHangEventsBloc
                 status: InviteStatus.owner,
                 title: InviteTitle.organizer,
                 type: InviteType.event));
-        await _discussionsRepository
-            .addEventDiscussion(retvalHangEvent.id, true, []);
+        await _discussionsRepository.addEventDiscussion(
+            HangEventPreview.fromEvent(retvalHangEvent), true, []);
       }
       return EventMainDetailsSavedSuccessfully(state,
           savedEvent: retvalHangEvent);

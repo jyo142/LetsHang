@@ -59,12 +59,10 @@ class EventDiscussionsView extends StatelessWidget {
                     if (state.discussionsStateStatus ==
                         DiscussionsStateStatus.retrievedEventDiscussions) {
                       return ListView.builder(
-                        itemCount: state
-                            .eventDiscussionsModel!.eventDiscussions.length,
+                        itemCount: state.allEventDiscussions!.length,
                         itemBuilder: (BuildContext context, int index) {
                           return DiscussionCard(
-                            discussion: state
-                                .eventDiscussionsModel!.eventDiscussions[index],
+                            discussion: state.allEventDiscussions![index],
                             onRefresh: () => context
                                 .read<DiscussionsBloc>()
                                 .add(LoadEventDiscussions(hangEventId)),

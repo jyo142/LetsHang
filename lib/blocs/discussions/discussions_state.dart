@@ -1,30 +1,34 @@
 part of 'discussions_bloc.dart';
 
-enum DiscussionsStateStatus { initial, loadingEventDiscussions, retrievedEventDiscussions, error }
+enum DiscussionsStateStatus {
+  initial,
+  loadingEventDiscussions,
+  retrievedEventDiscussions,
+  error
+}
 
 class DiscussionsState extends Equatable {
   final DiscussionsStateStatus discussionsStateStatus;
-  final EventDiscussionsModel? eventDiscussionsModel;
+  final List<DiscussionModel>? allEventDiscussions;
   final String? errorMessage;
 
   DiscussionsState(
       {required this.discussionsStateStatus,
-      this.eventDiscussionsModel,
+      this.allEventDiscussions,
       this.errorMessage});
 
   DiscussionsState copyWith(
       {DiscussionsStateStatus? discussionsStateStatus,
-      EventDiscussionsModel? eventDiscussionsModel,
+      List<DiscussionModel>? allEventDiscussions,
       String? errorMessage}) {
     return DiscussionsState(
         discussionsStateStatus:
             discussionsStateStatus ?? this.discussionsStateStatus,
-        eventDiscussionsModel:
-            eventDiscussionsModel ?? this.eventDiscussionsModel,
+        allEventDiscussions: allEventDiscussions ?? this.allEventDiscussions,
         errorMessage: errorMessage ?? this.errorMessage);
   }
 
   @override
   List<Object?> get props =>
-      [discussionsStateStatus, eventDiscussionsModel, errorMessage];
+      [discussionsStateStatus, allEventDiscussions, errorMessage];
 }

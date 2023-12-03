@@ -258,7 +258,7 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
       HangEvent savingEvent =
           curEvent!.copyWith(currentStage: HangEventStage.complete);
       await _hangEventRepository.editHangEvent(savingEvent);
-      await _discussionsRepository.addUsersToEventGroupDiscussion(
+      await _discussionsRepository.addUsersToEventMainDiscussion(
           savingEvent.id, allInvitedUsers.map((e) => e.user).toList());
       return SendAllInvitesSuccess(state);
     } catch (e) {
