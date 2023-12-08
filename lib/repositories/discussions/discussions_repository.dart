@@ -5,6 +5,7 @@ import 'package:letshang/models/discussions/discussion_model.dart';
 import 'package:letshang/models/discussions/event_discussions_model.dart';
 import 'package:letshang/models/discussions/user_discussions_model.dart';
 import 'package:letshang/models/group_model.dart';
+import 'package:letshang/models/group_preview.dart';
 import 'package:letshang/models/hang_event_preview.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/user_invite_model.dart';
@@ -69,15 +70,7 @@ class DiscussionsRepository extends BaseDiscussionsRepository {
         .doc(eventId)
         .collection("discussions");
 
-    QuerySnapshot mainDiscussionQuerySnap = await collectionReference
-        .where('isMainDiscussion', isEqualTo: true)
-        .get();
-
-    Map<String, dynamic>? discussionModelMap =
-        mainDiscussionQuerySnap.docs.isNotEmpty
-            ? mainDiscussionQuerySnap.docs.first.data()! as Map<String, dynamic>
-            : null;
-    addUsersToDiscussion(collectionReference, discussionModelMap, allNewUsers);
+    await addUsersMainDiscussionFromSnapshot(collectionReference, allNewUsers);
   }
 
   @override
@@ -88,6 +81,76 @@ class DiscussionsRepository extends BaseDiscussionsRepository {
         .doc(eventId)
         .collection("discussions");
 
+    await addUsersMainDiscussionFromSnapshot(collectionReference, [newUser]);
+  }
+
+  @override
+  Future<DiscussionModel> getGroupDiscussion(String groupId) async {
+    QuerySnapshot snapshots = await _firebaseFirestore
+        .collection('groups')
+        .doc(groupId)
+        .collection("discussions")
+        .get();
+
+    final allGroupDiscussionsSnapshots =
+        snapshots.docs.map((doc) => doc.data()).toList();
+    List<DiscussionModel> groupDiscussions = allGroupDiscussionsSnapshots
+        .map((doc) => DiscussionModel.fromMap(doc as Map<String, dynamic>))
+        .toList();
+    return groupDiscussions.first;
+  }
+
+  @override
+  Future<void> addGroupDiscussion(
+    GroupPreview group,
+    List<HangUserPreview> discussionMembers,
+  ) async {
+    final collectionRef = _firebaseFirestore
+        .collection('groups')
+        .doc(group.groupId)
+        .collection("discussions");
+
+    // create the discussion (collection of messages)
+    DiscussionMetadataModel metadataModel =
+        await createDiscussion(discussionMembers);
+
+    DiscussionModel retValDiscussionModel = DiscussionModel(
+        id: collectionRef.doc().id,
+        discussionId: metadataModel.id!,
+        isMainDiscussion: true,
+        discussionMembers: discussionMembers,
+        group: group);
+
+    await collectionRef
+        .doc(retValDiscussionModel.id)
+        .set(retValDiscussionModel.toDocument());
+  }
+
+  @override
+  Future<void> addUserToGroupDiscussion(
+      String groupId, HangUserPreview newUser) async {
+    final collectionReference = _firebaseFirestore
+        .collection('groups')
+        .doc(groupId)
+        .collection("discussions");
+
+    await addUsersMainDiscussionFromSnapshot(collectionReference, [newUser]);
+  }
+
+  @override
+  Future<void> addUsersToGroupDiscussion(
+      String groupId, List<HangUserPreview> allNewUsers) async {
+    final collectionReference = _firebaseFirestore
+        .collection('groups')
+        .doc(groupId)
+        .collection("discussions");
+
+    await addUsersMainDiscussionFromSnapshot(collectionReference, allNewUsers);
+  }
+
+  Future<void> addUsersMainDiscussionFromSnapshot(
+      CollectionReference collectionReference,
+      List<HangUserPreview> allNewUsers) async {
     QuerySnapshot mainDiscussionQuerySnap = await collectionReference
         .where('isMainDiscussion', isEqualTo: true)
         .get();
@@ -96,7 +159,7 @@ class DiscussionsRepository extends BaseDiscussionsRepository {
         mainDiscussionQuerySnap.docs.isNotEmpty
             ? mainDiscussionQuerySnap.docs.first.data()! as Map<String, dynamic>
             : null;
-    addUsersToDiscussion(collectionReference, discussionModelMap, [newUser]);
+    addUsersToDiscussion(collectionReference, discussionModelMap, allNewUsers);
   }
 
   Future<void> addUsersToDiscussion(

@@ -21,20 +21,28 @@ class GroupOverviewBloc extends Bloc<GroupOverviewEvent, GroupOverviewState> {
   GroupOverviewBloc()
       : _userInvitesRepository = UserInvitesRepository(),
         _groupRepository = GroupRepository(),
-        super(GroupsLoading()) {
+        super(const GroupOverviewState(
+            groupOverviewStateStatus: GroupOverviewStateStatus.initial)) {
     on<LoadGroupInvites>((event, emit) async {
+      emit(state.copyWith(
+          groupOverviewStateStatus: GroupOverviewStateStatus.groupsLoading));
       List<GroupInvite> groups =
           await _userInvitesRepository.getUserGroupInvites(event.userId);
-      emit(GroupsRetrieved(groupsForUser: groups));
+      emit(state.copyWith(
+          groupOverviewStateStatus: GroupOverviewStateStatus.groupsRetrieved,
+          groupsForUser: groups));
     });
     on<LoadIndividualGroup>((event, emit) async {
-      emit(IndividualGroupLoading());
+      emit(state.copyWith(
+          groupOverviewStateStatus: GroupOverviewStateStatus.groupsLoading));
       Group? foundGroup = await _groupRepository.getGroupById(event.groupId);
       if (foundGroup != null) {
-        emit(IndividualGroupRetrieved(group: foundGroup));
+        emit(state.copyWith(
+            groupOverviewStateStatus:
+                GroupOverviewStateStatus.individualGroupRetrieved,
+            individualGroup: foundGroup));
       } else {
-        emit(const IndividualGroupRetrievedError(
-            errorMessage: "Unable to find group"));
+        emit(state.copyWith(errorMessage: "Unable to find group"));
       }
     });
   }

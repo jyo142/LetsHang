@@ -6,6 +6,7 @@ import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:letshang/screens/edit_groups_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/screens/groups/group_details_screen.dart';
 import 'package:letshang/screens/groups/view_all_members.dart';
 import 'package:letshang/widgets/tags/admin_tag.dart';
 import 'package:letshang/widgets/tags/organizer_tag.dart';
@@ -64,51 +65,57 @@ class GroupCard extends StatelessWidget {
                 ],
               ),
             ),
-            PopupMenuButton(
-              onSelected: (result) async {
-                if (result == 'edit') {
-                  final bool? shouldRefresh = await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => EditGroupsScreen(curGroup: group),
-                    ),
-                  );
-                  if (shouldRefresh != null && shouldRefresh) {
-                    context.read<GroupOverviewBloc>().add(LoadGroupInvites(
-                        userId:
-                            (context.read<AppBloc>().state as AppAuthenticated)
-                                .user
-                                .id!));
-                  }
-                }
-                if (result == 'view_members') {
-                  final bool? shouldRefresh = await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          ViewAllGroupMembers(curGroup: group),
-                    ),
-                  );
-                  if (shouldRefresh != null && shouldRefresh) {
-                    context.read<GroupOverviewBloc>().add(LoadGroupInvites(
-                        userId:
-                            (context.read<AppBloc>().state as AppAuthenticated)
-                                .user
-                                .id!));
-                  }
-                }
-              },
-              itemBuilder: (context) {
-                return [
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: Text('Edit'),
-                  ),
-                  PopupMenuItem(
-                    value: 'view_members',
-                    child: Text('View Members (${group.userInvites.length})'),
-                  )
-                ];
-              },
-            ),
+            // PopupMenuButton(
+            //   onSelected: (result) async {
+            //     bool? shouldRefresh;
+            //     if (result == 'edit') {
+            //       shouldRefresh = await Navigator.of(context).push(
+            //         MaterialPageRoute(
+            //           builder: (context) => EditGroupsScreen(curGroup: group),
+            //         ),
+            //       );
+            //     }
+            //     if (result == 'view_details') {
+            //       shouldRefresh = await Navigator.of(context).push(
+            //         MaterialPageRoute(
+            //           builder: (context) =>
+            //               GroupDetailsScreen(groupId: group.id),
+            //         ),
+            //       );
+            //     }
+            //     if (result == 'view_members') {
+            //       shouldRefresh = await Navigator.of(context).push(
+            //         MaterialPageRoute(
+            //           builder: (context) =>
+            //               ViewAllGroupMembers(curGroup: group),
+            //         ),
+            //       );
+            //     }
+            //     if (shouldRefresh != null && shouldRefresh) {
+            //       context.read<GroupOverviewBloc>().add(LoadGroupInvites(
+            //           userId:
+            //               (context.read<AppBloc>().state as AppAuthenticated)
+            //                   .user
+            //                   .id!));
+            //     }
+            //   },
+            //   itemBuilder: (context) {
+            //     return [
+            //       const PopupMenuItem(
+            //         value: 'edit',
+            //         child: Text('Edit'),
+            //       ),
+            //       const PopupMenuItem(
+            //         value: 'view_details',
+            //         child: Text('View Details'),
+            //       ),
+            //       PopupMenuItem(
+            //         value: 'view_members',
+            //         child: Text('View Members (${group.userInvites.length})'),
+            //       )
+            //     ];
+            //   },
+            // ),
           ],
         ));
   }

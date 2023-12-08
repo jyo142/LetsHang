@@ -178,8 +178,11 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
             await transaction.get(dbEventsUserInvitesRef);
         if (!dbEventsUserInvitesSnap.exists) {
           await addUserInviteForEvent(hangEvent, ui, transaction);
-
           transaction.set(dbEventsUserInvitesRef, ui.toDocument());
+        } else {
+          final completeHangEvent =
+              hangEvent.copyWith(currentStage: HangEventStage.complete);
+          await updateUserInviteForEvent(completeHangEvent, ui, transaction);
         }
         // all reads need to be done before writes
       }));
@@ -269,6 +272,24 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
     if (eventInviteDocumentSnap.exists) {
       throw Exception("User is already invited to this event");
     }
+
+    transaction.set(eventInviteRef, newEventInvite.toDocument());
+  }
+
+  Future<void> updateUserInviteForEvent(
+      HangEvent hangEvent, UserInvite toUpdate, Transaction transaction) async {
+    DocumentReference eventInviteRef = _firebaseFirestore
+        .collection("userInvites")
+        .doc(toUpdate.user.userId)
+        .collection("eventInvites")
+        .doc(hangEvent.id);
+    HangEventInvite newEventInvite = HangEventInvite(
+        event: hangEvent,
+        status: toUpdate.status,
+        type: toUpdate.type,
+        title: toUpdate.title,
+        eventStartDateTime: hangEvent.eventStartDateTime,
+        eventEndDateTime: hangEvent.eventEndDateTime);
 
     transaction.set(eventInviteRef, newEventInvite.toDocument());
   }

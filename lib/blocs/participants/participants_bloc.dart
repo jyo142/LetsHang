@@ -92,7 +92,10 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
     });
     on<AddInviteeInitiated>((event, emit) {
       ParticipantsState newState = state.addInvitee(
-          HangUserPreview.fromUser(event.invitedUser), event.inviteTitle);
+          HangUserPreview.fromUser(event.invitedUser),
+          event.inviteType,
+          event.inviteTitle,
+          event.inviteStatus);
       emit(newState.copyWith(
           searchByEmailValue: '',
           searchByUsernameValue: '',
@@ -272,11 +275,15 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
       if (curEvent != null) {
         await _userInvitesRepository.addUserEventInvite(
             curEvent!, UserInvite.fromInvitedEventUser(invitedUser, curUser));
+        await _discussionsRepository.addUserToEventMainDiscussion(
+            curEvent!.id, HangUserPreview.fromUser(invitedUser));
         return SendInviteSuccess(state);
       }
       if (curGroup != null) {
         await _userInvitesRepository.addUserGroupInvite(
             curGroup!, UserInvite.fromInvitedGroupUser(invitedUser, curUser));
+        await _discussionsRepository.addUserToGroupDiscussion(
+            curGroup!.id, HangUserPreview.fromUser(invitedUser));
         return SendInviteSuccess(state);
       }
       return SendInviteError(state, errorMessage: "Failed to promote user.");

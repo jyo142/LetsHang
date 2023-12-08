@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/screens/add_people_event_screen.dart';
-import 'package:letshang/screens/event_details_screen.dart';
+import 'package:letshang/screens/events/event_details_screen.dart';
 import 'package:letshang/widgets/avatars/user_avatar.dart';
 
 import 'avatars/attendees_avatar.dart';
@@ -33,19 +33,25 @@ class EventCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Text(
-                    curEvent.eventName,
-                    style: Theme.of(context).textTheme.headline6,
-                  ),
-                  if (curEvent.currentStage == HangEventStage.addingUsers) ...[
-                    Text(
-                      ' [Needs Attendees]',
-                      style: Theme.of(context)
-                          .textTheme
-                          .headline6!
-                          .merge(const TextStyle(color: Colors.red)),
-                    ),
-                  ]
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        curEvent.eventName,
+                        style: Theme.of(context).textTheme.headline6,
+                      ),
+                      if (curEvent.currentStage ==
+                          HangEventStage.addingUsers) ...[
+                        Text(
+                          '[Needs Attendees]',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headline6!
+                              .merge(const TextStyle(color: Colors.red)),
+                        ),
+                      ]
+                    ],
+                  )
                 ],
               ),
               Text(
@@ -101,7 +107,7 @@ class EventCard extends StatelessWidget {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => EventDetailsScreen(
-                            curEvent: curEvent,
+                            eventId: curEvent.id,
                           ),
                         ),
                       );

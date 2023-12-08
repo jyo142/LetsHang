@@ -1,14 +1,16 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:letshang/models/group_model.dart';
+import 'package:letshang/models/group_preview.dart';
 import 'package:letshang/models/hang_user_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:letshang/models/user_invite_model.dart';
+import 'package:letshang/repositories/discussions/base_discussions_repository.dart';
+import 'package:letshang/repositories/discussions/discussions_repository.dart';
 import 'package:letshang/repositories/group/group_repository.dart';
 import 'package:letshang/repositories/invites/base_invites_repository.dart';
 import 'package:letshang/repositories/invites/invites_repository.dart';
-import 'package:letshang/repositories/user/user_repository.dart';
 import 'package:meta/meta.dart';
 import 'package:equatable/equatable.dart';
 
@@ -19,15 +21,13 @@ class EditGroupBloc extends Bloc<EditGroupEvent, EditGroupState> {
   final GroupRepository _groupRepository;
   final HangUserPreview creatingUser;
   final BaseUserInvitesRepository _invitesRepository;
+  final BaseDiscussionsRepository _discussionsRepository;
   final Group? existingGroup;
   // constructor
-  EditGroupBloc(
-      {required GroupRepository groupRepository,
-      required UserRepository userRepository,
-      required this.creatingUser,
-      this.existingGroup})
-      : _groupRepository = groupRepository,
+  EditGroupBloc({required this.creatingUser, this.existingGroup})
+      : _groupRepository = GroupRepository(),
         _invitesRepository = UserInvitesRepository(),
+        _discussionsRepository = DiscussionsRepository(),
         super(EditGroupState(
             groupName: existingGroup?.groupName ?? '',
             groupOwner: existingGroup?.groupOwner ?? creatingUser,
@@ -68,6 +68,9 @@ class EditGroupBloc extends Bloc<EditGroupEvent, EditGroupState> {
         retvalGroup = await _groupRepository.addGroup(savingGroup);
         await _invitesRepository.addUserGroupInvites(
             retvalGroup, event.allInvitedMembers);
+        await _discussionsRepository.addGroupDiscussion(
+            GroupPreview.fromGroup(retvalGroup),
+            event.allInvitedMembers.map((m) => m.user).toList());
       }
       return SavedGroupSuccessfully(state);
     } catch (_) {

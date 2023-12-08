@@ -1,11 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/user_invite_model.dart';
 
 class GroupPreview extends Equatable {
   final String groupId;
   final String groupName;
   GroupPreview({required this.groupId, required this.groupName});
+
+  GroupPreview.fromGroup(Group group)
+      : this.groupId = group.id,
+        this.groupName = group.groupName;
 
   static GroupPreview fromSnapshot(DocumentSnapshot snap,
       [List<UserInvite>? userInvites]) {
@@ -25,7 +30,7 @@ class GroupPreview extends Equatable {
   Map<String, Object> toDocument() {
     return {
       "groupId": groupId,
-      "name": groupName,
+      "groupName": groupName,
     };
   }
 

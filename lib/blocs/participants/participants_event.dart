@@ -61,11 +61,18 @@ class SendRemoveInviteInitiated extends ParticipantsEvent {
 }
 
 class AddInviteeInitiated extends ParticipantsEvent {
-  const AddInviteeInitiated({required this.invitedUser, this.inviteTitle});
+  const AddInviteeInitiated(
+      {required this.invitedUser,
+      required this.inviteType,
+      required this.inviteStatus,
+      this.inviteTitle});
   final HangUser invitedUser;
+  final InviteType inviteType;
+  final InviteStatus inviteStatus;
   final InviteTitle? inviteTitle;
   @override
-  List<Object?> get props => [invitedUser, inviteTitle];
+  List<Object?> get props =>
+      [invitedUser, inviteStatus, inviteType, inviteTitle];
 }
 
 class RemoveInviteeInitiated extends ParticipantsEvent {

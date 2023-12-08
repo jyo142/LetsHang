@@ -4,6 +4,7 @@ import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/edit_groups/edit_group_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/blocs/group_overview/group_overview_bloc.dart';
 import 'package:letshang/blocs/participants/participants_bloc.dart';
 import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
@@ -27,8 +28,6 @@ class EditGroupsScreen extends StatelessWidget {
         providers: [
           BlocProvider(
             create: (context) => EditGroupBloc(
-                groupRepository: GroupRepository(),
-                userRepository: UserRepository(),
                 creatingUser: HangUserPreview.fromUser(
                   (context.read<AppBloc>().state as AppAuthenticated).user,
                 ),
@@ -45,7 +44,9 @@ class EditGroupsScreen extends StatelessWidget {
                       invitedUser:
                           (context.read<AppBloc>().state as AppAuthenticated)
                               .user,
-                      inviteTitle: InviteTitle.organizer)
+                      inviteType: InviteType.group,
+                      inviteTitle: InviteTitle.organizer,
+                      inviteStatus: InviteStatus.owner)
                   : LoadGroupParticipants()),
           )
         ],
@@ -114,6 +115,9 @@ class EditGroupsView extends StatelessWidget {
                                       onInviteeAdded: (foundUser) {
                                         context.read<ParticipantsBloc>().add(
                                             AddInviteeInitiated(
+                                                inviteType: InviteType.group,
+                                                inviteStatus:
+                                                    InviteStatus.pending,
                                                 invitedUser: foundUser));
                                       },
                                     ),
@@ -163,7 +167,6 @@ class EditGroupsView extends StatelessWidget {
                                 MessageService.showSuccessMessage(
                                     content: "Group saved successfully",
                                     context: context);
-
                                 // after the event is saved go back to home screen
                                 Navigator.pop(context, true);
                               }
@@ -187,13 +190,6 @@ class EditGroupsView extends StatelessWidget {
                                                 allInvitedMembers:
                                                     participantsState
                                                         .invitedUsers));
-
-                                        MessageService.showSuccessMessage(
-                                            content: "Group saved successfully",
-                                            context: context);
-
-                                        // after the event is saved go back to home screen
-                                        Navigator.pop(context, true);
                                       },
                                       isDisabled: context
                                           .read<EditGroupBloc>()
@@ -203,8 +199,8 @@ class EditGroupsView extends StatelessWidget {
                                 ],
                                 LHButton(
                                     buttonText: curGroup != null
-                                        ? 'Save Event'
-                                        : 'Complete Event',
+                                        ? 'Save Group'
+                                        : 'Create Group',
                                     onPressed: () {
                                       // Validate returns true if the form is valid, or false otherwise.
                                       context.read<EditGroupBloc>().add(
@@ -212,13 +208,6 @@ class EditGroupsView extends StatelessWidget {
                                               allInvitedMembers:
                                                   participantsState
                                                       .invitedUsers));
-
-                                      MessageService.showSuccessMessage(
-                                          content: "Group saved successfully",
-                                          context: context);
-
-                                      // after the event is saved go back to home screen
-                                      Navigator.pop(context, true);
                                     },
                                     isDisabled: context
                                         .read<EditGroupBloc>()

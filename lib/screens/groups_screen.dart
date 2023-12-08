@@ -5,6 +5,7 @@ import 'package:letshang/blocs/group_overview/group_overview_bloc.dart';
 import 'package:letshang/models/group_invite.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/screens/edit_groups_screen.dart';
+import 'package:letshang/screens/groups/group_details_screen.dart';
 import 'package:letshang/widgets/cards/group_card.dart';
 
 class GroupsScreen extends StatelessWidget {
@@ -28,40 +29,45 @@ class GroupsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        floatingActionButton: FloatingActionButton(
-            heroTag: "createGroupBtn",
-            backgroundColor: const Color(0xFF0287BF),
-            onPressed: () async {
-              final shouldRefresh = await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const EditGroupsScreen(),
-                ),
-              );
-              if (context.mounted && shouldRefresh != null && shouldRefresh) {
-                context.read<GroupOverviewBloc>().add(LoadGroupInvites(
-                    userId: (context.read<AppBloc>().state as AppAuthenticated)
-                        .user
-                        .id!));
-              }
-            },
-            child: const Icon(Icons.add)),
+        floatingActionButton: Builder(builder: (context) {
+          return FloatingActionButton(
+              heroTag: "createGroupBtn",
+              backgroundColor: const Color(0xFF0287BF),
+              onPressed: () async {
+                final shouldRefresh = await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const EditGroupsScreen(),
+                  ),
+                );
+                if (context.mounted && shouldRefresh != null && shouldRefresh) {
+                  context.read<GroupOverviewBloc>().add(LoadGroupInvites(
+                      userId:
+                          (context.read<AppBloc>().state as AppAuthenticated)
+                              .user
+                              .id!));
+                }
+              },
+              child: const Icon(Icons.add));
+        }),
         body: SafeArea(
             child: Padding(
                 padding: const EdgeInsets.only(
                     left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
                 child: BlocBuilder<GroupOverviewBloc, GroupOverviewState>(
                   builder: (context, state) {
-                    if (state is GroupsLoading) {
+                    if (state.groupOverviewStateStatus ==
+                        GroupOverviewStateStatus.groupsLoading) {
                       return const Center(child: CircularProgressIndicator());
                     }
-                    if (state is GroupsRetrieved) {
-                      if (state.groupsForUser.isEmpty) {
+                    if (state.groupOverviewStateStatus ==
+                        GroupOverviewStateStatus.groupsRetrieved) {
+                      if (state.groupsForUser?.isEmpty ?? false) {
                         return Center(child: _noGroupsView(context));
                       } else {
                         return Column(children: [
                           Flexible(
                               flex: 10,
-                              child: _groupListView(state.groupsForUser)),
+                              child: _groupListView(state.groupsForUser!)),
                         ]);
                       }
                     }
@@ -96,25 +102,37 @@ class GroupsView extends StatelessWidget {
         itemBuilder: (BuildContext context, int index) {
           return Container(
             margin: const EdgeInsets.only(top: 10),
-            child: GroupCard(
-                onEdit: () async {
-                  final bool? shouldRefresh = await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => EditGroupsScreen(
-                        curGroup: groupInvites[index].group,
+            child: InkWell(
+              // on Tap function used and call back function os defined here
+              onTap: () async {
+                bool? shouldRefresh = await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => GroupDetailsScreen(
+                        groupId: groupInvites[index].group.id),
+                  ),
+                );
+              },
+              child: GroupCard(
+                  onEdit: () async {
+                    final bool? shouldRefresh =
+                        await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => EditGroupsScreen(
+                          curGroup: groupInvites[index].group,
+                        ),
                       ),
-                    ),
-                  );
-                  if (shouldRefresh != null && shouldRefresh) {
-                    context.read<GroupOverviewBloc>().add(LoadGroupInvites(
-                        userId:
-                            (context.read<AppBloc>().state as AppAuthenticated)
-                                .user
-                                .id!));
-                  }
-                },
-                group: groupInvites[index].group,
-                inviteTitle: groupInvites[index].title),
+                    );
+                    if (shouldRefresh != null && shouldRefresh) {
+                      context.read<GroupOverviewBloc>().add(LoadGroupInvites(
+                          userId: (context.read<AppBloc>().state
+                                  as AppAuthenticated)
+                              .user
+                              .id!));
+                    }
+                  },
+                  group: groupInvites[index].group,
+                  inviteTitle: groupInvites[index].title),
+            ),
           );
         },
       );

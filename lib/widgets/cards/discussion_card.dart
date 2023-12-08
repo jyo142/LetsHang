@@ -22,7 +22,7 @@ class DiscussionCard extends StatelessWidget {
           final bool? shouldRefresh = await Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => DiscussionScreen(
-                discussionId: discussion.discussionId,
+                discussion: discussion,
               ),
             ),
           );

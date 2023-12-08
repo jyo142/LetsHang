@@ -10,6 +10,10 @@ import { getStatusTitleDescription } from "./inviteStatusUtils";
 import { OAuth2Client } from "googleapis-common";
 import { calendar } from "@googleapis/calendar";
 import { getAccessTokenFromRefreshToken } from "./services/googleAuthService";
+import {
+  createUserDiscussionsFromEvent,
+  findNewDiscussionMembers,
+} from "./discussionUtils";
 
 export const onUserInvitedToEvent = onDocumentCreated(
   "/hangEvents/{eventId}/invites/{userId}",
@@ -150,7 +154,7 @@ export const onEventDiscussionModified = onDocumentUpdated(
       newDiscussionData.get("discussionMembers"),
     );
 
-    await createUserDiscussions(
+    await createUserDiscussionsFromEvent(
       snapData,
       newDiscussionMembers,
       snap.params.eventId,
@@ -179,62 +183,13 @@ export const onEventDiscussionCreated = onDocumentCreated(
     }
     const discussionMembers = await snapData.get("discussionMembers");
     // create user discussions for all users in the event discussion
-    await createUserDiscussions(
+    await createUserDiscussionsFromEvent(
       snapData,
       discussionMembers,
       snap.params.eventId,
     );
   },
 );
-
-const findNewDiscussionMembers = (
-  oldDiscussionMembers: any[],
-  newDiscussionMembers: any[],
-) => {
-  const newUsers = newDiscussionMembers.filter(
-    (nm) =>
-      !oldDiscussionMembers.find((om) => om.get("userId") === nm.get("userId")),
-  );
-  return newUsers;
-};
-
-const createUserDiscussions = async (
-  eventDiscussionSnapshot: DocumentSnapshot,
-  discussionMembers: any[],
-  eventId: string,
-) => {
-  const discussionId = await eventDiscussionSnapshot.get("discussionId");
-  const eventPreviewData = eventDiscussionSnapshot.get("event");
-
-  info(discussionMembers);
-  for (const curDiscussionMember of discussionMembers) {
-    // check if every member of the discussion has their own userDiscussion
-    const userDiscussionQuerySnap = await db
-      .collection("userDiscussions")
-      .where("discussionId", "==", discussionId)
-      .get();
-    if (userDiscussionQuerySnap.empty) {
-      const newUserDiscussion = {
-        userId: curDiscussionMember.userId,
-        discussionId,
-        discussionMembers,
-        isMainDiscussion: false,
-        event: {
-          eventId: eventId,
-          eventName: eventPreviewData?.eventName,
-          eventDescription: eventPreviewData?.eventDescription,
-          photoUrl: eventPreviewData?.photoUrl,
-        },
-      };
-      info("CREATING DISCUSSION FOR USER ", curDiscussionMember.userId);
-      await db
-        .collection("userDiscussions")
-        .doc(curDiscussionMember.userId)
-        .collection("discussions")
-        .add(newUserDiscussion);
-    }
-  }
-};
 
 const handleUserPromotionEvent = async (
   eventSnapshot: DocumentSnapshot,

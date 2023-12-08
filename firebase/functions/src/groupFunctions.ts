@@ -7,6 +7,10 @@ import { error, info } from "firebase-functions/logger";
 import { db } from ".";
 import { addNotification, sendNotification } from "./notificationUtils";
 import { getStatusTitleDescription } from "./inviteStatusUtils";
+import {
+  createUserDiscussionsFromGroup,
+  findNewDiscussionMembers,
+} from "./discussionUtils";
 
 export const onUserInvitedToGroup = onDocumentCreated(
   "/groups/{groupId}/invites/{userId}",
@@ -107,6 +111,71 @@ export const onUserGroupInviteChanged = onDocumentUpdated(
         newUserInviteData?.get("invitingUser"),
       );
     }
+  },
+);
+
+export const onGroupDiscussionModified = onDocumentUpdated(
+  "/group/{groupId}/discussions/{groupDiscussionId}",
+  async (snap) => {
+    if (!snap.data) {
+      info("No data");
+      return;
+    }
+
+    const newDiscussionData = snap.data?.after;
+    const oldDiscussionData = snap.data?.before;
+
+    const snapData = await db
+      .collection("groups")
+      .doc(snap.params.groupId)
+      .collection("discussions")
+      .doc(snap.params.groupDiscussionId)
+      .get();
+
+    if (!snapData) {
+      error("Unable to get snapshot data");
+      return;
+    }
+    // create user discussions for all users in the event discussion
+    const newDiscussionMembers = findNewDiscussionMembers(
+      oldDiscussionData.get("discussionMembers"),
+      newDiscussionData.get("discussionMembers"),
+    );
+
+    await createUserDiscussionsFromGroup(
+      snapData,
+      newDiscussionMembers,
+      snap.params.groupId,
+    );
+  },
+);
+
+export const onGroupDiscussionCreated = onDocumentCreated(
+  "/groups/{groupId}/discussions/{groupDiscussionId}",
+  async (snap) => {
+    if (!snap.data) {
+      info("No data");
+      return;
+    }
+
+    const snapData = await db
+      .collection("groups")
+      .doc(snap.params.groupId)
+      .collection("discussions")
+      .doc(snap.params.groupDiscussionId)
+      .get();
+
+    if (!snapData) {
+      error("Unable to get snapshot data");
+      return;
+    }
+    const discussionMembers = await snapData.get("discussionMembers");
+    // create user discussions for all users in the event discussion
+    await createUserDiscussionsFromGroup(
+      snapData,
+      discussionMembers,
+      snap.params.groupId,
+    );
   },
 );
 

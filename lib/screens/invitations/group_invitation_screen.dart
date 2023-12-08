@@ -37,22 +37,25 @@ class _GroupInvitationScreenView extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(child: BlocBuilder<GroupOverviewBloc, GroupOverviewState>(
         builder: (context, state) {
-      if (state is IndividualGroupLoading) {
+      if (state.groupOverviewStateStatus ==
+          GroupOverviewStateStatus.groupsLoading) {
         return const CircularProgressIndicator();
       }
-      if (state is IndividualGroupRetrieved) {
+      if (state.groupOverviewStateStatus ==
+          GroupOverviewStateStatus.individualGroupRetrieved) {
         return InvitationLayout(
             entityId: groupId,
             notification: notification,
             inviteType: InviteType.group,
             invitationContent: GroupInvitationContent(
-              group: state.group,
+              group: state.individualGroup!,
             ));
-      } else if (state is IndividualGroupRetrievedError) {
+      } else if (state.groupOverviewStateStatus ==
+          GroupOverviewStateStatus.error) {
         return Container(
           margin: const EdgeInsets.only(top: 20),
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Text(state.errorMessage,
+            Text(state.errorMessage!,
                 style: Theme.of(context)
                     .textTheme
                     .bodyText1!

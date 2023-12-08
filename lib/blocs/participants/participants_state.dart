@@ -11,6 +11,7 @@ class ParticipantsState extends Equatable {
   final List<UserInvite> invitedUsers;
   final List<UserInvite> rejectedUsers;
   late final Set<String> allUsers;
+  late final List<UserInvite> allSortedUsers;
 
   ParticipantsState(
       {this.addParticipantBy = AddParticipantBy.none,
@@ -23,6 +24,25 @@ class ParticipantsState extends Equatable {
     allUsers = Set.of(attendingUsers.map((e) => e.user.email!));
     allUsers.addAll(invitedUsers.map((e) => e.user.email!));
     allUsers.addAll(rejectedUsers.map((e) => e.user.email!));
+    List<UserInvite> sortedAttendingUsers = List.from(attendingUsers);
+    sortedAttendingUsers.sort((a, b) {
+      int? titleComparison = a.title != null && b.title != null
+          ? a.title!.index.compareTo(b.title!.index)
+          : null;
+      if (titleComparison == null || titleComparison == 0) {
+        return a.user.name!.compareTo(b.user!.name!);
+      }
+      return titleComparison;
+    });
+    List<UserInvite> sortedInvitedUsers = List.from(invitedUsers);
+    sortedInvitedUsers.sort((a, b) => a.user.name!.compareTo(b.user!.name!));
+
+    List<UserInvite> sortedRejectedusers = List.from(rejectedUsers);
+    sortedRejectedusers.sort((a, b) => a.user.name!.compareTo(b.user!.name!));
+    allSortedUsers = [];
+    allSortedUsers.addAll(sortedAttendingUsers);
+    allSortedUsers.addAll(sortedInvitedUsers);
+    allSortedUsers.addAll(sortedRejectedusers);
   }
 
   ParticipantsState.fromState(ParticipantsState state)
@@ -54,12 +74,11 @@ class ParticipantsState extends Equatable {
         rejectedUsers: rejectedUsers ?? this.rejectedUsers);
   }
 
-  ParticipantsState addInvitee(HangUserPreview newInvitee, InviteTitle? title) {
-    UserInvite newUserInvitee = UserInvite(
-        user: newInvitee,
-        status: InviteStatus.pending,
-        type: InviteType.event,
-        title: title);
+  ParticipantsState addInvitee(
+      HangUserPreview newInvitee, InviteType type, InviteTitle? title,
+      [InviteStatus status = InviteStatus.pending]) {
+    UserInvite newUserInvitee =
+        UserInvite(user: newInvitee, status: status, type: type, title: title);
     final newInvitees = List.of(invitedUsers);
     newInvitees.add(newUserInvitee);
     allUsers.add(newUserInvitee.user.email!);

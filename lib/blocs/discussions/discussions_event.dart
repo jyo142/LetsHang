@@ -15,3 +15,12 @@ class LoadEventDiscussions extends DiscussionsEvent {
   @override
   List<Object> get props => [eventId];
 }
+
+class LoadGroupDiscussion extends DiscussionsEvent {
+  final String groupId;
+
+  const LoadGroupDiscussion(this.groupId);
+
+  @override
+  List<Object> get props => [groupId];
+}

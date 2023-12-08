@@ -52,6 +52,8 @@ class AddPeopleEventScreen extends StatelessWidget {
             ..add(AddInviteeInitiated(
                 invitedUser:
                     (context.read<AppBloc>().state as AppAuthenticated).user,
+                inviteType: InviteType.event,
+                inviteStatus: InviteStatus.owner,
                 inviteTitle: InviteTitle.organizer)),
           child: _AddPeopleEventScreenView(
             curEvent: curEvent,
@@ -93,9 +95,10 @@ class _AddPeopleEventScreenView extends StatelessWidget {
               AddPeopleBottomModal(
                 submitPeopleButtonName: 'Add to Event',
                 onInviteeAdded: (foundUser) {
-                  context
-                      .read<ParticipantsBloc>()
-                      .add(AddInviteeInitiated(invitedUser: foundUser));
+                  context.read<ParticipantsBloc>().add(AddInviteeInitiated(
+                      invitedUser: foundUser,
+                      inviteStatus: InviteStatus.pending,
+                      inviteType: InviteType.event));
                 },
               ),
               Container(
@@ -242,7 +245,10 @@ class _AddPeopleEventScreenView extends StatelessWidget {
                           submitPeopleButtonName: 'Add to Event',
                           onInviteeAdded: (foundUser) {
                             context.read<ParticipantsBloc>().add(
-                                AddInviteeInitiated(invitedUser: foundUser));
+                                AddInviteeInitiated(
+                                    invitedUser: foundUser,
+                                    inviteStatus: InviteStatus.pending,
+                                    inviteType: InviteType.event));
                           },
                         ),
                         Container(

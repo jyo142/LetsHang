@@ -48,7 +48,7 @@ class _ViewAllGroupMembersView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ParticipantsBloc, ParticipantsState>(
       builder: (context, state) {
-        return _invitedPeopleSection(context, state.invitedUsers);
+        return _invitedPeopleSection(context, state.allSortedUsers);
       },
     );
   }
