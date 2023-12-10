@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
-import 'package:letshang/blocs/discussions/discussions_bloc.dart';
 import 'package:letshang/blocs/user_discussions/user_discussions_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/widgets/cards/discussion_card.dart';
@@ -42,17 +41,20 @@ class UserDiscussionsView extends StatelessWidget {
                   return ListView.builder(
                     itemCount: state.allUserDiscussions.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return DiscussionCard(
-                        discussion: state.allUserDiscussions[index],
-                        showTitle: true,
-                        onRefresh: () => context
-                            .read<UserDiscussionsBloc>()
-                            .add(LoadUserDiscussions(
-                              userId: (context.read<AppBloc>().state
-                                      as AppAuthenticated)
-                                  .user
-                                  .id!,
-                            )),
+                      return Container(
+                        margin: const EdgeInsets.only(top: 10),
+                        child: DiscussionCard(
+                          discussion: state.allUserDiscussions[index],
+                          showTitle: true,
+                          onRefresh: () => context
+                              .read<UserDiscussionsBloc>()
+                              .add(LoadUserDiscussions(
+                                userId: (context.read<AppBloc>().state
+                                        as AppAuthenticated)
+                                    .user
+                                    .id!,
+                              )),
+                        ),
                       );
                     },
                   );

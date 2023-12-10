@@ -7,24 +7,28 @@ class ParticipantsState extends Equatable {
   final String searchByEmailValue;
   final String searchByGroupValue;
 
-  final List<UserInvite> attendingUsers;
-  final List<UserInvite> invitedUsers;
-  final List<UserInvite> rejectedUsers;
+  List<UserInvite> attendingUsers;
+  List<UserInvite> invitedUsers;
+  List<UserInvite> rejectedUsers;
   late final Set<String> allUsers;
-  late final List<UserInvite> allSortedUsers;
 
-  ParticipantsState(
-      {this.addParticipantBy = AddParticipantBy.none,
-      this.searchByUsernameValue = '',
-      this.searchByEmailValue = '',
-      this.searchByGroupValue = '',
-      this.attendingUsers = const [],
-      this.invitedUsers = const [],
-      this.rejectedUsers = const []}) {
-    allUsers = Set.of(attendingUsers.map((e) => e.user.email!));
-    allUsers.addAll(invitedUsers.map((e) => e.user.email!));
-    allUsers.addAll(rejectedUsers.map((e) => e.user.email!));
-    List<UserInvite> sortedAttendingUsers = List.from(attendingUsers);
+  ParticipantsState({
+    this.addParticipantBy = AddParticipantBy.none,
+    this.searchByUsernameValue = '',
+    this.searchByEmailValue = '',
+    this.searchByGroupValue = '',
+    List<UserInvite>? attendingUsers,
+    List<UserInvite>? invitedUsers,
+    List<UserInvite>? rejectedUsers,
+  })  : attendingUsers = attendingUsers ?? const [],
+        invitedUsers = invitedUsers ?? const [],
+        rejectedUsers = rejectedUsers ?? const [],
+        allUsers = Set.of((attendingUsers ?? const [])
+            .map((e) => e.user.email!)
+            .followedBy((invitedUsers ?? const []).map((e) => e.user.email!))
+            .followedBy(
+                (rejectedUsers ?? const []).map((e) => e.user.email!))) {
+    List<UserInvite> sortedAttendingUsers = List.from(this.attendingUsers);
     sortedAttendingUsers.sort((a, b) {
       int? titleComparison = a.title != null && b.title != null
           ? a.title!.index.compareTo(b.title!.index)
@@ -34,15 +38,17 @@ class ParticipantsState extends Equatable {
       }
       return titleComparison;
     });
-    List<UserInvite> sortedInvitedUsers = List.from(invitedUsers);
+
+    List<UserInvite> sortedInvitedUsers = List.from(this.invitedUsers);
     sortedInvitedUsers.sort((a, b) => a.user.name!.compareTo(b.user!.name!));
 
-    List<UserInvite> sortedRejectedusers = List.from(rejectedUsers);
-    sortedRejectedusers.sort((a, b) => a.user.name!.compareTo(b.user!.name!));
-    allSortedUsers = [];
-    allSortedUsers.addAll(sortedAttendingUsers);
-    allSortedUsers.addAll(sortedInvitedUsers);
-    allSortedUsers.addAll(sortedRejectedusers);
+    List<UserInvite> sortedRejectedUsers = List.from(this.rejectedUsers);
+    sortedRejectedUsers.sort((a, b) => a.user.name!.compareTo(b.user!.name!));
+
+    // Assign the sorted lists back to the fields
+    this.attendingUsers = sortedAttendingUsers;
+    this.invitedUsers = sortedInvitedUsers;
+    this.rejectedUsers = sortedRejectedUsers;
   }
 
   ParticipantsState.fromState(ParticipantsState state)

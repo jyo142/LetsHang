@@ -1,6 +1,7 @@
 import {
   DocumentSnapshot,
   onDocumentCreated,
+  onDocumentDeleted,
   onDocumentUpdated,
 } from "firebase-functions/v2/firestore";
 import { error, info } from "firebase-functions/logger";
@@ -11,8 +12,11 @@ import { OAuth2Client } from "googleapis-common";
 import { calendar } from "@googleapis/calendar";
 import { getAccessTokenFromRefreshToken } from "./services/googleAuthService";
 import {
+  addUserToDiscussion,
   createUserDiscussionsFromEvent,
   findNewDiscussionMembers,
+  removeUserDiscussionForUser,
+  removeUserFromDiscussion,
 } from "./discussionUtils";
 
 export const onUserInvitedToEvent = onDocumentCreated(
@@ -121,7 +125,118 @@ export const onUserEventInviteChanged = onDocumentUpdated(
 
       if (newUserInviteStatus === "accepted") {
         await sendGoogleCalendarInvite(snap.params.userId, eventSnapshot);
+
+        // add the user to discussion
+        const eventDiscussionsColRef = db
+          .collection("hangEvents")
+          .doc(snap.params.eventId)
+          .collection("discussions");
+        const mainEventDiscussionSnap = await eventDiscussionsColRef
+          .where("isMainDiscussion", "==", true)
+          .get();
+        if (!mainEventDiscussionSnap.empty) {
+          const newUserDiscussionMember = {
+            userId: userSnapshot.get("id"),
+            name: userSnapshot.get("name"),
+            email: userSnapshot.get("email"),
+            userName: userSnapshot.get("userName"),
+            photoUrl: userSnapshot.get("photoUrl"),
+          };
+          await addUserToDiscussion(
+            snap.params.userId,
+            eventDiscussionsColRef,
+            mainEventDiscussionSnap,
+            newUserDiscussionMember,
+          );
+
+          const mainDiscussionSnap = mainEventDiscussionSnap.docs[0];
+          const mainDiscussionData = mainDiscussionSnap.data();
+          const newDiscussionMembers = mainDiscussionData.discussionMembers;
+          if (
+            !newDiscussionMembers.some(
+              (u: any) => u.userId === newUserDiscussionMember.userId,
+            )
+          ) {
+            newDiscussionMembers.push(newUserDiscussionMember);
+          }
+          info("NEW DISCUSSION MEMBERS ", newDiscussionMembers);
+
+          await createUserDiscussionsFromEvent(
+            mainDiscussionSnap,
+            newDiscussionMembers,
+            snap.params.eventId,
+          );
+        } else {
+          info(
+            "UNABLE TO FIND MAIN EVENT DISCUSSION FOR EVENT ",
+            snap.params.eventId,
+          );
+        }
       }
+    }
+  },
+);
+
+export const onUserEventInviteDeleted = onDocumentDeleted(
+  "/hangEvents/{eventId}/invites/{userId}",
+  async (snap) => {
+    // check that userInvite for event is deleted as well
+    const userInvitesEventInvitesColRef = db
+      .collection("userInvites")
+      .doc(snap.params.userId)
+      .collection("eventInvites");
+    const userInviteForEventSnap = await userInvitesEventInvitesColRef
+      .where("event.eventId", "==", snap.params.eventId)
+      .get();
+
+    if (!userInviteForEventSnap.empty) {
+      info("REMOVING USER INVITE FOR EVENT ", snap.params.eventId);
+      const userInviteForEventId = userInviteForEventSnap.docs[0].id;
+      await userInvitesEventInvitesColRef.doc(userInviteForEventId).delete();
+    } else {
+      info("USER INVITE FOR EVENT ALREADY REMOVED", snap.params.eventId);
+    }
+
+    // first get rid of the user from the main discusssion in the event
+    const hangEventDiscussionsColRef = db
+      .collection("hangEvents")
+      .doc(snap.params.eventId)
+      .collection("discussions");
+    const mainEventDiscussionSnap = await hangEventDiscussionsColRef
+      .where("isMainDiscussion", "==", true)
+      .get();
+
+    if (!mainEventDiscussionSnap.empty) {
+      info("REMOVING USER FROM DISCUSSION. ", snap.params.userId);
+      await removeUserFromDiscussion(
+        snap.params.userId,
+        hangEventDiscussionsColRef,
+        mainEventDiscussionSnap,
+      );
+    } else {
+      info(
+        "UNABLE TO FIND MAIN EVENT DISCUSSION FOR EVENT ",
+        snap.params.eventId,
+      );
+    }
+
+    // remove the userDiscussion for the event as well
+    const userDiscussionDiscussionsColRef = db
+      .collection("userDiscussions")
+      .doc(snap.params.userId)
+      .collection("discussions");
+
+    const eventUserDiscussionSnap = await userDiscussionDiscussionsColRef
+      .where("event.eventId", "==", snap.params.eventId)
+      .get();
+    if (!eventUserDiscussionSnap.empty) {
+      await removeUserDiscussionForUser(
+        snap.params.userId,
+        userDiscussionDiscussionsColRef,
+        eventUserDiscussionSnap.docs[0].id,
+      );
+    } else {
+      info("UNABLE TO FIND USER DISCUSSION FOR EVENT ", snap.params.eventId);
     }
   },
 );

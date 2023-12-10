@@ -1,6 +1,7 @@
 import {
   DocumentSnapshot,
   onDocumentCreated,
+  onDocumentDeleted,
   onDocumentUpdated,
 } from "firebase-functions/v2/firestore";
 import { error, info } from "firebase-functions/logger";
@@ -8,8 +9,10 @@ import { db } from ".";
 import { addNotification, sendNotification } from "./notificationUtils";
 import { getStatusTitleDescription } from "./inviteStatusUtils";
 import {
+  addUserToDiscussion,
   createUserDiscussionsFromGroup,
-  findNewDiscussionMembers,
+  removeUserDiscussionForUser,
+  removeUserFromDiscussion,
 } from "./discussionUtils";
 
 export const onUserInvitedToGroup = onDocumentCreated(
@@ -110,43 +113,120 @@ export const onUserGroupInviteChanged = onDocumentUpdated(
         snap.params.groupId,
         newUserInviteData?.get("invitingUser"),
       );
+
+      if (newUserInviteStatus === "accepted") {
+        // add the user to discussion
+        const groupDiscussionsColRef = db
+          .collection("groups")
+          .doc(snap.params.groupId)
+          .collection("discussions");
+        const mainGroupDiscussionSnap = await groupDiscussionsColRef
+          .where("isMainDiscussion", "==", true)
+          .get();
+        if (!mainGroupDiscussionSnap.empty) {
+          const newUserDiscussionMember = {
+            userId: userSnapshot.get("id"),
+            name: userSnapshot.get("name"),
+            email: userSnapshot.get("email"),
+            userName: userSnapshot.get("userName"),
+            photoUrl: userSnapshot.get("photoUrl"),
+          };
+          await addUserToDiscussion(
+            snap.params.userId,
+            groupDiscussionsColRef,
+            mainGroupDiscussionSnap,
+            newUserDiscussionMember,
+          );
+
+          const mainDiscussionSnap = mainGroupDiscussionSnap.docs[0];
+          const mainDiscussionData = mainDiscussionSnap.data();
+          const newDiscussionMembers = mainDiscussionData.discussionMembers;
+          if (
+            !newDiscussionMembers.some(
+              (u: any) => u.userId === newUserDiscussionMember.userId,
+            )
+          ) {
+            newDiscussionMembers.push(newUserDiscussionMember);
+          }
+          info("NEW DISCUSSION MEMBERS ", newDiscussionMembers);
+
+          await createUserDiscussionsFromGroup(
+            mainDiscussionSnap,
+            newDiscussionMembers,
+            snap.params.groupId,
+          );
+        } else {
+          info(
+            "UNABLE TO FIND MAIN GROUP DISCUSSION FOR GROUP ",
+            snap.params.groupId,
+          );
+        }
+      }
     }
   },
 );
 
-export const onGroupDiscussionModified = onDocumentUpdated(
-  "/group/{groupId}/discussions/{groupDiscussionId}",
+export const onUserGroupInviteDeleted = onDocumentDeleted(
+  "/groups/{groupId}/invites/{userId}",
   async (snap) => {
-    if (!snap.data) {
-      info("No data");
-      return;
-    }
-
-    const newDiscussionData = snap.data?.after;
-    const oldDiscussionData = snap.data?.before;
-
-    const snapData = await db
-      .collection("groups")
-      .doc(snap.params.groupId)
-      .collection("discussions")
-      .doc(snap.params.groupDiscussionId)
+    // check that userInvite for event is deleted as well
+    const userInvitesGroupInvitesColRef = db
+      .collection("userInvites")
+      .doc(snap.params.userId)
+      .collection("groupInvites");
+    const userInviteForGroupSnap = await userInvitesGroupInvitesColRef
+      .where("group.id", "==", snap.params.groupId)
       .get();
 
-    if (!snapData) {
-      error("Unable to get snapshot data");
-      return;
+    if (!userInviteForGroupSnap.empty) {
+      info("REMOVING USER INVITE FOR GROUP ", snap.params.groupId);
+      const userInviteForGroupId = userInviteForGroupSnap.docs[0].id;
+      await userInvitesGroupInvitesColRef.doc(userInviteForGroupId).delete();
+    } else {
+      info("USER INVITE FOR GROUP ALREADY REMOVED", snap.params.groupId);
     }
-    // create user discussions for all users in the event discussion
-    const newDiscussionMembers = findNewDiscussionMembers(
-      oldDiscussionData.get("discussionMembers"),
-      newDiscussionData.get("discussionMembers"),
-    );
 
-    await createUserDiscussionsFromGroup(
-      snapData,
-      newDiscussionMembers,
-      snap.params.groupId,
-    );
+    // first get rid of the user from the main discusssion in the event
+    const groupDiscussionsColRef = db
+      .collection("groups")
+      .doc(snap.params.groupId)
+      .collection("discussions");
+    const mainGroupDiscussionSnap = await groupDiscussionsColRef
+      .where("isMainDiscussion", "==", true)
+      .get();
+
+    if (!mainGroupDiscussionSnap.empty) {
+      info("REMOVING USER FROM DISCUSSION ", snap.params.userId);
+      await removeUserFromDiscussion(
+        snap.params.userId,
+        groupDiscussionsColRef,
+        mainGroupDiscussionSnap,
+      );
+    } else {
+      info(
+        "UNABLE TO FIND MAIN GROUP DISCUSSION FOR GROUP ",
+        snap.params.groupId,
+      );
+    }
+
+    // remove the userDiscussion for the event as well
+    const userDiscussionDiscussionsColRef = db
+      .collection("userDiscussions")
+      .doc(snap.params.userId)
+      .collection("discussions");
+
+    const groupUserDiscussionSnap = await userDiscussionDiscussionsColRef
+      .where("group.groupId", "==", snap.params.groupId)
+      .get();
+    if (!groupUserDiscussionSnap.empty) {
+      await removeUserDiscussionForUser(
+        snap.params.userId,
+        userDiscussionDiscussionsColRef,
+        groupUserDiscussionSnap.docs[0].id,
+      );
+    } else {
+      info("UNABLE TO FIND USER DISCUSSION FOR GROUP ", snap.params.groupId);
+    }
   },
 );
 
@@ -240,6 +320,8 @@ const handleUserStatusChange = async (
       titleDescription.description,
       { groupId },
       invitingUser,
+      undefined,
+      "statusChange",
     );
     await sendNotification(
       userSnapshot,

@@ -261,8 +261,6 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
       HangEvent savingEvent =
           curEvent!.copyWith(currentStage: HangEventStage.complete);
       await _hangEventRepository.editHangEvent(savingEvent);
-      await _discussionsRepository.addUsersToEventMainDiscussion(
-          savingEvent.id, allInvitedUsers.map((e) => e.user).toList());
       return SendAllInvitesSuccess(state);
     } catch (e) {
       return SendAllInvitesError(state,
@@ -275,15 +273,11 @@ class ParticipantsBloc extends Bloc<ParticipantsEvent, ParticipantsState> {
       if (curEvent != null) {
         await _userInvitesRepository.addUserEventInvite(
             curEvent!, UserInvite.fromInvitedEventUser(invitedUser, curUser));
-        await _discussionsRepository.addUserToEventMainDiscussion(
-            curEvent!.id, HangUserPreview.fromUser(invitedUser));
         return SendInviteSuccess(state);
       }
       if (curGroup != null) {
         await _userInvitesRepository.addUserGroupInvite(
             curGroup!, UserInvite.fromInvitedGroupUser(invitedUser, curUser));
-        await _discussionsRepository.addUserToGroupDiscussion(
-            curGroup!.id, HangUserPreview.fromUser(invitedUser));
         return SendInviteSuccess(state);
       }
       return SendInviteError(state, errorMessage: "Failed to promote user.");

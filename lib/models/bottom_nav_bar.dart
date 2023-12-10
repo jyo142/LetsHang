@@ -22,7 +22,7 @@ class LHBottomNavBarModel extends Equatable {
   List<Object> get props => [screenName, screen];
 }
 
-enum BottomScreenName { home, events, groups, profile }
+enum BottomScreenName { home, events, groups, discussions }
 
 class BottomNavigationBarHelper {
   static void navigateToTabScreen(

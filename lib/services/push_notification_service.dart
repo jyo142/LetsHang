@@ -64,7 +64,7 @@ class PushNotificationService {
 
   static Future initializeLocalNotifications() async {
     const iOS = DarwinInitializationSettings();
-    const android = AndroidInitializationSettings("@drawable/ic_launcher");
+    const android = AndroidInitializationSettings("@drawable/lets_hang_logo");
     const settings = InitializationSettings(android: android, iOS: iOS);
     await flutterLocalNotificationsPlugin.initialize(settings,
         onDidReceiveNotificationResponse: (payload) {
@@ -123,7 +123,7 @@ class PushNotificationService {
                 androidChannel.id,
                 androidChannel.name,
                 channelDescription: androidChannel.description,
-                icon: '@drawable/ic_launcher',
+                icon: '@drawable/lets_hang_logo',
               ),
             ),
             payload: jsonEncode(message.toMap()));

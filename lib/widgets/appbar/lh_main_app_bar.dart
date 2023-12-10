@@ -8,6 +8,7 @@ import 'package:letshang/blocs/notifications/notifications_bloc.dart';
 import 'package:letshang/models/bottom_nav_bar.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/screens/notifications_screen.dart';
+import 'package:letshang/screens/profile_screen.dart';
 import 'package:letshang/screens/user_settings_screen.dart';
 import 'package:letshang/widgets/avatars/user_avatar.dart';
 import 'package:badges/badges.dart' as badges;
@@ -25,8 +26,11 @@ class LHMainAppBar extends StatelessWidget implements PreferredSizeWidget {
         margin: const EdgeInsets.only(left: 15),
         child: InkWell(
             onTap: () {
-              BottomNavigationBarHelper.navigateToTabScreen(
-                  mainAppBarContext, BottomScreenName.profile);
+              Navigator.of(mainAppBarContext).push(
+                MaterialPageRoute(
+                  builder: (context) => const ProfileScreen(),
+                ),
+              );
             },
             child: UserAvatar(
                 radius: 5,

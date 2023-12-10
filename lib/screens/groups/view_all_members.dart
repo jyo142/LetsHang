@@ -48,97 +48,117 @@ class _ViewAllGroupMembersView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ParticipantsBloc, ParticipantsState>(
       builder: (context, state) {
-        return _invitedPeopleSection(context, state.allSortedUsers);
+        return Column(children: [
+          Text(
+            curGroup.groupName,
+            style: Theme.of(context).textTheme.headline4,
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          BlocConsumer<ParticipantsBloc, ParticipantsState>(
+            listener: (context, state) {
+              if (state is SendInviteSuccess) {
+                MessageService.showSuccessMessage(
+                    content: "Event saved successfully", context: context);
+                context.read<ParticipantsBloc>().add(LoadGroupParticipants());
+              }
+            },
+            builder: (context, state) {
+              if (state is SendInviteLoading) {
+                return const CircularProgressIndicator();
+              }
+              if (state is SendInviteError) {
+                MessageService.showErrorMessage(
+                    content: "Unable to send invites to users",
+                    context: context);
+              }
+              return Flexible(
+                  flex: 1,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      AddPeopleBottomModal(
+                        submitPeopleButtonName: 'Add to Group',
+                        onInviteeAdded: (foundUser) {
+                          context
+                              .read<ParticipantsBloc>()
+                              .add(SendInviteInitiated(invitedUser: foundUser));
+                        },
+                      ),
+                      // Container(
+                      //   margin: const EdgeInsets.only(left: 20),
+                      //   child: const AddGroupBottomModal(),
+                      // )
+                    ],
+                  ));
+            },
+          ),
+          Flexible(
+              child: Container(
+                  margin: const EdgeInsets.only(top: 30),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      BlocBuilder<ParticipantsBloc, ParticipantsState>(
+                          builder: (context, state) {
+                        return Text(
+                          'MEMBERS (${state.attendingUsers.length})',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyText1!
+                              .merge(const TextStyle(color: Color(0x8004152D))),
+                        );
+                      })
+                    ],
+                  ))),
+          _membersListView(state.attendingUsers),
+          Flexible(
+              child: Container(
+                  margin: const EdgeInsets.only(top: 30),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      BlocBuilder<ParticipantsBloc, ParticipantsState>(
+                          builder: (context, state) {
+                        return Text(
+                          'INVITED (${state.invitedUsers.length})',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyText1!
+                              .merge(const TextStyle(color: Color(0x8004152D))),
+                        );
+                      })
+                    ],
+                  ))),
+          _membersListView(state.invitedUsers)
+        ]);
       },
     );
   }
 
-  Widget _invitedPeopleSection(
-      BuildContext context, List<UserInvite> invitedUsers) {
-    return Column(children: [
-      Text(
-        curGroup.groupName,
-        style: Theme.of(context).textTheme.headline4,
-      ),
-      const SizedBox(
-        height: 20,
-      ),
-      BlocConsumer<ParticipantsBloc, ParticipantsState>(
-        listener: (context, state) {
-          if (state is SendInviteSuccess) {
-            MessageService.showSuccessMessage(
-                content: "Event saved successfully", context: context);
-            context.read<ParticipantsBloc>().add(LoadGroupParticipants());
-          }
-        },
-        builder: (context, state) {
-          if (state is SendInviteLoading) {
-            return const CircularProgressIndicator();
-          }
-          if (state is SendInviteError) {
-            MessageService.showErrorMessage(
-                content: "Unable to send invites to users", context: context);
-          }
-          return Flexible(
-              flex: 1,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  AddPeopleBottomModal(
-                    submitPeopleButtonName: 'Add to Group',
-                    onInviteeAdded: (foundUser) {
-                      context
-                          .read<ParticipantsBloc>()
-                          .add(SendInviteInitiated(invitedUser: foundUser));
+  Widget _membersListView(List<UserInvite> members) {
+    return Flexible(
+        flex: 4,
+        child: ListView.builder(
+            itemCount: members.length,
+            itemBuilder: (BuildContext context, int index) {
+              return Container(
+                margin: const EdgeInsets.only(top: 10),
+                child: UserParticipantCard(
+                    curUser: members[index].user,
+                    inviteTitle: members[index].title,
+                    backgroundColor: Colors.white,
+                    onRemove: (curUser) {
+                      context.read<ParticipantsBloc>().add(
+                          SendRemoveInviteInitiated(toRemoveUser: curUser));
                     },
-                  ),
-                  // Container(
-                  //   margin: const EdgeInsets.only(left: 20),
-                  //   child: const AddGroupBottomModal(),
-                  // )
-                ],
-              ));
-        },
-      ),
-      Flexible(
-          flex: 2,
-          child: Container(
-            margin: const EdgeInsets.only(top: 20, bottom: 20),
-            child: TextField(
-                decoration: InputDecoration(
-              fillColor: Colors.white,
-              filled: true,
-              labelText: 'Search',
-              focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                  borderSide: const BorderSide(color: Colors.white)),
-              enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                  borderSide: const BorderSide(color: Colors.white)),
-            )),
-          )),
-      Flexible(
-          flex: 9,
-          child: ListView.builder(
-              itemCount: invitedUsers.length,
-              itemBuilder: (BuildContext context, int index) {
-                return Container(
-                  margin: const EdgeInsets.only(top: 10),
-                  child: UserParticipantCard(
-                      curUser: invitedUsers[index].user,
-                      inviteTitle: invitedUsers[index].title,
-                      backgroundColor: Colors.white,
-                      onRemove: (curUser) {
-                        context.read<ParticipantsBloc>().add(
-                            SendRemoveInviteInitiated(toRemoveUser: curUser));
-                      },
-                      onPromote: (toPromoteUser) {
-                        context.read<ParticipantsBloc>().add(
-                            SendPromoteInviteeInitiated(
-                                toPromoteUserPreview: toPromoteUser));
-                      }),
-                );
-              })),
-    ]);
+                    onPromote: (toPromoteUser) {
+                      context.read<ParticipantsBloc>().add(
+                          SendPromoteInviteeInitiated(
+                              toPromoteUserPreview: toPromoteUser));
+                    }),
+              );
+            }));
   }
 }

@@ -3,7 +3,7 @@
    <application
         android:label="letshang"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/lets_hang_logo">
         <activity
             android:name=".MainActivity"
             android:exported="true"

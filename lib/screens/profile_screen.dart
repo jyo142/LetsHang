@@ -53,8 +53,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               (context.read<AppBloc>().state as AppAuthenticated).user.email!)
         ..add(LoadProfile()),
       child: SafeArea(
-        child: _profileInformation(),
-      ),
+          child: Stack(
+        children: [
+          _profileInformation(),
+          IconButton(
+            icon: const Icon(
+              Icons.arrow_back,
+              color: Color(0xFF9BADBD),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      )),
     ));
   }
 
