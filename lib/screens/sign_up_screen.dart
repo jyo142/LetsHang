@@ -86,6 +86,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       BlocBuilder<SignUpBloc, SignUpState>(
         builder: (context, state) {
           return TextFormField(
+              scrollPadding: EdgeInsets.only(bottom: 40),
               autovalidateMode: AutovalidateMode.onUserInteraction,
               obscureText: isPassword,
               decoration: InputDecoration(

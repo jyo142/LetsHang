@@ -60,4 +60,8 @@ abstract class BaseUserInvitesRepository {
   Future<PendingInvites> getAllPendingInvites(String userId);
   Future<List<GroupInvite>> getGroupPendingInvites(String userId);
   Future<List<HangEventInvite>> getEventPendingInvites(String userId);
+
+  // accepted invites
+  Future<List<UserInvite>> getEventAcceptedUserInvites(String eventId);
+  Future<List<UserInvite>> getGroupAcceptedUserInvites(String groupId);
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:letshang/models/group_invite.dart';
 import 'package:letshang/models/group_model.dart';
+import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/repositories/group/base_group_repository.dart';
 import 'package:letshang/repositories/group/group_repository.dart';
 import 'package:letshang/repositories/invites/base_invites_repository.dart';
@@ -37,6 +38,11 @@ class GroupOverviewBloc extends Bloc<GroupOverviewEvent, GroupOverviewState> {
           groupOverviewStateStatus: GroupOverviewStateStatus.groupsLoading));
       Group? foundGroup = await _groupRepository.getGroupById(event.groupId);
       if (foundGroup != null) {
+        if (event.retrieveAcceptedInvites ?? false) {
+          List<UserInvite> acceptedInvites = await _userInvitesRepository
+              .getGroupAcceptedUserInvites(foundGroup.id);
+          foundGroup = foundGroup.copyWith(userInvites: acceptedInvites);
+        }
         emit(state.copyWith(
             groupOverviewStateStatus:
                 GroupOverviewStateStatus.individualGroupRetrieved,

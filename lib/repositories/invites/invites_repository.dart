@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:flutter/foundation.dart';
 import 'package:googleapis/photoslibrary/v1.dart';
 import 'package:letshang/models/event_invite.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -978,5 +979,43 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
     UserInvite dbUserInvite = UserInvite.fromSnapshot(dbUserInvitesSnap);
     UserInvite updatedUserInvite = dbUserInvite.copyWith(status: inviteStatus);
     transaction.update(dbGroupUserInvitesRef, updatedUserInvite.toDocument());
+  }
+
+  @override
+  Future<List<UserInvite>> getEventAcceptedUserInvites(String eventId) async {
+    CollectionReference eventInviteCollectionRef = _firebaseFirestore
+        .collection("hangEvents")
+        .doc(eventId)
+        .collection("invites");
+    List<UserInvite> acceptedEventUserInvites =
+        await getAcceptedUserInvites(eventInviteCollectionRef);
+    return acceptedEventUserInvites;
+  }
+
+  @override
+  Future<List<UserInvite>> getGroupAcceptedUserInvites(String groupId) async {
+    CollectionReference groupInviteCollectionRef = _firebaseFirestore
+        .collection("groups")
+        .doc(groupId)
+        .collection("invites");
+
+    List<UserInvite> acceptedGroupUserInvites =
+        await getAcceptedUserInvites(groupInviteCollectionRef);
+    return acceptedGroupUserInvites;
+  }
+
+  Future<List<UserInvite>> getAcceptedUserInvites(
+      CollectionReference inviteCollectionRef) async {
+    QuerySnapshot allAcceptedInvites = await inviteCollectionRef
+        .where('status', isEqualTo: describeEnum(InviteStatus.accepted))
+        .get();
+
+    final allAcceptedInviteSnapshots =
+        allAcceptedInvites.docs.map((doc) => doc.data()).toList();
+    List<UserInvite> userInvites = allAcceptedInviteSnapshots
+        .map((doc) => UserInvite.fromMap(doc as Map<String, dynamic>))
+        .toList();
+
+    return userInvites;
   }
 }

@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:letshang/models/event_invite.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/invite.dart';
+import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/repositories/hang_event/base_hang_event_repository.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
 import 'package:letshang/repositories/invites/base_invites_repository.dart';
@@ -44,6 +45,9 @@ class HangEventOverviewBloc
       HangEvent? foundEvent =
           await _hangEventRepository.getEventById(event.eventId);
       if (foundEvent != null) {
+        List<UserInvite> acceptedInvites = await _userInvitesRepository
+            .getEventAcceptedUserInvites(event.eventId);
+        foundEvent = foundEvent.copyWith(userInvites: acceptedInvites);
         emit(IndividualEventRetrieved(hangEvent: foundEvent));
       } else {
         emit(const IndividualEventRetrievedError(

@@ -5,7 +5,7 @@ abstract class GroupOverviewEvent extends Equatable {
   const GroupOverviewEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class LoadGroupInvites extends GroupOverviewEvent {
@@ -19,11 +19,12 @@ class LoadGroupInvites extends GroupOverviewEvent {
 
 class LoadIndividualGroup extends GroupOverviewEvent {
   final String groupId;
-
-  const LoadIndividualGroup({required this.groupId});
+  final bool? retrieveAcceptedInvites;
+  const LoadIndividualGroup(
+      {required this.groupId, this.retrieveAcceptedInvites});
 
   @override
-  List<Object> get props => [groupId];
+  List<Object?> get props => [groupId, retrieveAcceptedInvites];
 }
 
 class UpdateGroups extends GroupOverviewEvent {

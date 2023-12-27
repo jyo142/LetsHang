@@ -32,8 +32,9 @@ class GroupDetailsScreen extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) =>
-              GroupOverviewBloc()..add(LoadIndividualGroup(groupId: groupId)),
+          create: (context) => GroupOverviewBloc()
+            ..add(LoadIndividualGroup(
+                groupId: groupId, retrieveAcceptedInvites: true)),
         ),
         BlocProvider(
           create: (context) => DiscussionsBloc(),
