@@ -13,7 +13,7 @@ class UpcomingEventsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.read<HangEventOverviewBloc>().add(LoadUpcomingEvents(
-        userId: (context.read<AppBloc>().state as AppAuthenticated).user.id!));
+        userId: (context.read<AppBloc>().state).authenticatedUser!.id!));
 
     return BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
       builder: (context, state) {

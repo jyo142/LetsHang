@@ -55,7 +55,7 @@ class _InvitationLayoutView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userId = (context.read<AppBloc>().state as AppAuthenticated).user.id!;
+    final userId = (context.read<AppBloc>().state).authenticatedUser!.id!;
     final isNotificationExpired = notification?.expirationDate != null &&
         notification!.expirationDate!.isBefore(DateTime.now());
     return SafeArea(

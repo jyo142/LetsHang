@@ -1,9 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:letshang/utils/firebase_utils.dart';
 
-enum NotificationType { invitation, promotion }
+enum NotificationType { invitation, promotion, statusChange }
 
 class NotificationsModel extends Equatable {
   final String id;

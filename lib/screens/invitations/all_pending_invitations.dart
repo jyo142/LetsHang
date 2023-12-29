@@ -26,8 +26,7 @@ class AllPendingInvitations extends StatelessWidget {
           create: (context) => InvitationsBloc()
             ..add(LoadPendingInvites(
               inviteType: inviteType,
-              userId:
-                  (context.read<AppBloc>().state as AppAuthenticated).user.id!,
+              userId: (context.read<AppBloc>().state).authenticatedUser!.id!,
             )),
           child: _AllPendingInvitationsView(
             inviteType: inviteType,

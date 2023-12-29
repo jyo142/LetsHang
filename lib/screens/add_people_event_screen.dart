@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/participants/participants_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:letshang/models/bottom_nav_bar.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/invite.dart';
@@ -46,12 +46,11 @@ class AddPeopleEventScreen extends StatelessWidget {
       body: BlocProvider(
           create: (context) => ParticipantsBloc(
               curUser: HangUserPreview.fromUser(
-                (context.read<AppBloc>().state as AppAuthenticated).user,
+                (context.read<AppBloc>().state).authenticatedUser!,
               ),
               curEvent: curEvent)
             ..add(AddInviteeInitiated(
-                invitedUser:
-                    (context.read<AppBloc>().state as AppAuthenticated).user,
+                invitedUser: (context.read<AppBloc>().state).authenticatedUser!,
                 inviteType: InviteType.event,
                 inviteStatus: InviteStatus.owner,
                 inviteTitle: InviteTitle.organizer)),
@@ -159,8 +158,7 @@ class _AddPeopleEventScreenView extends StatelessWidget {
                       builder: (context) => AppScreen(),
                     ),
                   );
-                  BottomNavigationBarHelper.navigateToTabScreen(
-                      context, BottomScreenName.events);
+                  context.pushNamed("events");
                   MessageService.showSuccessMessage(
                       content: "Event saved successfully", context: context);
                 }

@@ -22,9 +22,6 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
     on<ConfirmPasswordChanged>((event, emit) {
       emit(state.copyWith(confirmPassword: event.confirmPassword));
     });
-    on<EmailPasswordSubmitted>((event, emit) {
-      emit(SignUpEmailPasswordSubmitLoading(state));
-    });
     on<EmailPasswordSubmitted>((event, emit) async {
       emit(SignUpEmailPasswordSubmitLoading(state));
       emit(await _mapEmailPasswordSubmitToState(event, state));

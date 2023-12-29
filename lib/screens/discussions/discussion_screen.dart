@@ -22,7 +22,7 @@ class DiscussionScreen extends StatelessWidget {
       create: (context) => DiscussionMessagesBloc(
         discussionId: discussion.discussionId,
         currentUser: HangUserPreview.fromUser(
-          (context.read<AppBloc>().state as AppAuthenticated).user,
+          (context.read<AppBloc>().state).authenticatedUser!,
         ),
       )..add(LoadDiscussionMessages()),
       child: DiscussionView(

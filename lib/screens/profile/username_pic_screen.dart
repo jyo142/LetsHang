@@ -125,7 +125,8 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
         }
         if (state is UsernamePicSubmitSuccessful) {
           final appState = context.read<AppBloc>().state;
-          if (appState is AppNewFirebaseUser || appState is AppNewUser) {
+          if (appState.appStateStatus == AppStateStatus.newFirebaseUser ||
+              appState.appStateStatus == AppStateStatus.newUser) {
             // user came from the signup flow, we need to authenticate them
             context
                 .read<AppBloc>()

@@ -23,7 +23,7 @@ class ViewAllGroupMembers extends StatelessWidget {
       body: BlocProvider(
         create: (context) => ParticipantsBloc(
             curUser: HangUserPreview.fromUser(
-              (context.read<AppBloc>().state as AppAuthenticated).user,
+              (context.read<AppBloc>().state).authenticatedUser!,
             ),
             curGroup: curGroup)
           ..add(LoadGroupParticipants()),

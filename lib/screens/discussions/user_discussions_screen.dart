@@ -14,7 +14,7 @@ class UserDiscussionsScreen extends StatelessWidget {
         body: BlocProvider(
       create: (context) => UserDiscussionsBloc()
         ..add(LoadUserDiscussions(
-          userId: (context.read<AppBloc>().state as AppAuthenticated).user.id!,
+          userId: (context.read<AppBloc>().state).authenticatedUser!.id!,
         )),
       child: const UserDiscussionsView(),
     ));
@@ -49,9 +49,8 @@ class UserDiscussionsView extends StatelessWidget {
                           onRefresh: () => context
                               .read<UserDiscussionsBloc>()
                               .add(LoadUserDiscussions(
-                                userId: (context.read<AppBloc>().state
-                                        as AppAuthenticated)
-                                    .user
+                                userId: (context.read<AppBloc>().state)
+                                    .authenticatedUser!
                                     .id!,
                               )),
                         ),

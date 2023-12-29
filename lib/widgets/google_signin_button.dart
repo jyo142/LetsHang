@@ -16,12 +16,12 @@ class GoogleSignInButton extends StatelessWidget {
   Widget _signInButton() {
     return BlocBuilder<AppBloc, AppState>(
       builder: (context, state) {
-        if (state is AppLoginLoading) {
+        if (state.appStateStatus == AppStateStatus.loginLoading) {
           return const CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
           );
         }
-        if (state is AppLoginError) {
+        if (state.appStateStatus == AppStateStatus.loginError) {
           MessageService.showErrorMessage(
               content: state.errorMessage!, context: context);
         }

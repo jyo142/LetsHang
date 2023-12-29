@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_event.dart';
@@ -6,9 +7,6 @@ import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/login/login_bloc.dart';
 import 'package:letshang/layouts/unauthorized_layout.dart';
 import 'package:letshang/repositories/user/user_repository.dart';
-import 'package:letshang/screens/app_screen.dart';
-import 'package:letshang/screens/profile/username_pic_screen.dart';
-import 'package:letshang/screens/sign_up_screen.dart';
 import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/google_signin_button.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,28 +24,12 @@ class UnAuthorizedScreen extends StatelessWidget {
               create: (context) => LoginBloc(userRepository: UserRepository()),
               child: BlocConsumer<AppBloc, AppState>(
                 listener: (context, state) {
-                  if (state is AppAuthenticated) {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (context) => const AppScreen(),
-                      ),
-                    );
+                  if (state.appStateStatus == AppStateStatus.authenticated) {
+                    context.goNamed("home");
                   }
-                  if (state is AppNewFirebaseUser) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => UsernamePictureProfile(
-                          email: state.firebaseUser!.email!,
-                        ),
-                      ),
-                    );
-                  }
-                  if (state is AppNewUser) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const SignUpScreen(),
-                      ),
-                    );
+                  if (state.appStateStatus == AppStateStatus.newFirebaseUser) {
+                    context.pushNamed("usernamePictureSetup",
+                        pathParameters: {"email": state.firebaseUser!.email!});
                   }
                 },
                 builder: (context, state) {
@@ -90,11 +72,7 @@ class UnAuthorizedScreen extends StatelessWidget {
             InkWell(
               // on Tap function used and call back function os defined here
               onTap: () async {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const SignUpScreen(),
-                  ),
-                );
+                context.push("/signup");
               },
               child: Text(
                 'Sign up',

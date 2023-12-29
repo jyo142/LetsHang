@@ -49,8 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         body: BlocProvider(
       create: (context) => ProfileBloc(
           userRepository: UserRepository(),
-          email:
-              (context.read<AppBloc>().state as AppAuthenticated).user.email!)
+          email: (context.read<AppBloc>().state).authenticatedUser!.email!)
         ..add(LoadProfile()),
       child: SafeArea(
           child: Stack(

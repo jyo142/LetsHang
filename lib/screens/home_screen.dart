@@ -156,18 +156,15 @@ class _HomeScreenState extends State<HomeScreen> {
           BlocProvider(
             create: (context) => HangEventOverviewBloc()
               ..add(LoadHangEventsForDates(
-                  userId: (context.read<AppBloc>().state as AppAuthenticated)
-                      .user
-                      .id!,
+                  userId:
+                      (context.read<AppBloc>().state).authenticatedUser!.id!,
                   startDateTime: _startOfWeek,
                   endDateTime: _endOfWeek)),
           ),
           BlocProvider(
             create: (context) => InvitationsBloc()
               ..add(LoadAllPendingInvites(
-                userId: (context.read<AppBloc>().state as AppAuthenticated)
-                    .user
-                    .id!,
+                userId: (context.read<AppBloc>().state).authenticatedUser!.id!,
               )),
           ),
         ],
@@ -256,9 +253,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         context
                             .read<InvitationsBloc>()
                             .add(LoadAllPendingInvites(
-                              userId: (context.read<AppBloc>().state
-                                      as AppAuthenticated)
-                                  .user
+                              userId: (context.read<AppBloc>().state)
+                                  .authenticatedUser!
                                   .id!,
                             ));
                       }
@@ -327,9 +323,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       days: DateTime.daysPerWeek - focusedDay.weekday));
                   context.read<HangEventOverviewBloc>().add(
                       LoadHangEventsForDates(
-                          userId: (context.read<AppBloc>().state
-                                  as AppAuthenticated)
-                              .user
+                          userId: (context.read<AppBloc>().state)
+                              .authenticatedUser!
                               .id!,
                           startDateTime: newStartOfWeek,
                           endDateTime: newEndOfWeek));
@@ -422,10 +417,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                   if (shouldRefresh != null && shouldRefresh) {
                     context.read<HangEventOverviewBloc>().add(LoadHangEvents(
-                        userId:
-                            (context.read<AppBloc>().state as AppAuthenticated)
-                                .user
-                                .id!));
+                        userId: (context.read<AppBloc>().state)
+                            .authenticatedUser!
+                            .id!));
                   }
                 },
               ),

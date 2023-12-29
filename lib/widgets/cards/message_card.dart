@@ -27,7 +27,7 @@ class MessageCard extends StatelessWidget {
             ? DateFormat('h:mm a').format(message.creationDate)
             : DateFormat('MMM d, yyyy h:mm a').format(message.creationDate);
     bool isCurrentUserMessage =
-        (context.read<AppBloc>().state as AppAuthenticated).user.email ==
+        (context.read<AppBloc>().state).authenticatedUser!.email ==
             message.sendingUser.email;
     double screenWidth = MediaQuery.of(context).size.width;
 

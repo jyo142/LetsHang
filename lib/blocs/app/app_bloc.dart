@@ -13,9 +13,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   AppBloc({required UserRepository userRepository})
       : _userRepository = userRepository,
-        super(const AppState()) {
+        super(const AppState(appStateStatus: AppStateStatus.initial)) {
     on<AppGoogleLoginRequested>((event, emit) async {
-      emit(AppLoginLoading());
+      emit(state.copyWith(appStateStatus: AppStateStatus.loginLoading));
       try {
         User? user = await AuthenticationService.signInWithGoogle();
         if (user != null) {
@@ -25,36 +25,43 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
           if (curHangUser == null) {
             await _userRepository.addFirebaseUser(user.email!, user);
-            emit(AppNewFirebaseUser(firebaseUser: user));
+            emit(state.copyWith(
+                appStateStatus: AppStateStatus.newFirebaseUser,
+                firebaseUser: user));
           } else {
             if (curHangUser.userName.isEmpty) {
-              emit(AppNewFirebaseUser(firebaseUser: user));
+              emit(state.copyWith(
+                  appStateStatus: AppStateStatus.newFirebaseUser,
+                  firebaseUser: user));
             } else {
               emit(await mapAuthenticatedUser(curHangUser));
             }
           }
         } else {
-          emit(
-              const AppLoginError(errorMessage: "Failed to login with google"));
+          emit(state.copyWith(
+              appStateStatus: AppStateStatus.loginError,
+              errorMessage: "Failed to login with google"));
         }
       } catch (e) {
-        emit(const AppLoginError(errorMessage: "Failed to login with google"));
+        emit(state.copyWith(
+            appStateStatus: AppStateStatus.loginError,
+            errorMessage: "Failed to login with google"));
       }
     });
     on<AppUserAuthReturned>((event, emit) async {
       emit(await mapAuthenticatedReturnedUser(event.userEmail));
     });
     on<AppLoginRequested>((event, emit) async {
-      emit(const AppIsLoggingIn());
+      emit(state.copyWith(appStateStatus: AppStateStatus.isLoggingIn));
     });
     on<AppUserAuthenticated>((event, emit) async {
       emit(await mapAuthenticatedUser(event.hangUser));
     });
     on<AppSignupRequested>((event, emit) async {
-      emit(AppNewUser());
+      emit(state.copyWith(appStateStatus: AppStateStatus.newUser));
     });
     on<AppLogoutRequested>((event, emit) async {
-      emit(AppUnauthenticated());
+      emit(state.copyWith(appStateStatus: AppStateStatus.unauthenticated));
     });
   }
 
@@ -63,13 +70,17 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     if (foundUser != null) {
       return mapAuthenticatedUser(foundUser);
     } else {
-      return AppReturnedUserError(errorMessage: "Unable to find user");
+      return state.copyWith(
+          appStateStatus: AppStateStatus.loginError,
+          errorMessage: "Unable to find user");
     }
   }
 
   Future<AppState> mapAuthenticatedUser(HangUser curUser) async {
     final fcmToken = await FirebaseMessaging.instance.getToken();
     await _userRepository.updateFCMToken(curUser.id!, fcmToken);
-    return AppAuthenticated(user: curUser);
+    return state.copyWith(
+        appStateStatus: AppStateStatus.authenticated,
+        authenticatedUser: curUser);
   }
 }

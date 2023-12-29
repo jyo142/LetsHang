@@ -45,7 +45,7 @@ class _EventDetailsAddResponsibilityViewState
 
   @override
   Widget build(BuildContext context) {
-    final curUser = (context.read<AppBloc>().state as AppAuthenticated).user;
+    final curUser = (context.read<AppBloc>().state).authenticatedUser!;
     return Scaffold(
         appBar: AppBar(
           elevation: 0,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/notifications/notifications_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/cards/notifications_card.dart';
 
 class NotificationsScreen extends StatelessWidget {
@@ -17,6 +19,8 @@ class _NotificationsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.read<NotificationsBloc>().add(LoadPendingNotifications(
+        (context.read<AppBloc>().state).authenticatedUser!.id!));
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -52,7 +56,11 @@ class _NotificationsView extends StatelessWidget {
                 );
               });
         }
-        return Text("ee");
+        if (state.notificationStateStatus == NotificationStateStatus.error) {
+          MessageService.showErrorMessage(
+              content: state.errorMessage!, context: context);
+        }
+        return Text("Unable to get notifications");
       })),
     );
   }

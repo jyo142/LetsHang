@@ -29,21 +29,20 @@ class EditGroupsScreen extends StatelessWidget {
           BlocProvider(
             create: (context) => EditGroupBloc(
                 creatingUser: HangUserPreview.fromUser(
-                  (context.read<AppBloc>().state as AppAuthenticated).user,
+                  (context.read<AppBloc>().state).authenticatedUser!,
                 ),
                 existingGroup: curGroup),
           ),
           BlocProvider(
             create: (context) => ParticipantsBloc(
                 curUser: HangUserPreview.fromUser(
-                  (context.read<AppBloc>().state as AppAuthenticated).user,
+                  (context.read<AppBloc>().state).authenticatedUser!,
                 ),
                 curGroup: curGroup)
               ..add(curGroup == null
                   ? AddInviteeInitiated(
                       invitedUser:
-                          (context.read<AppBloc>().state as AppAuthenticated)
-                              .user,
+                          (context.read<AppBloc>().state).authenticatedUser!,
                       inviteType: InviteType.group,
                       inviteTitle: InviteTitle.organizer,
                       inviteStatus: InviteStatus.owner)

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_event.dart';
 import 'package:letshang/blocs/app/app_state.dart';
@@ -25,16 +26,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return UnAuthorizedLayout(
+        allowGoBack: true,
         content: BlocProvider(
           create: (context) => SignUpBloc(userRepository: UserRepository()),
           child: BlocConsumer<AppBloc, AppState>(
             listener: (context, state) {
-              if (state is AppAuthenticated) {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => const AppScreen(),
-                  ),
-                );
+              if (state.appStateStatus == AppStateStatus.authenticated) {
+                context.goNamed("home");
               }
             },
             builder: (context, state) {
@@ -42,7 +40,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             },
           ),
         ),
-        imageContent: Image(
+        imageContent: const Image(
           height: 96,
           width: 96,
           image: AssetImage("assets/images/create_profile.png"),
@@ -69,9 +67,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 (value) => ConfirmPasswordChanged(value),
                 (SignUpState state) => state.confirmPasswordError),
             _signUpSubmitButton(),
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 GoogleSignInButton(),
               ],
             ),
@@ -86,11 +84,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
       BlocBuilder<SignUpBloc, SignUpState>(
         builder: (context, state) {
           return TextFormField(
-              scrollPadding: EdgeInsets.only(bottom: 40),
+              scrollPadding: const EdgeInsets.only(bottom: 40),
               autovalidateMode: AutovalidateMode.onUserInteraction,
               obscureText: isPassword,
               decoration: InputDecoration(
-                fillColor: Color(0xFFCCCCCC),
+                fillColor: const Color(0xFFCCCCCC),
                 filled: true,
                 labelText: text,
                 focusedBorder: OutlineInputBorder(
@@ -136,20 +134,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
       },
       listener: (context, state) {
         if (state is SignUpEmailPasswordCreated) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => UsernamePictureProfile(
-                email: state.email,
-              ),
-            ),
-          );
+          context.goNamed("/username", pathParameters: {"email": state.email});
         }
         if (state is SignUpUserCreated) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const AppScreen(),
-            ),
-          );
+          context.goNamed("home");
         }
       },
     );

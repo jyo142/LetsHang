@@ -26,7 +26,7 @@ class InvitationCardBase extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userId = (context.read<AppBloc>().state as AppAuthenticated).user.id!;
+    final userId = (context.read<AppBloc>().state).authenticatedUser!.id!;
     return Container(
         width: double.infinity,
         decoration: const BoxDecoration(

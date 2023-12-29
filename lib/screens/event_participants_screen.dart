@@ -24,7 +24,7 @@ class EventParticipantsScreen extends StatelessWidget {
       body: BlocProvider(
           create: (context) => ParticipantsBloc(
               curUser: HangUserPreview.fromUser(
-                (context.read<AppBloc>().state as AppAuthenticated).user,
+                (context.read<AppBloc>().state).authenticatedUser!,
               ),
               curEvent: curEvent)
             ..add(LoadHangEventParticipants()),

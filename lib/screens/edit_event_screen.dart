@@ -46,7 +46,7 @@ class EditEventScreen extends StatelessWidget {
             create: (context) => EditHangEventsBloc(
                 hangEventRepository: HangEventRepository(),
                 creatingUser: HangUserPreview.fromUser(
-                  (context.read<AppBloc>().state as AppAuthenticated).user,
+                  (context.read<AppBloc>().state).authenticatedUser!,
                 ),
                 existingHangEvent: curEvent),
             child: _EditEventScreenView(

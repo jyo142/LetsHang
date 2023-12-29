@@ -11,7 +11,7 @@ class PastEventsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.read<HangEventOverviewBloc>().add(LoadPastEvents(
-        userId: (context.read<AppBloc>().state as AppAuthenticated).user.id!));
+        userId: (context.read<AppBloc>().state).authenticatedUser!.id!));
     return BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
       builder: (context, state) {
         if (state is HangEventsLoading) {

@@ -41,7 +41,7 @@ class NotificationsCard extends StatelessWidget {
             );
           }
           context.read<NotificationsBloc>().add(MarkNotificationAsRead(
-              (context.read<AppBloc>().state as AppAuthenticated).user.email!,
+              (context.read<AppBloc>().state).authenticatedUser!.email!,
               notification.id));
         },
         child: Container(
