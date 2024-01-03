@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
@@ -404,31 +405,28 @@ class _HomeScreenState extends State<HomeScreen> {
           itemCount: events.length,
           itemBuilder: (BuildContext context, int index) {
             return Card(
+                color: Colors.white,
                 child: ListTile(
-              leading: IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () async {
-                  final bool? shouldRefresh = await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => EditEventScreen(
-                        curEvent: events[index].event,
-                      ),
-                    ),
-                  );
-                  if (shouldRefresh != null && shouldRefresh) {
-                    context.read<HangEventOverviewBloc>().add(LoadHangEvents(
-                        userId: (context.read<AppBloc>().state)
-                            .authenticatedUser!
-                            .id!));
-                  }
-                },
-              ),
-              title: Text(events[index].event.eventStartDateTime != null
-                  ? DateFormat('MM/dd/yyyy h:mm a')
-                      .format(events[index].event.eventStartDateTime!)
-                  : 'Undecided'),
-              subtitle: Text(events[index].event.eventName),
-            ));
+                  leading: IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () async {
+                      final bool? shouldRefresh = await context
+                          .pushNamed("editEvent", extra: events[index].event);
+                      if (shouldRefresh != null && shouldRefresh) {
+                        context.read<HangEventOverviewBloc>().add(
+                            LoadHangEvents(
+                                userId: (context.read<AppBloc>().state)
+                                    .authenticatedUser!
+                                    .id!));
+                      }
+                    },
+                  ),
+                  title: Text(events[index].event.eventStartDateTime != null
+                      ? DateFormat('MM/dd/yyyy h:mm a')
+                          .format(events[index].event.eventStartDateTime!)
+                      : 'Undecided'),
+                  subtitle: Text(events[index].event.eventName),
+                ));
           }),
     );
   }

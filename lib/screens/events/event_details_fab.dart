@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/event_responsibilities/hang_event_responsibilities_bloc.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -60,20 +61,10 @@ class EventDetailsFAB extends StatelessWidget {
                   foregroundColor: Colors.white,
                   label: 'Add Responsibility',
                   onTap: () async {
-                    final shouldRefresh =
-                        await Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => EventDetailsAddResponsibilityScreen(
-                        hangEventId: state.hangEvent.id,
-                        acceptedUserInvites: [
-                          ...state.hangEvent.userInvites,
-                          UserInvite(
-                              user: state.hangEvent.eventOwner,
-                              status: InviteStatus.owner,
-                              type: InviteType.event)
-                        ],
-                      ),
-                    ));
-                    if (shouldRefresh) {
+                    final shouldRefresh = await context.push(
+                        "/eventDetails/${state.hangEvent.id}/addEventResponsibility",
+                        extra: state.hangEvent);
+                    if (shouldRefresh as bool? ?? false) {
                       context.read<HangEventResponsibilitiesBloc>().add(
                           LoadEventResponsibilities(
                               eventId: state.hangEvent.id));

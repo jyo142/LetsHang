@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:letshang/assets/MainTheme.dart';
-import 'package:letshang/blocs/app/app_bloc.dart';
-import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:letshang/widgets/events/past_events_view.dart';
 import 'package:letshang/widgets/events/upcoming_events_view.dart';
 
@@ -43,13 +41,12 @@ class _EventsViewState extends State<EventsView> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-          heroTag: "createGroupBtn",
+          heroTag: "createEventBtn",
           backgroundColor: const Color(0xFF0287BF),
           onPressed: () async {
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const EditEventScreen(),
-            ));
+            context.pushNamed("editEvent");
           },
+          foregroundColor: Colors.white,
           child: const Icon(Icons.add)),
       body: SafeArea(
           child: Padding(
@@ -69,32 +66,29 @@ class _EventsViewState extends State<EventsView> with TickerProviderStateMixin {
                       bottom: 6.0,
                     ),
                     child: TabBar(
+                      dividerHeight: 0,
                       unselectedLabelColor: const Color(0xFF04152D),
                       indicatorSize: TabBarIndicatorSize.label,
                       indicator: BoxDecoration(
                           borderRadius: BorderRadius.circular(5),
                           color: const Color(0xFF0287BF)),
                       controller: _tabController,
+                      labelColor: Colors.white,
                       tabs: [
-                        Tab(
-                          child: Container(
-                            child: Align(
-                              alignment: Alignment.center,
-                              child: Text(
-                                "Upcoming",
-                                style: Theme.of(context).textTheme.tabText,
-                              ),
+                        const Tab(
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Upcoming",
                             ),
                           ),
                         ),
                         Tab(
-                          child: Container(
-                            child: Align(
-                              alignment: Alignment.center,
-                              child: Text(
-                                "Past",
-                                style: Theme.of(context).textTheme.tabText,
-                              ),
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Past",
+                              style: Theme.of(context).textTheme.tabText,
                             ),
                           ),
                         ),

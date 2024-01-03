@@ -1,23 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:letshang/assets/MainTheme.dart';
-import 'package:letshang/blocs/app/app_bloc.dart';
-import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/event_responsibilities/hang_event_responsibilities_bloc.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/invite.dart';
-import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:letshang/screens/app_screen.dart';
-import 'package:letshang/screens/event_participants_screen.dart';
 import 'package:letshang/screens/events/event_details_fab.dart';
-import 'package:letshang/screens/events/event_discussions_screen.dart';
-import 'package:letshang/screens/events/view_all_event_responsibilities.dart';
 import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/avatars/attendees_avatar.dart';
-import 'package:letshang/widgets/avatars/user_avatar.dart';
 import 'package:letshang/widgets/cards/hang_event_responsibility_card.dart';
 import 'package:letshang/widgets/cards/user_event_card.dart';
 import 'package:letshang/widgets/lh_button.dart';
@@ -28,35 +20,13 @@ class EventDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (context) => HangEventOverviewBloc()
-              ..add(LoadIndividualEvent(eventId: eventId)),
-          ),
-          BlocProvider(
-            create: (context) => HangEventResponsibilitiesBloc()
-              ..add(LoadEventResponsibilities(eventId: eventId)),
-          ),
-        ],
-        child: _EventDetailsView(eventId: eventId),
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: LHButton(
-            buttonText: 'Discussions',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => EventDiscussionsScreen(
-                    hangEventId: eventId,
-                  ),
-                ),
-              );
-            }),
-      ),
-    );
+    context
+        .read<HangEventOverviewBloc>()
+        .add(LoadIndividualEvent(eventId: eventId));
+    context
+        .read<HangEventResponsibilitiesBloc>()
+        .add(LoadEventResponsibilities(eventId: eventId));
+    return _EventDetailsView(eventId: eventId);
   }
 }
 
@@ -71,10 +41,18 @@ class _EventDetailsView extends StatelessWidget {
     double width = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: LHButton(
+            buttonText: 'Discussions',
+            onPressed: () {
+              context.push("/eventDetails/${eventId}/eventDiscussions");
+            }),
+      ),
       floatingActionButton: EventDetailsFAB(),
       backgroundColor: Colors.white,
       body: SafeArea(
-          child: Container(
+          child: SizedBox(
         height: fullHeight,
         child: Stack(
           children: [
@@ -95,7 +73,7 @@ class _EventDetailsView extends StatelessWidget {
                 color: Color(0xFF9BADBD),
               ),
               onPressed: () {
-                Navigator.of(context).pop();
+                context.pop();
               },
             ),
             Positioned(
@@ -151,25 +129,6 @@ class _EventDetailsView extends StatelessWidget {
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodyText1,
-                                        ),
-                                        InkWell(
-                                          // on Tap function used and call back function os defined here
-                                          onTap: () async {
-                                            Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    EventDetailsScreen(
-                                                  eventId: state.hangEvent.id,
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                          child: Text(
-                                            'Edit',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .linkText,
-                                          ),
                                         ),
                                       ],
                                     ),
@@ -243,14 +202,9 @@ class _EventDetailsView extends StatelessWidget {
                                         InkWell(
                                           // on Tap function used and call back function os defined here
                                           onTap: () async {
-                                            Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    EventParticipantsScreen(
-                                                  curEvent: state.hangEvent,
-                                                ),
-                                              ),
-                                            );
+                                            context.push(
+                                                "/eventDetails/${state.hangEvent.id}/eventParticipants",
+                                                extra: state.hangEvent);
                                           },
                                           child: Text(
                                             'Manage',
@@ -318,14 +272,9 @@ class _EventResponsibilitiesView extends StatelessWidget {
                       InkWell(
                         // on Tap function used and call back function os defined here
                         onTap: () async {
-                          Navigator.of(mainContext).push(
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ViewAllEventResponsibilities(
-                                hangEvent: hangEvent,
-                              ),
-                            ),
-                          );
+                          mainContext.push(
+                              "/eventDetails/${hangEvent.id}/eventResponsibilities",
+                              extra: hangEvent);
                         },
                         child: Text(
                           'View All',

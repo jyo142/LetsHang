@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
@@ -29,19 +30,9 @@ class GroupDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => GroupOverviewBloc()
-            ..add(LoadIndividualGroup(
-                groupId: groupId, retrieveAcceptedInvites: true)),
-        ),
-        BlocProvider(
-          create: (context) => DiscussionsBloc(),
-        ),
-      ],
-      child: _GroupDetailsView(groupId: groupId),
-    );
+    context.read<GroupOverviewBloc>().add(
+        LoadIndividualGroup(groupId: groupId, retrieveAcceptedInvites: true));
+    return _GroupDetailsView(groupId: groupId);
   }
 }
 
@@ -109,7 +100,7 @@ class _GroupDetailsView extends StatelessWidget {
                 color: Color(0xFF9BADBD),
               ),
               onPressed: () {
-                Navigator.of(context).pop();
+                context.pop();
               },
             ),
             Positioned(
@@ -261,15 +252,9 @@ class _GroupDetailsView extends StatelessWidget {
                                         InkWell(
                                           // on Tap function used and call back function os defined here
                                           onTap: () async {
-                                            Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    ViewAllGroupMembers(
-                                                  curGroup:
-                                                      state.individualGroup!,
-                                                ),
-                                              ),
-                                            );
+                                            context.push(
+                                                "/groupDetails/${state.individualGroup!.id}/groupMembers",
+                                                extra: state.individualGroup!);
                                           },
                                           child: Text(
                                             'Manage',

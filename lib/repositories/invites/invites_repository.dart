@@ -172,20 +172,31 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         throw Exception(
             "Unable to add users to event. Event cannot be retrieved.");
       }
+      List<UserInvite> toAddUserInvites = [];
+      List<UserInvite> toUpdateUserInvites = [];
+      // figure out which users need a new user invite and ones that need to be updated
       await Future.wait(userInvites.map((ui) async {
         DocumentReference dbEventsUserInvitesRef =
             dbEventsRef.collection('invites').doc(ui.user.userId);
         final dbEventsUserInvitesSnap =
             await transaction.get(dbEventsUserInvitesRef);
         if (!dbEventsUserInvitesSnap.exists) {
-          await addUserInviteForEvent(hangEvent, ui, transaction);
-          transaction.set(dbEventsUserInvitesRef, ui.toDocument());
+          toAddUserInvites.add(ui);
         } else {
-          final completeHangEvent =
-              hangEvent.copyWith(currentStage: HangEventStage.complete);
-          await updateUserInviteForEvent(completeHangEvent, ui, transaction);
+          toUpdateUserInvites.add(ui);
         }
         // all reads need to be done before writes
+      }));
+      await Future.wait(toAddUserInvites.map((ui) async {
+        DocumentReference dbEventsUserInvitesRef =
+            dbEventsRef.collection('invites').doc(ui.user.userId);
+        await addUserInviteForEvent(hangEvent, ui, transaction);
+        transaction.set(dbEventsUserInvitesRef, ui.toDocument());
+      }));
+      await Future.wait(toUpdateUserInvites.map((ui) async {
+        final completeHangEvent =
+            hangEvent.copyWith(currentStage: HangEventStage.complete);
+        await updateUserInviteForEvent(completeHangEvent, ui, transaction);
       }));
     });
   }

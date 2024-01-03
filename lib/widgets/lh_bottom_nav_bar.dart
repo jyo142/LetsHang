@@ -44,6 +44,7 @@ class LHBottomNavBar extends StatelessWidget {
       ),
       body: navigationShell,
       floatingActionButton: FloatingActionButton(
+        elevation: 0.0,
         child: const CircleAvatar(
           radius: 50,
           backgroundImage: AssetImage(
@@ -51,9 +52,7 @@ class LHBottomNavBar extends StatelessWidget {
           ),
         ),
         onPressed: () {
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => const EditEventScreen(),
-          ));
+          context.pushNamed("editEvent");
         },
         //params
       ),

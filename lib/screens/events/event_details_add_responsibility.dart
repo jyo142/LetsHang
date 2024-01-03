@@ -3,33 +3,30 @@ import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/event_responsibilities/add_event_responsibility_bloc.dart';
+import 'package:letshang/models/hang_event_model.dart';
+import 'package:letshang/models/invite.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/lh_button.dart';
 
 class EventDetailsAddResponsibilityScreen extends StatelessWidget {
-  final String hangEventId;
-  final List<UserInvite> acceptedUserInvites;
-  const EventDetailsAddResponsibilityScreen(
-      {Key? key, required this.hangEventId, required this.acceptedUserInvites})
+  final HangEvent hangEvent;
+  const EventDetailsAddResponsibilityScreen({Key? key, required this.hangEvent})
       : super(key: key);
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
         create: (context) => AddEventResponsibilityBloc(),
         child: _EventDetailsAddResponsibilityView(
-          hangEventId: hangEventId,
-          acceptedUserInvites: acceptedUserInvites,
+          hangEvent: hangEvent,
         ));
   }
 }
 
 class _EventDetailsAddResponsibilityView extends StatefulWidget {
-  final List<UserInvite> acceptedUserInvites;
-  final String hangEventId;
-  const _EventDetailsAddResponsibilityView(
-      {Key? key, required this.hangEventId, required this.acceptedUserInvites})
+  final HangEvent hangEvent;
+  const _EventDetailsAddResponsibilityView({Key? key, required this.hangEvent})
       : super(key: key);
 
   @override
@@ -45,6 +42,13 @@ class _EventDetailsAddResponsibilityViewState
 
   @override
   Widget build(BuildContext context) {
+    final acceptedUserInvites = [
+      ...widget.hangEvent.userInvites,
+      UserInvite(
+          user: widget.hangEvent.eventOwner,
+          status: InviteStatus.owner,
+          type: InviteType.event)
+    ];
     final curUser = (context.read<AppBloc>().state).authenticatedUser!;
     return Scaffold(
         appBar: AppBar(
@@ -93,7 +97,7 @@ class _EventDetailsAddResponsibilityViewState
                                   }
                                   FocusScope.of(context).unfocus();
                                 },
-                                items: widget.acceptedUserInvites
+                                items: acceptedUserInvites
                                     .map<DropdownMenuItem<UserInvite>>(
                                   (UserInvite ui) {
                                     final labelName =
@@ -148,7 +152,7 @@ class _EventDetailsAddResponsibilityViewState
                                         context
                                             .read<AddEventResponsibilityBloc>()
                                             .add(AddResponsibility(
-                                                eventId: widget.hangEventId));
+                                                eventId: widget.hangEvent.id));
                                       }
                                     }),
                               ],

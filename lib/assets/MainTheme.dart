@@ -55,10 +55,7 @@ extension CustomStyles on TextTheme {
 
   TextStyle get tabText {
     return const TextStyle(
-      fontSize: 14.0,
-      fontFamily: "TT Norms",
-      letterSpacing: 0.01,
-    );
+        fontSize: 14.0, fontFamily: "TT Norms", letterSpacing: 0.01);
   }
 }
 

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/event_responsibilities/hang_event_responsibilities_bloc.dart';
-import 'package:letshang/blocs/participants/participants_bloc.dart';
 import 'package:letshang/models/events/hang_event_responsibility.dart';
 import 'package:letshang/models/hang_event_model.dart';
-import 'package:letshang/models/invite.dart';
-import 'package:letshang/models/user_invite_model.dart';
-import 'package:letshang/screens/events/event_details_add_responsibility.dart';
 import 'package:letshang/widgets/appbar/lh_app_bar.dart';
 import 'package:letshang/widgets/cards/hang_event_responsibility_card.dart';
 
@@ -55,20 +52,10 @@ class _ViewAllEventResponsibilitiesView extends StatelessWidget {
             children: [
               OutlinedButton(
                   onPressed: () async {
-                    final shouldRefresh =
-                        await Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => EventDetailsAddResponsibilityScreen(
-                        hangEventId: hangEvent.id,
-                        acceptedUserInvites: [
-                          ...hangEvent.userInvites,
-                          UserInvite(
-                              user: hangEvent.eventOwner,
-                              status: InviteStatus.owner,
-                              type: InviteType.event)
-                        ],
-                      ),
-                    ));
-                    if (shouldRefresh) {
+                    final shouldRefresh = await context.push(
+                        "/eventDetails/${hangEvent.id}/addEventResponsibility",
+                        extra: hangEvent);
+                    if (shouldRefresh as bool? ?? false) {
                       context.read<HangEventResponsibilitiesBloc>().add(
                           LoadEventResponsibilities(eventId: hangEvent.id));
                       ;
@@ -133,10 +120,11 @@ class _ViewAllEventResponsibilitiesView extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  BlocBuilder<ParticipantsBloc, ParticipantsState>(
+                  BlocBuilder<HangEventResponsibilitiesBloc,
+                          HangEventResponsibilitiesState>(
                       builder: (context, state) {
                     return Text(
-                      'COMPLETED RESPONSIBILITIES (${state.invitedUsers.length})',
+                      'COMPLETED RESPONSIBILITIES (${state.eventResponsibilities!.length})',
                       style: Theme.of(context)
                           .textTheme
                           .bodyText1!

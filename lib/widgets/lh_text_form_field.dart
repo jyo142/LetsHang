@@ -38,6 +38,9 @@ class LHTextFormField extends StatelessWidget {
         enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.0),
             borderSide: const BorderSide(color: Colors.white)),
+        disabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10.0),
+            borderSide: const BorderSide(color: Colors.white)),
       ),
       initialValue: initialValue,
       inputFormatters: <TextInputFormatter>[

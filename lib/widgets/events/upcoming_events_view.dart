@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
@@ -48,11 +49,7 @@ class UpcomingEventsView extends StatelessWidget {
                   child: LHButton(
                       buttonText: 'Create Event',
                       onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const EditEventScreen(),
-                          ),
-                        );
+                        context.pushNamed("editEvent");
                       }))
             ]);
           }
