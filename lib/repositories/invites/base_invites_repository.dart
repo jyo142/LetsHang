@@ -32,8 +32,6 @@ abstract class BaseUserInvitesRepository {
   Future<void> promoteUserEventInvite(
       HangEvent hangEvent, UserInvite toPromote);
 
-  Future<void> editUserEventInvites(HangEvent hangEvent);
-
   // group invites
   // this method creates all the user invites for a group
   Future<void> addUserGroupInvite(Group group, UserInvite userInvite);

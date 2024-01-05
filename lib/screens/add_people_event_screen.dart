@@ -10,6 +10,7 @@ import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/screens/app_screen.dart';
 import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:letshang/services/message_service.dart';
+import 'package:letshang/utils/router.dart';
 import 'package:letshang/widgets/cards/user_event_card.dart';
 import 'package:letshang/widgets/hang_event_participants/add_group_bottom_modal.dart';
 import 'package:letshang/widgets/hang_event_participants/add_people_bottom_modal.dart';
@@ -35,7 +36,7 @@ class AddPeopleEventScreen extends StatelessWidget {
             color: Color(0xFF9BADBD),
           ),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pop(context, curEvent);
           },
         ),
         title: const Text('Add People'),
@@ -151,7 +152,7 @@ class _AddPeopleEventScreenView extends StatelessWidget {
               listener: (context, state) {
                 if (state is SendAllInvitesSuccess) {
                   // after the invite is sent go back to participants screen
-                  context.pushNamed("events");
+                  context.replace("/events");
                   MessageService.showSuccessMessage(
                       content: "Event saved successfully", context: context);
                 }

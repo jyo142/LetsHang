@@ -231,39 +231,6 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
     });
   }
 
-  @override
-  Future<void> editUserEventInvites(HangEvent hangEvent) async {
-    await _firebaseFirestore.runTransaction((transaction) async {
-      DocumentReference dbUserInvitesRef = _firebaseFirestore
-          .collection('hangEvents')
-          .doc(hangEvent.id)
-          .collection('invites')
-          .doc("userInvites");
-      DocumentSnapshot dbUserInvitesSnap =
-          await transaction.get(dbUserInvitesRef);
-      List<UserInvite> dbUserInvites = List.of(dbUserInvitesSnap["userInvites"])
-          .map((m) => UserInvite.fromMap(m))
-          .toList();
-
-      List<UserInvite> toAdd =
-          findUserInvitesDifferences(dbUserInvites, hangEvent.userInvites);
-      if (toAdd.isNotEmpty) {
-        await addUserInvitesForEvent(hangEvent, toAdd, transaction);
-      }
-
-      List<UserInvite> toRemove =
-          findUserInvitesDifferences(hangEvent.userInvites, dbUserInvites);
-
-      if (toRemove.isNotEmpty) {
-        await removeUserInvitesForEvent(hangEvent, toRemove, transaction);
-      }
-      transaction.update(dbUserInvitesRef, {
-        "userInvites":
-            hangEvent.userInvites.map((ui) => ui.toDocument()).toList()
-      });
-    });
-  }
-
   Future<void> addUserInviteForEvent(
       HangEvent hangEvent, UserInvite toAdd, Transaction transaction) async {
     DocumentReference eventInviteRef = _firebaseFirestore

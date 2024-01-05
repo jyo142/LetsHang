@@ -154,3 +154,12 @@ class AddEventGroupInviteeInitiated extends EditHangEventsEvent {
   @override
   List<Object> get props => [eventGroupInvitee];
 }
+
+class PopulateEventData extends EditHangEventsEvent {
+  const PopulateEventData({required this.eventData});
+
+  final HangEvent eventData;
+
+  @override
+  List<Object> get props => [eventData];
+}

@@ -66,6 +66,21 @@ class EditHangEventsState extends Equatable {
             searchEventInviteeBy: state.searchEventInviteeBy,
             eventUserInvitees: state.eventUserInvitees);
 
+  EditHangEventsState.fromEventData(HangEvent hangEvent)
+      : this(
+          hangEventId: hangEvent.id,
+          eventOwner: hangEvent.eventOwner,
+          eventName: hangEvent.eventName,
+          eventDescription: hangEvent.eventDescription,
+          eventStartDateTime: hangEvent.eventStartDateTime,
+          eventEndDateTime: hangEvent.eventEndDateTime,
+          eventStartTime: hangEvent.eventStartDateTime != null
+              ? TimeOfDay(
+                  hour: hangEvent.eventStartDateTime!.hour,
+                  minute: hangEvent.eventStartDateTime!.minute)
+              : null,
+        );
+
   EditHangEventsState copyWith(
       {String? hangEventId,
       HangUserPreview? eventOwner,

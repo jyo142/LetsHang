@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:flutter/material.dart';
 import 'package:letshang/blocs/edit_hang_events/edit_hang_events_event.dart';
 import 'package:letshang/blocs/edit_hang_events/edit_hang_events_state.dart';
 import 'package:letshang/models/discussions/discussion_metadata.dart';
@@ -39,6 +40,7 @@ class EditHangEventsBloc
         _userRepository = UserRepository(),
         _groupRepository = GroupRepository(),
         super(EditHangEventsState(
+            hangEventId: existingHangEvent?.id ?? '',
             eventName: existingHangEvent?.eventName ?? '',
             eventOwner: existingHangEvent?.eventOwner ?? creatingUser,
             eventDescription: existingHangEvent?.eventDescription ?? '',
@@ -130,26 +132,31 @@ class EditHangEventsBloc
     on<AddEventGroupInviteeInitiated>((event, emit) {
       emit(state.addEventGroupInvitee(event.eventGroupInvitee));
     });
+    on<PopulateEventData>((event, emit) {
+      emit(EditHangEventsState.fromEventData(event.eventData));
+    });
   }
 
   Future<EditHangEventsState> _mapMainEventDetailsSavedState(
       EditHangEventsState eventsState) async {
     try {
       HangEvent savingEvent = HangEvent(
-          id: existingHangEvent?.id ?? "",
+          id: state.hangEventId,
           eventOwner: creatingUser,
           eventName: state.eventName,
           eventDescription: state.eventDescription,
-          eventStartDateTime: state.eventStartDateTime,
+          eventStartDateTime: state.eventStartDateTime != null
+              ? combineDateAndTime(
+                  state.eventStartDateTime!, state.eventStartTime)
+              : null,
           eventEndDateTime: state.eventEndDateTime,
           currentStage: HangEventStage.addingUsers);
       HangEvent retvalHangEvent;
-      if (existingHangEvent != null) {
+      if (state.hangEventId.isNotEmpty) {
         // this event is being edited if an id is present
         retvalHangEvent = await _hangEventRepository.editHangEvent(savingEvent);
         retvalHangEvent = retvalHangEvent.copyWith(
             userInvites: List.of(state.eventUserInvitees.values));
-        await _invitesRepository.editUserEventInvites(retvalHangEvent);
       } else {
         retvalHangEvent = await _hangEventRepository.addHangEvent(savingEvent);
         await _invitesRepository.addUserEventInvite(
@@ -169,34 +176,14 @@ class EditHangEventsBloc
     }
   }
 
-  Future<EditHangEventsState> _mapEventSavedState(
-      EventSavedInitiated eventSavedEvent,
-      EditHangEventsState eventsState) async {
-    try {
-      final resultEventUserInvitees = List.of(state.eventUserInvitees.values);
-
-      HangEvent savingEvent = HangEvent(
-          id: existingHangEvent?.id ?? "",
-          eventOwner: creatingUser,
-          eventName: state.eventName,
-          eventDescription: state.eventDescription,
-          eventStartDateTime: state.eventStartDateTime,
-          eventEndDateTime: state.eventEndDateTime,
-          userInvites: resultEventUserInvitees);
-      if (existingHangEvent != null) {
-        // this event is being edited if an id is present
-        HangEvent editingEvent =
-            await _hangEventRepository.editHangEvent(savingEvent);
-        await _invitesRepository.editUserEventInvites(editingEvent);
-      } else {
-        HangEvent newEvent =
-            await _hangEventRepository.addHangEvent(savingEvent);
-        await _invitesRepository.addUserEventInvites(
-            newEvent, savingEvent.userInvites);
-      }
-      return EventSavedSuccessfully(state);
-    } catch (e) {
-      return FindEventInviteeError(state, errorMessage: "Failed to find user");
-    }
+  DateTime combineDateAndTime(DateTime date, TimeOfDay? timeOfDay) {
+    DateTime newEventStartDateTime = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      timeOfDay != null ? timeOfDay.hour : 0,
+      timeOfDay != null ? timeOfDay.minute : 0,
+    );
+    return newEventStartDateTime;
   }
 }

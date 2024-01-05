@@ -579,14 +579,21 @@ class _EditEventScreenState extends State<_EditEventScreenView> {
 
   Widget _submitButton() {
     return BlocConsumer<EditHangEventsBloc, EditHangEventsState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state is EventMainDetailsSavedSuccessfully) {
-          Navigator.of(context).push(
+          HangEvent? returnedEvent = await Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) =>
                   AddPeopleEventScreen(curEvent: state.savedEvent),
             ),
           );
+          if (!context.mounted) return;
+
+          if (returnedEvent != null) {
+            context
+                .read<EditHangEventsBloc>()
+                .add(PopulateEventData(eventData: returnedEvent));
+          }
         }
         if (state is EventMainDetailsSavedError) {
           MessageService.showErrorMessage(
