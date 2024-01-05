@@ -29,6 +29,8 @@ class EventDetailsFAB extends StatelessWidget {
             icon: Icons.add,
             activeIcon: Icons.close,
             spacing: 3,
+            foregroundColor: Colors.white,
+
             childPadding: const EdgeInsets.all(5),
             spaceBetweenChildren: 4,
 

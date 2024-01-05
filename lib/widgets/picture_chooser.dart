@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -97,7 +98,7 @@ class _PictureChooserState extends State<PictureChooser> {
                     leading: const Icon(Icons.camera),
                     title: const Text('Camera'),
                     onTap: () async => {
-                          Navigator.pop(context),
+                          context.pop(),
                           await _onImageButtonPressed(
                               context, ImageSource.camera),
                         }),
@@ -105,7 +106,7 @@ class _PictureChooserState extends State<PictureChooser> {
                     leading: const Icon(Icons.image),
                     title: const Text('Gallery'),
                     onTap: () async => {
-                          Navigator.pop(context),
+                          context.pop(),
                           await _onImageButtonPressed(
                               context, ImageSource.gallery),
                         }),

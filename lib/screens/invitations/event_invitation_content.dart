@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:letshang/layouts/invitation_layout.dart';
 import 'package:letshang/models/hang_event_model.dart';
@@ -76,7 +77,7 @@ class _EventInvitationContentView extends StatelessWidget {
                       color: Color(0xFF9BADBD),
                     ),
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      context.pop();
                     },
                   ),
                 ]

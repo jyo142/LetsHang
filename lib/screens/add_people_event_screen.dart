@@ -36,7 +36,7 @@ class AddPeopleEventScreen extends StatelessWidget {
             color: Color(0xFF9BADBD),
           ),
           onPressed: () {
-            Navigator.pop(context, curEvent);
+            context.pop(curEvent);
           },
         ),
         title: const Text('Add People'),

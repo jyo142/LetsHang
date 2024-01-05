@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
@@ -36,7 +37,7 @@ class EditEventScreen extends StatelessWidget {
               color: Color(0xFF9BADBD),
             ),
             onPressed: () {
-              Navigator.pop(context);
+              context.pop();
             },
           ),
           title: const Text('Create Event'),

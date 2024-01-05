@@ -1,5 +1,6 @@
 import 'package:change_case/src/change_case.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/edit_groups/edit_group_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/models/hang_user_model.dart';
@@ -150,7 +151,7 @@ class AddMemberDialog extends StatelessWidget {
         context
             .read<EditGroupBloc>()
             .add(AddGroupMemberInitialized(groupMember: newGroupMember));
-        Navigator.pop(context);
+        context.pop();
       },
       child: const Text('Add to group'),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/discussions/discussions_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/widgets/cards/discussion_card.dart';
@@ -39,7 +40,7 @@ class EventDiscussionsView extends StatelessWidget {
               color: Color(0xFF9BADBD),
             ),
             onPressed: () {
-              Navigator.pop(context);
+              context.pop();
             },
           ),
           title: const Text('Event Discussions'),

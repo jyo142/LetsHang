@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
@@ -178,7 +179,7 @@ class _UsernamePictureProfileState extends State<UsernamePictureProfile> {
                               leading: const Icon(Icons.camera),
                               title: const Text('Camera'),
                               onTap: () async => {
-                                    Navigator.pop(context),
+                                    context.pop(),
                                     await _onImageButtonPressed(
                                         imageContext, ImageSource.camera),
                                   }),

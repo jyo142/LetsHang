@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/edit_hang_events/edit_hang_events_bloc.dart';
 import 'package:letshang/blocs/edit_hang_events/edit_hang_events_event.dart';
 import 'package:letshang/blocs/edit_hang_events/edit_hang_events_state.dart';
@@ -188,7 +189,7 @@ class _AddInviteeDialogState extends State {
       onPressed: () {
         context.read<EditHangEventsBloc>().add(AddEventGroupInviteeInitiated(
             eventGroupInvitee: newEventGroupInvitee));
-        Navigator.pop(context);
+        context.pop();
       },
       child: const Text('Add to group to event'),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
@@ -61,7 +62,7 @@ class _EventDetailsAddResponsibilityViewState
               color: Color(0xFF9BADBD),
             ),
             onPressed: () {
-              Navigator.pop(context);
+              context.pop();
             },
           ),
           title: const Text('Add Responsibility'),

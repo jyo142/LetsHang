@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/user_settings/user_settings_bloc.dart';
 import 'package:letshang/services/message_service.dart';
 
@@ -25,12 +26,12 @@ class _UserSettingsView extends StatelessWidget {
         TextButton(
             onPressed: () {
               context.read<UserSettingsBloc>().add(SyncGoogleCalendar());
-              Navigator.pop(context);
+              context.pop();
             },
             child: const Text("Confirm")),
         TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              context.pop();
             },
             child: const Text("Cancel"))
       ],
@@ -43,12 +44,12 @@ class _UserSettingsView extends StatelessWidget {
         TextButton(
             onPressed: () {
               context.read<UserSettingsBloc>().add(UnsyncGoogleCalendar());
-              Navigator.pop(context);
+              context.pop();
             },
             child: const Text("Confirm")),
         TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              context.pop();
             },
             child: const Text("Cancel"))
       ],
@@ -64,7 +65,7 @@ class _UserSettingsView extends StatelessWidget {
             color: Color(0xFF9BADBD),
           ),
           onPressed: () {
-            Navigator.pop(context);
+            context.pop();
           },
         ),
         title: const Text('Settings'),

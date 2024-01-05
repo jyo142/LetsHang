@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class DialogService {
   static void showConfirmationDialog(
@@ -11,12 +12,12 @@ class DialogService {
         TextButton(
             onPressed: () {
               onConfirm();
-              Navigator.pop(context);
+              context.pop();
             },
             child: const Text("Confirm")),
         TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              context.pop();
             },
             child: const Text("Cancel"))
       ],

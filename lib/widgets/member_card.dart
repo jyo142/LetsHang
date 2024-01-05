@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class MemberCard extends StatelessWidget {
   final String userName;
@@ -41,12 +42,12 @@ class MemberCard extends StatelessWidget {
         TextButton(
             onPressed: () {
               onDelete();
-              Navigator.pop(context);
+              context.pop();
             },
             child: const Text("Delete")),
         TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              context.pop();
             },
             child: const Text("Cancel"))
       ],

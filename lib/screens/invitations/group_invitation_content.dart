@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:letshang/layouts/invitation_layout.dart';
 import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/invite.dart';
@@ -72,7 +73,7 @@ class _GroupInvitationContentView extends StatelessWidget {
                     color: Color(0xFF9BADBD),
                   ),
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    context.pop();
                   },
                 ),
               ]
