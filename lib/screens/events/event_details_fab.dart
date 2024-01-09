@@ -64,7 +64,7 @@ class EventDetailsFAB extends StatelessWidget {
                   label: 'Add Responsibility',
                   onTap: () async {
                     final shouldRefresh = await context.push(
-                        "/eventDetails/${state.hangEvent.id}/addEventResponsibility",
+                        "/addEventResponsibility",
                         extra: state.hangEvent);
                     if (shouldRefresh as bool? ?? false) {
                       context.read<HangEventResponsibilitiesBloc>().add(

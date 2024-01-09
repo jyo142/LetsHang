@@ -15,3 +15,25 @@ class LoadEventResponsibilities extends HangEventResponsibilitiesEvent {
   @override
   List<Object> get props => [eventId];
 }
+
+class LoadUserEventResponsibilities extends HangEventResponsibilitiesEvent {
+  final String eventId;
+  final String userId;
+
+  const LoadUserEventResponsibilities(
+      {required this.eventId, required this.userId});
+
+  @override
+  List<Object> get props => [eventId, userId];
+}
+
+class CompleteEventResponsibility extends HangEventResponsibilitiesEvent {
+  final String eventId;
+  final HangEventResponsibility eventResponsibility;
+
+  const CompleteEventResponsibility(
+      {required this.eventId, required this.eventResponsibility});
+
+  @override
+  List<Object> get props => [eventId, eventResponsibility];
+}

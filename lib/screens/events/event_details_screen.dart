@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:letshang/assets/MainTheme.dart';
+import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/event_responsibilities/hang_event_responsibilities_bloc.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
@@ -14,19 +15,33 @@ import 'package:letshang/widgets/cards/hang_event_responsibility_card.dart';
 import 'package:letshang/widgets/cards/user_event_card.dart';
 import 'package:letshang/widgets/lh_button.dart';
 
-class EventDetailsScreen extends StatelessWidget {
+class EventDetailsScreen extends StatefulWidget {
   final String eventId;
+
   const EventDetailsScreen({Key? key, required this.eventId}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  State createState() {
+    return _EventDetailsScreenState();
+  }
+}
+
+class _EventDetailsScreenState extends State<EventDetailsScreen> {
+  @override
+  void initState() {
+    super.initState();
     context
         .read<HangEventOverviewBloc>()
-        .add(LoadIndividualEvent(eventId: eventId));
-    context
-        .read<HangEventResponsibilitiesBloc>()
-        .add(LoadEventResponsibilities(eventId: eventId));
-    return _EventDetailsView(eventId: eventId);
+        .add(LoadIndividualEvent(eventId: widget.eventId));
+    context.read<HangEventResponsibilitiesBloc>().add(
+        LoadUserEventResponsibilities(
+            eventId: widget.eventId,
+            userId: (context.read<AppBloc>().state).authenticatedUser!.id!));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _EventDetailsView(eventId: widget.eventId);
   }
 }
 
@@ -46,7 +61,7 @@ class _EventDetailsView extends StatelessWidget {
         child: LHButton(
             buttonText: 'Discussions',
             onPressed: () {
-              context.push("/eventDetails/${eventId}/eventDiscussions");
+              context.push("/eventDiscussions/${eventId}");
             }),
       ),
       floatingActionButton: EventDetailsFAB(),
@@ -202,8 +217,7 @@ class _EventDetailsView extends StatelessWidget {
                                         InkWell(
                                           // on Tap function used and call back function os defined here
                                           onTap: () async {
-                                            context.push(
-                                                "/eventDetails/${state.hangEvent.id}/eventParticipants",
+                                            context.push("/eventParticipants",
                                                 extra: state.hangEvent);
                                           },
                                           child: Text(
@@ -268,42 +282,38 @@ class _EventResponsibilitiesView extends StatelessWidget {
                       'Responsibilities',
                       style: Theme.of(context).textTheme.bodyText1,
                     ),
-                    if (state.eventResponsibilities?.isNotEmpty ?? false) ...[
-                      InkWell(
-                        // on Tap function used and call back function os defined here
-                        onTap: () async {
-                          mainContext.push(
-                              "/eventDetails/${hangEvent.id}/eventResponsibilities",
-                              extra: hangEvent);
-                        },
-                        child: Text(
-                          'View All',
-                          style: Theme.of(context).textTheme.linkText,
-                        ),
+                    InkWell(
+                      // on Tap function used and call back function os defined here
+                      onTap: () async {
+                        mainContext.push("/eventResponsibilities",
+                            extra: hangEvent);
+                      },
+                      child: Text(
+                        'View All',
+                        style: Theme.of(context).textTheme.linkText,
                       ),
-                    ]
+                    ),
                   ],
                 )),
-            if (state.eventResponsibilities?.isEmpty ?? true) ...[
-              Container(
-                  margin: const EdgeInsets.only(top: 30),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF4F8FA),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Not Assigned Yet',
-                          style: Theme.of(context).textTheme.bodyText2)
-                    ],
-                  ))
-            ] else
-              HangEventResponsibilityCard(
-                responsibility: state.eventResponsibilities![0],
-              )
+            Container(
+                margin: const EdgeInsets.only(top: 30),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF4F8FA),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                        child: Text(
+                      'You have ${state.activeUserEventResponsibilities} active responsibilities and ${state.completedUserEventResponsibilities} completed responsibilities for this event',
+                      style: Theme.of(context).textTheme.bodyText1,
+                      softWrap: true,
+                    ))
+                  ],
+                ))
           ],
         );
       },

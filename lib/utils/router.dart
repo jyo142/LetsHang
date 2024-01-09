@@ -121,42 +121,40 @@ abstract class AppRouter {
           },
           routes: [
             GoRoute(
-                name: "eventDetails",
-                path: "/eventDetails/:eventId",
-                builder: (context, state) => EventDetailsScreen(
-                      eventId: state.pathParameters["eventId"]!,
-                    ),
-                routes: [
-                  GoRoute(
-                    name: "eventDiscussions",
-                    path: "eventDiscussions",
-                    builder: (context, state) => EventDiscussionsScreen(
-                      hangEventId: state.pathParameters["eventId"]!,
-                    ),
-                  ),
-                  GoRoute(
-                    name: "eventParticipants",
-                    path: "eventParticipants",
-                    builder: (context, state) => EventParticipantsScreen(
-                      curEvent: state.extra as HangEvent,
-                    ),
-                  ),
-                  GoRoute(
-                    name: "addEventResponsibility",
-                    path: "addEventResponsibility",
-                    builder: (context, state) =>
-                        EventDetailsAddResponsibilityScreen(
-                      hangEvent: state.extra as HangEvent,
-                    ),
-                  ),
-                  GoRoute(
-                    name: "eventResponsibilities",
-                    path: "eventResponsibilities",
-                    builder: (context, state) => ViewAllEventResponsibilities(
-                      hangEvent: state.extra as HangEvent,
-                    ),
-                  ),
-                ])
+              name: "eventDetails",
+              path: "/eventDetails/:eventId",
+              builder: (context, state) => EventDetailsScreen(
+                eventId: state.pathParameters["eventId"]!,
+              ),
+            ),
+            GoRoute(
+              name: "eventParticipants",
+              path: "/eventParticipants",
+              builder: (context, state) => EventParticipantsScreen(
+                curEvent: state.extra as HangEvent,
+              ),
+            ),
+            GoRoute(
+              name: "addEventResponsibility",
+              path: "/addEventResponsibility",
+              builder: (context, state) => EventDetailsAddResponsibilityScreen(
+                hangEvent: state.extra as HangEvent,
+              ),
+            ),
+            GoRoute(
+              name: "eventResponsibilities",
+              path: "/eventResponsibilities",
+              builder: (context, state) => ViewAllEventResponsibilities(
+                hangEvent: state.extra as HangEvent,
+              ),
+            ),
+            GoRoute(
+              name: "eventDiscussions",
+              path: "/eventDiscussions/:eventId",
+              builder: (context, state) => EventDiscussionsScreen(
+                hangEventId: state.pathParameters["eventId"]!,
+              ),
+            ),
           ]),
       GoRoute(
         name: "editEvent",
