@@ -2,16 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
+import 'package:letshang/models/events/hang_event_poll.dart';
 import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/screens/discussions/user_discussions_screen.dart';
 import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:letshang/screens/event_participants_screen.dart';
 import 'package:letshang/screens/events/event_details_add_responsibility.dart';
+import 'package:letshang/screens/events/event_details_create_poll.dart';
 import 'package:letshang/screens/events/event_details_screen.dart';
 import 'package:letshang/screens/events/event_details_shell.dart';
 import 'package:letshang/screens/events/event_discussions_screen.dart';
+import 'package:letshang/screens/events/view_all_event_polls.dart';
 import 'package:letshang/screens/events/view_all_event_responsibilities.dart';
+import 'package:letshang/screens/events/view_individual_poll.dart';
 import 'package:letshang/screens/events_screen.dart';
 import 'package:letshang/screens/groups/group_details_screen.dart';
 import 'package:letshang/screens/groups/group_details_shell.dart';
@@ -153,6 +157,27 @@ abstract class AppRouter {
               path: "/eventDiscussions/:eventId",
               builder: (context, state) => EventDiscussionsScreen(
                 hangEventId: state.pathParameters["eventId"]!,
+              ),
+            ),
+            GoRoute(
+              name: "createPoll",
+              path: "/createPoll/:eventId",
+              builder: (context, state) => EventDetailsCreatePoll(
+                hangEventId: state.pathParameters["eventId"]!,
+              ),
+            ),
+            GoRoute(
+              name: "eventPolls",
+              path: "/eventPolls",
+              builder: (context, state) => ViewAllEventPolls(
+                hangEvent: state.extra as HangEvent,
+              ),
+            ),
+            GoRoute(
+              name: "viewIndividualPoll",
+              path: "/viewIndividualPoll",
+              builder: (context, state) => ViewIndividualPoll(
+                eventPoll: state.extra as HangEventPoll,
               ),
             ),
           ]),

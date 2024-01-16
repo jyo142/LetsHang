@@ -248,6 +248,18 @@ class _EventDetailsView extends StatelessWidget {
                                   _EventResponsibilitiesView(
                                     hangEvent: state.hangEvent,
                                   ),
+                                  InkWell(
+                                    // on Tap function used and call back function os defined here
+                                    onTap: () async {
+                                      context.push("/eventPolls",
+                                          extra: state.hangEvent);
+                                    },
+                                    child: Text(
+                                      'View All Polls',
+                                      style:
+                                          Theme.of(context).textTheme.linkText,
+                                    ),
+                                  ),
                                 ],
                               );
                             }

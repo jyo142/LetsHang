@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:letshang/blocs/event_polls/hang_event_polls_bloc.dart';
 import 'package:letshang/blocs/event_responsibilities/hang_event_responsibilities_bloc.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,6 +16,7 @@ class EventDetailsShell extends StatelessWidget {
         providers: [
           BlocProvider(create: (context) => HangEventOverviewBloc()),
           BlocProvider(create: (context) => HangEventResponsibilitiesBloc()),
+          BlocProvider(create: (context) => HangEventPollsBloc()),
         ],
         child: child,
       ),

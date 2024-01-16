@@ -58,6 +58,22 @@ class EventDetailsFAB extends StatelessWidget {
             // childMargin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             children: [
               SpeedDialChild(
+                  child: const Icon(Icons.poll),
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  label: 'Create Poll',
+                  onTap: () async {
+                    final shouldRefresh = await context.push(
+                      "/createPoll/${state.hangEvent.id}",
+                    );
+                    if (shouldRefresh as bool? ?? false) {
+                      context.read<HangEventResponsibilitiesBloc>().add(
+                          LoadEventResponsibilities(
+                              eventId: state.hangEvent.id));
+                      ;
+                    }
+                  }),
+              SpeedDialChild(
                   child: const Icon(Icons.brush),
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,
