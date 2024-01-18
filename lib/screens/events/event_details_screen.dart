@@ -11,7 +11,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/screens/events/event_details_fab.dart';
 import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/avatars/attendees_avatar.dart';
-import 'package:letshang/widgets/cards/hang_event_responsibility_card.dart';
 import 'package:letshang/widgets/cards/user_event_card.dart';
 import 'package:letshang/widgets/lh_button.dart';
 
@@ -41,14 +40,22 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _EventDetailsView(eventId: widget.eventId);
+    return BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
+      builder: (context, state) {
+        if (state.hangEventOverviewStateStatus ==
+            HangEventOverviewStateStatus.loading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return _EventDetailsView(curEvent: state.individualHangEvent!);
+      },
+    );
   }
 }
 
 class _EventDetailsView extends StatelessWidget {
-  final String eventId;
+  final HangEvent curEvent;
 
-  const _EventDetailsView({required this.eventId});
+  const _EventDetailsView({required this.curEvent});
 
   @override
   Widget build(BuildContext context) {
@@ -56,12 +63,57 @@ class _EventDetailsView extends StatelessWidget {
     double width = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      drawer: Drawer(
+        // Add a ListView to the drawer. This ensures the user can scroll
+        // through the options in the drawer if there isn't enough vertical
+        // space to fit everything.
+        child: ListView(
+          // Important: Remove any padding from the ListView.
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text('Drawer Header'),
+            ),
+            ListTile(
+              title: const Text('Participants'),
+              onTap: () {
+                context.pop();
+                context.push("/eventParticipants", extra: curEvent);
+
+                // Update the state of the app.
+                // ...
+              },
+            ),
+            ListTile(
+              title: const Text('Responsibilities'),
+              onTap: () {
+                context.pop();
+                context.push("/eventResponsibilities", extra: curEvent);
+                // Update the state of the app.
+                // ...
+              },
+            ),
+            ListTile(
+              title: const Text('Polls'),
+              onTap: () {
+                context.pop();
+                context.push("/eventPolls", extra: curEvent);
+                // Update the state of the app.
+                // ...
+              },
+            ),
+          ],
+        ),
+      ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),
         child: LHButton(
             buttonText: 'Discussions',
             onPressed: () {
-              context.push("/eventDiscussions/${eventId}");
+              context.push("/eventDiscussions/${curEvent.id}");
             }),
       ),
       floatingActionButton: EventDetailsFAB(),
@@ -82,15 +134,29 @@ class _EventDetailsView extends StatelessWidget {
                 width: width,
               ),
             ),
-            IconButton(
-              icon: const Icon(
-                Icons.arrow_back,
-                color: Color(0xFF9BADBD),
-              ),
-              onPressed: () {
-                context.pop();
-              },
-            ),
+            Builder(builder: (context) {
+              // this uses the new context to open the drawer properly provided by the Builder
+              return Row(children: [
+                IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back,
+                    color: Color(0xFF9BADBD),
+                  ),
+                  onPressed: () {
+                    context.pop();
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.menu,
+                    color: Color(0xFF9BADBD),
+                  ),
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                ),
+              ]);
+            }),
             Positioned(
                 top: 145,
                 child: Container(
@@ -106,16 +172,20 @@ class _EventDetailsView extends StatelessWidget {
                         child: SingleChildScrollView(child: BlocBuilder<
                             HangEventOverviewBloc, HangEventOverviewState>(
                           builder: (context, state) {
-                            if (state is IndividualEventLoading) {
+                            if (state.hangEventOverviewStateStatus ==
+                                HangEventOverviewStateStatus.loading) {
                               return const Center(
                                   child: CircularProgressIndicator());
                             }
-                            if (state is IndividualEventRetrievedError) {
+                            if (state.hangEventOverviewStateStatus ==
+                                HangEventOverviewStateStatus.error) {
                               MessageService.showErrorMessage(
                                   content: state.errorMessage!,
                                   context: context);
                             }
-                            if (state is IndividualEventRetrieved) {
+                            if (state.hangEventOverviewStateStatus ==
+                                HangEventOverviewStateStatus
+                                    .individualEventRetrieved) {
                               return Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
@@ -126,7 +196,8 @@ class _EventDetailsView extends StatelessWidget {
                                             MainAxisAlignment.center,
                                         children: [
                                           Text(
-                                            state.hangEvent.eventName,
+                                            state
+                                                .individualHangEvent!.eventName,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .headline5,
@@ -157,11 +228,12 @@ class _EventDetailsView extends StatelessWidget {
                                           padding:
                                               const EdgeInsets.only(left: 15),
                                           child: Text(
-                                              state.hangEvent
+                                              state.individualHangEvent!
                                                           .eventStartDateTime !=
                                                       null
                                                   ? DateFormat('MM/dd/yyyy')
-                                                      .format(state.hangEvent
+                                                      .format(state
+                                                          .individualHangEvent!
                                                           .eventStartDateTime!)
                                                   : 'Undecided',
                                               style: Theme.of(context)
@@ -180,11 +252,12 @@ class _EventDetailsView extends StatelessWidget {
                                           padding:
                                               const EdgeInsets.only(left: 15),
                                           child: Text(
-                                              state.hangEvent
+                                              state.individualHangEvent!
                                                           .eventEndDateTime !=
                                                       null
                                                   ? DateFormat('hh:mm a')
-                                                      .format(state.hangEvent
+                                                      .format(state
+                                                          .individualHangEvent!
                                                           .eventEndDateTime!)
                                                   : 'Undecided',
                                               style: Theme.of(context)
@@ -203,37 +276,10 @@ class _EventDetailsView extends StatelessWidget {
                                     ),
                                   ),
                                   Container(
-                                    margin: const EdgeInsets.only(top: 20),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          "Participants",
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyText1,
-                                        ),
-                                        InkWell(
-                                          // on Tap function used and call back function os defined here
-                                          onTap: () async {
-                                            context.push("/eventParticipants",
-                                                extra: state.hangEvent);
-                                          },
-                                          child: Text(
-                                            'Manage',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .linkText,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
                                       margin: const EdgeInsets.only(top: 30),
                                       child: UserParticipantCard(
-                                        curUser: state.hangEvent.eventOwner,
+                                        curUser: state
+                                            .individualHangEvent!.eventOwner,
                                         inviteTitle: InviteTitle.organizer,
                                         backgroundColor:
                                             const Color(0xFFF4F8FA),
@@ -242,24 +288,10 @@ class _EventDetailsView extends StatelessWidget {
                                       margin: const EdgeInsets.only(top: 20),
                                       child: Row(children: [
                                         AttendeesAvatars(
-                                            userInvites:
-                                                state.hangEvent.userInvites),
+                                            userInvites: state
+                                                .individualHangEvent!
+                                                .userInvites),
                                       ])),
-                                  _EventResponsibilitiesView(
-                                    hangEvent: state.hangEvent,
-                                  ),
-                                  InkWell(
-                                    // on Tap function used and call back function os defined here
-                                    onTap: () async {
-                                      context.push("/eventPolls",
-                                          extra: state.hangEvent);
-                                    },
-                                    child: Text(
-                                      'View All Polls',
-                                      style:
-                                          Theme.of(context).textTheme.linkText,
-                                    ),
-                                  ),
                                 ],
                               );
                             }

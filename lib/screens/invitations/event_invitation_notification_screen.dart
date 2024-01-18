@@ -58,27 +58,30 @@ class EventInvitationNotificationScreenView extends StatelessWidget {
             builder: (context, eventOverviewState) {
       return BlocBuilder<NotificationsBloc, NotificationsState>(
         builder: (context, notificationsState) {
-          if (eventOverviewState is IndividualEventLoading ||
+          if (eventOverviewState.hangEventOverviewStateStatus ==
+                  HangEventOverviewStateStatus.loading ||
               notificationsState.notificationStateStatus ==
                   NotificationStateStatus.pendingUserNotificationsLoading) {
             return const CircularProgressIndicator();
           }
-          if (eventOverviewState is IndividualEventRetrieved &&
+          if (eventOverviewState.hangEventOverviewStateStatus ==
+                  HangEventOverviewStateStatus.individualEventRetrieved &&
               notificationsState.notificationStateStatus ==
                   NotificationStateStatus.notificationDetailsRetrieved) {
             return InvitationLayout(
-                entityId: eventOverviewState.hangEvent.id,
+                entityId: eventOverviewState.individualHangEvent!.id,
                 notification: notificationsState.currentNotificationDetails!,
                 inviteType: InviteType.event,
                 invitationContent: EventInvitationContent(
                     notification:
                         notificationsState.currentNotificationDetails!,
-                    event: eventOverviewState.hangEvent));
+                    event: eventOverviewState.individualHangEvent!));
           }
           return Column(
             children: [
-              if (eventOverviewState is IndividualEventRetrievedError) ...[
-                _errorContainer(context, eventOverviewState.errorMessage)
+              if (eventOverviewState.hangEventOverviewStateStatus ==
+                  HangEventOverviewStateStatus.error) ...[
+                _errorContainer(context, eventOverviewState.errorMessage!)
               ],
               if (notificationsState.notificationStateStatus ==
                   NotificationStateStatus.error) ...[

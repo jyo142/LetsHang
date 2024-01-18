@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/event_polls/create_event_poll_bloc.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -58,7 +57,6 @@ class _EventDetailsCreatePollViewState
 
   @override
   Widget build(BuildContext context) {
-    final curUser = (context.read<AppBloc>().state).authenticatedUser!;
     return Scaffold(
         appBar: AppBar(
           elevation: 0,
@@ -225,7 +223,7 @@ class _EventDetailsCreatePollViewState
                                 ] else
                                   Flexible(
                                       child: ListView.builder(
-                                          itemCount: state.pollOptions!.length,
+                                          itemCount: state.pollOptions.length,
                                           itemBuilder: (BuildContext context,
                                               int index) {
                                             return Row(

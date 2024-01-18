@@ -278,10 +278,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _homeEvents(BuildContext context) {
     return BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
       builder: (context, state) {
-        if (state is HangEventsLoading) {
+        if (state.hangEventOverviewStateStatus ==
+            HangEventOverviewStateStatus.loading) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (state is HangEventsRetrieved) {
+        if (state.hangEventOverviewStateStatus ==
+            HangEventOverviewStateStatus.hangEventsRetrieved) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -349,10 +351,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
         builder: (context, state) {
-          if (state is HangEventsLoading) {
+          if (state.hangEventOverviewStateStatus ==
+              HangEventOverviewStateStatus.loading) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (state is HangEventsRetrieved) {
+          if (state.hangEventOverviewStateStatus ==
+              HangEventOverviewStateStatus.hangEventsRetrieved) {
             if (state.draftUpcomingHangEvents.isNotEmpty) {
               return _eventListView(state.draftUpcomingHangEvents);
             } else {
@@ -378,10 +382,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
         builder: (context, state) {
-          if (state is HangEventsLoading) {
+          if (state.hangEventOverviewStateStatus ==
+              HangEventOverviewStateStatus.loading) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (state is HangEventsRetrieved) {
+          if (state.hangEventOverviewStateStatus ==
+              HangEventOverviewStateStatus.hangEventsRetrieved) {
             if (state.pastHangEvents.isNotEmpty) {
               return _eventListView(state.pastHangEvents);
             } else {

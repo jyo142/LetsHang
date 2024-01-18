@@ -14,10 +14,12 @@ class PastEventsView extends StatelessWidget {
         userId: (context.read<AppBloc>().state).authenticatedUser!.id!));
     return BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
       builder: (context, state) {
-        if (state is HangEventsLoading) {
+        if (state.hangEventOverviewStateStatus ==
+            HangEventOverviewStateStatus.loading) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (state is HangEventsRetrieved) {
+        if (state.hangEventOverviewStateStatus ==
+            HangEventOverviewStateStatus.hangEventsRetrieved) {
           if (state.pastHangEvents.isNotEmpty) {
             return EventListCardView(events: state.pastHangEvents);
           } else {

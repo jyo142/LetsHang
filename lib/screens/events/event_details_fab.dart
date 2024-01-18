@@ -4,9 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/event_responsibilities/hang_event_responsibilities_bloc.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:letshang/models/invite.dart';
-import 'package:letshang/models/user_invite_model.dart';
-import 'package:letshang/screens/events/event_details_add_responsibility.dart';
 
 class EventDetailsFAB extends StatelessWidget {
   const EventDetailsFAB({Key? key}) : super(key: key);
@@ -15,10 +12,12 @@ class EventDetailsFAB extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
       builder: (context, state) {
-        if (state is IndividualEventLoading) {
+        if (state.hangEventOverviewStateStatus ==
+            HangEventOverviewStateStatus.loading) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (state is IndividualEventRetrieved) {
+        if (state.hangEventOverviewStateStatus ==
+            HangEventOverviewStateStatus.individualEventRetrieved) {
           return SpeedDial(
             backgroundColor: const Color(0xFF0287BF),
             // animatedIcon: AnimatedIcons.menu_close,
@@ -64,12 +63,12 @@ class EventDetailsFAB extends StatelessWidget {
                   label: 'Create Poll',
                   onTap: () async {
                     final shouldRefresh = await context.push(
-                      "/createPoll/${state.hangEvent.id}",
+                      "/createPoll/${state.individualHangEvent!.id}",
                     );
                     if (shouldRefresh as bool? ?? false) {
                       context.read<HangEventResponsibilitiesBloc>().add(
                           LoadEventResponsibilities(
-                              eventId: state.hangEvent.id));
+                              eventId: state.individualHangEvent!.id));
                       ;
                     }
                   }),
@@ -81,11 +80,27 @@ class EventDetailsFAB extends StatelessWidget {
                   onTap: () async {
                     final shouldRefresh = await context.push(
                         "/addEventResponsibility",
-                        extra: state.hangEvent);
+                        extra: state.individualHangEvent);
                     if (shouldRefresh as bool? ?? false) {
                       context.read<HangEventResponsibilitiesBloc>().add(
                           LoadEventResponsibilities(
-                              eventId: state.hangEvent.id));
+                              eventId: state.individualHangEvent!.id));
+                      ;
+                    }
+                  }),
+              SpeedDialChild(
+                  child: const Icon(Icons.announcement),
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  label: 'Add Announcement',
+                  onTap: () async {
+                    final shouldRefresh = await context.push(
+                      "/addAnnouncement/${state.individualHangEvent!.id}",
+                    );
+                    if (shouldRefresh as bool? ?? false) {
+                      context.read<HangEventResponsibilitiesBloc>().add(
+                          LoadEventResponsibilities(
+                              eventId: state.individualHangEvent!.id));
                       ;
                     }
                   }),

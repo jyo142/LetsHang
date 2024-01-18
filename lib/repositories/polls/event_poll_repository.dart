@@ -3,7 +3,6 @@ import 'package:letshang/models/events/hang_event_poll.dart';
 import 'package:letshang/models/events/hang_event_poll_result.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/hang_event_preview.dart';
-import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/repositories/polls/base_event_poll_repository.dart';
 
 class EventPollRepository extends BaseEventPollRepository {

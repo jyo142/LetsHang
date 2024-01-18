@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/event_polls/hang_event_polls_bloc.dart';
 import 'package:letshang/blocs/event_responsibilities/hang_event_responsibilities_bloc.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';

@@ -6,7 +6,6 @@ import 'package:letshang/widgets/appbar/lh_app_bar.dart';
 import 'package:letshang/widgets/cards/invitations/event_invitation_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
-import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/widgets/cards/invitations/group_invitation_card.dart';
 
 class AllPendingInvitations extends StatelessWidget {

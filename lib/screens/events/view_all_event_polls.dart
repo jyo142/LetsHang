@@ -2,14 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/event_polls/hang_event_polls_bloc.dart';
-import 'package:letshang/blocs/event_responsibilities/hang_event_responsibilities_bloc.dart';
 import 'package:letshang/models/events/hang_event_poll.dart';
-import 'package:letshang/models/events/hang_event_responsibility.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/appbar/lh_app_bar.dart';
 import 'package:letshang/widgets/cards/hang_event_poll_card.dart';
-import 'package:letshang/widgets/cards/hang_event_responsibility_card.dart';
 
 class ViewAllEventPolls extends StatefulWidget {
   final HangEvent hangEvent;

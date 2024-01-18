@@ -39,16 +39,18 @@ class _EventInvitationScreenView extends StatelessWidget {
     return SafeArea(child:
         BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
             builder: (context, state) {
-      if (state is IndividualEventLoading) {
+      if (state.hangEventOverviewStateStatus ==
+          HangEventOverviewStateStatus.loading) {
         return const CircularProgressIndicator();
       }
-      if (state is IndividualEventRetrieved) {
+      if (state.hangEventOverviewStateStatus ==
+          HangEventOverviewStateStatus.individualEventRetrieved) {
         return InvitationLayout(
             entityId: eventId,
             notification: notification,
             inviteType: InviteType.event,
             invitationContent: EventInvitationContent(
-                notification: notification, event: state.hangEvent),
+                notification: notification, event: state.individualHangEvent!),
             onStatusChangedSuccess: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -56,11 +58,12 @@ class _EventInvitationScreenView extends StatelessWidget {
                 ),
               );
             });
-      } else if (state is IndividualEventRetrievedError) {
+      } else if (state.hangEventOverviewStateStatus ==
+          HangEventOverviewStateStatus.error) {
         return Container(
           margin: const EdgeInsets.only(top: 20),
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Text(state.errorMessage,
+            Text(state.errorMessage!,
                 style: Theme.of(context)
                     .textTheme
                     .bodyText1!

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:letshang/layouts/invitation_layout.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/invite.dart';
@@ -8,7 +7,6 @@ import 'package:letshang/models/notifications_model.dart';
 import 'package:letshang/screens/app_screen.dart';
 import 'package:letshang/widgets/avatars/attendees_avatar.dart';
 import 'package:letshang/widgets/cards/user_event_card.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 class EventInvitationContent extends StatelessWidget {

@@ -24,7 +24,9 @@ class HangEventOverviewBloc
   HangEventOverviewBloc()
       : _userInvitesRepository = UserInvitesRepository(),
         _hangEventRepository = HangEventRepository(),
-        super(HangEventsLoading()) {
+        super(const HangEventOverviewState(
+            hangEventOverviewStateStatus:
+                HangEventOverviewStateStatus.loading)) {
     on<LoadHangEvents>((event, emit) async {
       emit(await _mapLoadHangEventsToState(userId: event.userId));
     });
@@ -41,16 +43,21 @@ class HangEventOverviewBloc
           endDateTime: event.endDateTime));
     });
     on<LoadIndividualEvent>((event, emit) async {
-      emit(IndividualEventLoading());
+      emit(state.copyWith(
+          hangEventOverviewStateStatus: HangEventOverviewStateStatus.loading));
       HangEvent? foundEvent =
           await _hangEventRepository.getEventById(event.eventId);
       if (foundEvent != null) {
         List<UserInvite> acceptedInvites = await _userInvitesRepository
             .getEventAcceptedUserInvites(event.eventId);
         foundEvent = foundEvent.copyWith(userInvites: acceptedInvites);
-        emit(IndividualEventRetrieved(hangEvent: foundEvent));
+        emit(state.copyWith(
+            hangEventOverviewStateStatus:
+                HangEventOverviewStateStatus.individualEventRetrieved,
+            individualHangEvent: foundEvent));
       } else {
-        emit(const IndividualEventRetrievedError(
+        emit(state.copyWith(
+            hangEventOverviewStateStatus: HangEventOverviewStateStatus.error,
             errorMessage: "Unable to find event"));
       }
     });
@@ -61,15 +68,20 @@ class HangEventOverviewBloc
     List<HangEventInvite> eventsForUser =
         await _userInvitesRepository.getUpcomingDraftEventInvites(userId);
 
-    return HangEventsRetrieved(hangEvents: eventsForUser);
+    return state.copyWith(
+        hangEventOverviewStateStatus:
+            HangEventOverviewStateStatus.hangEventsRetrieved,
+        draftUpcomingHangEvents: eventsForUser);
   }
 
   Future<HangEventOverviewState> _mapLoadPastHangEventsToState(
       {required String userId}) async {
     List<HangEventInvite> eventsForUser =
         await _userInvitesRepository.getPastEventInvites(userId);
-
-    return HangEventsRetrieved(hangEvents: eventsForUser);
+    return state.copyWith(
+        hangEventOverviewStateStatus:
+            HangEventOverviewStateStatus.hangEventsRetrieved,
+        pastHangEvents: eventsForUser);
   }
 
   Future<HangEventOverviewState> _mapLoadHangEventsToState(
@@ -84,7 +96,9 @@ class HangEventOverviewBloc
       eventsForUser = await _userInvitesRepository.getUserEventInvitesByRange(
           userId, startDateTime!, endDateTime!);
     }
-
-    return HangEventsRetrieved(hangEvents: eventsForUser);
+    return state.copyWith(
+        hangEventOverviewStateStatus:
+            HangEventOverviewStateStatus.hangEventsRetrieved,
+        hangEvents: eventsForUser);
   }
 }

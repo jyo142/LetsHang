@@ -14,7 +14,7 @@ class HangEventResponsibilitiesBloc extends Bloc<HangEventResponsibilitiesEvent,
   // constructor
   HangEventResponsibilitiesBloc()
       : _responsibilitiesRepository = ResponsibilitiesRepository(),
-        super(HangEventResponsibilitiesState(
+        super(const HangEventResponsibilitiesState(
             eventResponsibilitiesStateStatus:
                 HangEventResponsibilitiesStateStatus.initial)) {
     on<LoadEventResponsibilities>((event, emit) async {

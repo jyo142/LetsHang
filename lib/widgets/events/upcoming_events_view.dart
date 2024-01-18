@@ -16,10 +16,12 @@ class UpcomingEventsView extends StatelessWidget {
 
     return BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
       builder: (context, state) {
-        if (state is HangEventsLoading) {
+        if (state.hangEventOverviewStateStatus ==
+            HangEventOverviewStateStatus.loading) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (state is HangEventsRetrieved) {
+        if (state.hangEventOverviewStateStatus ==
+            HangEventOverviewStateStatus.hangEventsRetrieved) {
           if (state.draftUpcomingHangEvents.isNotEmpty) {
             return EventListCardView(events: state.draftUpcomingHangEvents);
           } else {

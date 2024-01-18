@@ -1,45 +1,59 @@
 part of 'hang_event_overview_bloc.dart';
 
+enum HangEventOverviewStateStatus {
+  initial,
+  loading,
+  hangEventsRetrieved,
+  individualEventRetrieved,
+  error
+}
+
 @immutable
-abstract class HangEventOverviewState extends Equatable {
-  const HangEventOverviewState();
+class HangEventOverviewState extends Equatable {
+  final HangEventOverviewStateStatus hangEventOverviewStateStatus;
+  final String? errorMessage;
+  final HangEvent? individualHangEvent;
+  final List<HangEventInvite> hangEvents;
+  final List<HangEventInvite> pastHangEvents;
+  final List<HangEventInvite> upcomingHangEvents;
+  final List<HangEventInvite> draftUpcomingHangEvents;
+  final Map<String, List<HangEventInvite>> dateToEvents;
+  const HangEventOverviewState(
+      {required this.hangEventOverviewStateStatus,
+      this.errorMessage,
+      this.individualHangEvent,
+      this.hangEvents = const [],
+      this.pastHangEvents = const [],
+      this.upcomingHangEvents = const [],
+      this.draftUpcomingHangEvents = const [],
+      this.dateToEvents = const {}});
 
-  @override
-  List<Object> get props => [];
-}
+  HangEventOverviewState copyWith(
+      {HangEventOverviewStateStatus? hangEventOverviewStateStatus,
+      HangEvent? individualHangEvent,
+      String? errorMessage,
+      List<HangEventInvite>? hangEvents,
+      List<HangEventInvite>? pastHangEvents,
+      List<HangEventInvite>? upcomingHangEvents,
+      List<HangEventInvite>? draftUpcomingHangEvents,
+      Map<String, List<HangEventInvite>>? dateToEvents}) {
+    return HangEventOverviewState(
+        hangEventOverviewStateStatus:
+            hangEventOverviewStateStatus ?? this.hangEventOverviewStateStatus,
+        individualHangEvent: individualHangEvent ?? this.individualHangEvent,
+        hangEvents: hangEvents ?? this.hangEvents,
+        pastHangEvents: pastHangEvents ?? this.pastHangEvents,
+        upcomingHangEvents: upcomingHangEvents ?? this.upcomingHangEvents,
+        draftUpcomingHangEvents:
+            draftUpcomingHangEvents ?? this.draftUpcomingHangEvents,
+        dateToEvents: dateToEvents ?? this.dateToEvents,
+        errorMessage: errorMessage ?? this.errorMessage);
+  }
 
-class HangEventsLoading extends HangEventOverviewState {}
-
-class IndividualEventLoading extends HangEventOverviewState {}
-
-class IndividualEventRetrieved extends HangEventOverviewState {
-  final HangEvent hangEvent;
-
-  const IndividualEventRetrieved({required this.hangEvent});
-
-  @override
-  List<Object> get props => [hangEvent];
-}
-
-class IndividualEventRetrievedError extends HangEventOverviewState {
-  final String errorMessage;
-
-  const IndividualEventRetrievedError({required this.errorMessage});
-
-  @override
-  List<Object> get props => [errorMessage];
-}
-
-class HangEventsRetrieved extends HangEventOverviewState {
-  late final List<HangEventInvite> hangEvents;
-  late final List<HangEventInvite> pastHangEvents;
-  late final List<HangEventInvite> upcomingHangEvents;
-  late final List<HangEventInvite> draftUpcomingHangEvents;
-  late final Map<String, List<HangEventInvite>> dateToEvents;
-  HangEventsRetrieved({this.hangEvents = const <HangEventInvite>[]}) {
+  HangEventOverviewState eventsRetrieved() {
     final dateNow = DateTime.now();
     // past events are when the current date is after both the start and end date of the event
-    pastHangEvents = hangEvents
+    List<HangEventInvite> pastHangEvents = hangEvents
         .where((element) =>
             element.eventStartDateTime != null &&
             element.eventEndDateTime != null &&
@@ -47,17 +61,17 @@ class HangEventsRetrieved extends HangEventOverviewState {
             dateNow.isAfter(element.eventEndDateTime!))
         .toList();
 
-    upcomingHangEvents = hangEvents
+    List<HangEventInvite> upcomingHangEvents = hangEvents
         .where((element) =>
             element.eventStartDateTime != null &&
             (dateNow.compareTo(element.eventStartDateTime!) <= 0))
         .toList();
 
-    dateToEvents = {
+    Map<String, List<HangEventInvite>> dateToEvents = {
       for (HangEventInvite item in upcomingHangEvents)
         DateFormat('MM/dd/yyyy').format(item.eventStartDateTime!): [item]
     };
-    draftUpcomingHangEvents = hangEvents
+    List<HangEventInvite> draftUpcomingHangEvents = hangEvents
         .where((element) =>
             element.eventStartDateTime == null ||
             element.eventEndDateTime == null ||
@@ -65,10 +79,19 @@ class HangEventsRetrieved extends HangEventOverviewState {
             dateNow.compareTo(element.eventStartDateTime!) <= 0 ||
             dateNow.compareTo(element.eventEndDateTime!) <= 0)
         .toList();
+
+    return copyWith(
+        pastHangEvents: pastHangEvents,
+        upcomingHangEvents: upcomingHangEvents,
+        dateToEvents: dateToEvents,
+        draftUpcomingHangEvents: draftUpcomingHangEvents);
   }
 
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
+        hangEventOverviewStateStatus,
+        errorMessage,
+        individualHangEvent,
         hangEvents,
         pastHangEvents,
         upcomingHangEvents,

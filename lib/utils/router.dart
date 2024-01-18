@@ -8,6 +8,7 @@ import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/screens/discussions/user_discussions_screen.dart';
 import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:letshang/screens/event_participants_screen.dart';
+import 'package:letshang/screens/events/event_details_add_announcement.dart';
 import 'package:letshang/screens/events/event_details_add_responsibility.dart';
 import 'package:letshang/screens/events/event_details_create_poll.dart';
 import 'package:letshang/screens/events/event_details_screen.dart';
@@ -178,6 +179,13 @@ abstract class AppRouter {
               path: "/viewIndividualPoll",
               builder: (context, state) => ViewIndividualPoll(
                 eventPoll: state.extra as HangEventPoll,
+              ),
+            ),
+            GoRoute(
+              name: "addAnnouncement",
+              path: "/addAnnouncement/:eventId",
+              builder: (context, state) => EventDetailsAddAnnouncement(
+                hangEventId: state.pathParameters["eventId"]!,
               ),
             ),
           ]),
