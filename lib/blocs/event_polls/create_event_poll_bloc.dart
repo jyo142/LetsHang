@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:googleapis/compute/v1.dart';
 import 'package:letshang/models/events/hang_event_poll.dart';
 import 'package:letshang/models/events/hang_event_responsibility.dart';
 import 'package:equatable/equatable.dart';
@@ -35,18 +36,20 @@ class CreateEventPollBloc
       emit(state.copyWith(
           createEventPollStateStatus:
               CreateEventPollStateStatus.submittingCreatePoll));
-      emit(await _mapAddEventPoll(event.eventId));
+      emit(await _mapAddEventPoll(event.eventId, event.creatingUser));
     });
   }
 
-  Future<CreateEventPollState> _mapAddEventPoll(String eventId) async {
+  Future<CreateEventPollState> _mapAddEventPoll(
+      String eventId, HangUserPreview creatingUser) async {
     try {
       await _eventPollRepository.addEventPoll(
           eventId,
           HangEventPoll(
               pollName: state.pollName!,
               pollOptions: state.pollOptions,
-              creationDate: DateTime.now()));
+              creationDate: DateTime.now(),
+              creatingUser: creatingUser));
 
       return state.copyWith(
           createEventPollStateStatus:

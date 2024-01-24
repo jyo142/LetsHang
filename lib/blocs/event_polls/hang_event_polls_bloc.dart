@@ -16,12 +16,39 @@ class HangEventPollsBloc
       : _eventPollRepository = EventPollRepository(),
         super(const HangEventPollsState(
             hangEventPollsStateStatus: HangEventPollsStateStatus.initial)) {
+    on<LoadIndividualEventPoll>((event, emit) async {
+      emit(state.copyWith(
+          hangEventPollsStateStatus: HangEventPollsStateStatus.loading));
+      emit(await _mapLoadIndividualEventPoll(event.eventId, event.eventPollId));
+    });
     on<LoadEventPolls>((event, emit) async {
       emit(state.copyWith(
-          hangEventPollsStateStatus:
-              HangEventPollsStateStatus.loadingEventPolls));
+          hangEventPollsStateStatus: HangEventPollsStateStatus.loading));
       emit(await _mapLoadEventPolls(event.eventId));
     });
+  }
+
+  Future<HangEventPollsState> _mapLoadIndividualEventPoll(
+      String eventId, String eventPollId) async {
+    try {
+      HangEventPoll? retrievedEventPoll =
+          await _eventPollRepository.getIndividualPoll(eventId, eventPollId);
+      if (retrievedEventPoll != null) {
+        return state.copyWith(
+          hangEventPollsStateStatus:
+              HangEventPollsStateStatus.individualEventPollRetrieved,
+          individualEventPoll: retrievedEventPoll,
+        );
+      } else {
+        return state.copyWith(
+            hangEventPollsStateStatus: HangEventPollsStateStatus.error,
+            errorMessage: 'Unable to find event poll');
+      }
+    } catch (_) {
+      return state.copyWith(
+          hangEventPollsStateStatus: HangEventPollsStateStatus.error,
+          errorMessage: 'Unable to retrieve poll for event.');
+    }
   }
 
   Future<HangEventPollsState> _mapLoadEventPolls(String eventId) async {

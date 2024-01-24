@@ -45,9 +45,9 @@ class RemovePollOption extends CreateEventPollEvent {
 
 class SubmitCreatePoll extends CreateEventPollEvent {
   final String eventId;
-
-  const SubmitCreatePoll({required this.eventId});
+  final HangUserPreview creatingUser;
+  const SubmitCreatePoll({required this.eventId, required this.creatingUser});
 
   @override
-  List<Object> get props => [eventId];
+  List<Object> get props => [eventId, creatingUser];
 }

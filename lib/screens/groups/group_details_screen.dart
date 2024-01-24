@@ -1,38 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:letshang/assets/MainTheme.dart';
-import 'package:letshang/blocs/app/app_bloc.dart';
-import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/discussions/discussions_bloc.dart';
-import 'package:letshang/blocs/edit_groups/edit_group_bloc.dart';
 import 'package:letshang/blocs/group_overview/group_overview_bloc.dart';
-import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
-import 'package:letshang/models/hang_event_model.dart';
-import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/invite.dart';
-import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:letshang/screens/app_screen.dart';
 import 'package:letshang/screens/discussions/discussion_screen.dart';
-import 'package:letshang/screens/event_participants_screen.dart';
-import 'package:letshang/screens/events/event_discussions_screen.dart';
-import 'package:letshang/screens/groups/view_all_members.dart';
 import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/avatars/attendees_avatar.dart';
-import 'package:letshang/widgets/avatars/user_avatar.dart';
 import 'package:letshang/widgets/cards/user_event_card.dart';
 import 'package:letshang/widgets/lh_button.dart';
 
-class GroupDetailsScreen extends StatelessWidget {
+class GroupDetailsScreen extends StatefulWidget {
   final String groupId;
   const GroupDetailsScreen({Key? key, required this.groupId}) : super(key: key);
 
   @override
+  State createState() {
+    return _GroupDetailsScreenState();
+  }
+}
+
+class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<GroupOverviewBloc>().add(LoadIndividualGroup(
+        groupId: widget.groupId, retrieveAcceptedInvites: true));
+  }
+
+  @override
   Widget build(BuildContext context) {
-    context.read<GroupOverviewBloc>().add(
-        LoadIndividualGroup(groupId: groupId, retrieveAcceptedInvites: true));
-    return _GroupDetailsView(groupId: groupId);
+    return _GroupDetailsView(groupId: widget.groupId);
   }
 }
 

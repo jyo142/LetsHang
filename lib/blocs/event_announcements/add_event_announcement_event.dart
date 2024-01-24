@@ -18,9 +18,10 @@ class AnnouncementContentChanged extends AddEventAnnouncementEvent {
 
 class SubmitAddAnnouncement extends AddEventAnnouncementEvent {
   final String eventId;
-
-  const SubmitAddAnnouncement({required this.eventId});
+  final HangUserPreview creatingUser;
+  const SubmitAddAnnouncement(
+      {required this.eventId, required this.creatingUser});
 
   @override
-  List<Object> get props => [eventId];
+  List<Object> get props => [eventId, creatingUser];
 }

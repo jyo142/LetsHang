@@ -1,14 +1,17 @@
 import 'package:equatable/equatable.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:letshang/models/hang_user_preview_model.dart';
 
 class HangEventAnnouncement extends Equatable {
   final String? id;
   final String announcementContent;
+  final HangUserPreview creatingUser;
   final DateTime creationDate;
 
   const HangEventAnnouncement({
     this.id,
     required this.announcementContent,
+    required this.creatingUser,
     required this.creationDate,
   });
 
@@ -17,17 +20,20 @@ class HangEventAnnouncement extends Equatable {
       : this(
           id: id,
           announcementContent: hangEventAnnouncement.announcementContent,
+          creatingUser: hangEventAnnouncement.creatingUser,
           creationDate: hangEventAnnouncement.creationDate,
         );
 
   HangEventAnnouncement copyWith({
     String? id,
     String? announcementContent,
+    HangUserPreview? creatingUser,
     DateTime? creationDate,
   }) {
     return HangEventAnnouncement(
       id: id ?? this.id,
       announcementContent: announcementContent ?? this.announcementContent,
+      creatingUser: creatingUser ?? this.creatingUser,
       creationDate: creationDate ?? this.creationDate,
     );
   }
@@ -40,6 +46,7 @@ class HangEventAnnouncement extends Equatable {
     HangEventAnnouncement model = HangEventAnnouncement(
       id: map['id'],
       announcementContent: map['announcementContent'],
+      creatingUser: HangUserPreview.fromMap(map['creatingUser']),
       creationDate: map["creationDate"].toDate(),
     );
 
@@ -50,11 +57,13 @@ class HangEventAnnouncement extends Equatable {
     Map<String, Object?> retVal = {
       'id': id,
       'announcementContent': announcementContent,
+      'creatingUser': creatingUser.toDocument(),
       'creationDate': Timestamp.fromDate(creationDate),
     };
     return retVal;
   }
 
   @override
-  List<Object?> get props => [id, announcementContent, creationDate];
+  List<Object?> get props =>
+      [id, announcementContent, creatingUser, creationDate];
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/event_polls/create_event_poll_bloc.dart';
+import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/services/message_service.dart';
@@ -57,6 +59,8 @@ class _EventDetailsCreatePollViewState
 
   @override
   Widget build(BuildContext context) {
+    final curUser = (context.read<AppBloc>().state).authenticatedUser!;
+
     return Scaffold(
         appBar: AppBar(
           elevation: 0,
@@ -266,7 +270,10 @@ class _EventDetailsCreatePollViewState
                                         //form is valid, proceed further
                                         context.read<CreateEventPollBloc>().add(
                                             SubmitCreatePoll(
-                                                eventId: widget.hangEventId));
+                                                eventId: widget.hangEventId,
+                                                creatingUser:
+                                                    HangUserPreview.fromUser(
+                                                        curUser)));
                                       }
                                     }),
                               ],

@@ -12,6 +12,21 @@ class EventPollRepository extends BaseEventPollRepository {
       : _firebaseFirestore = firebaseFirestore ?? FirebaseFirestore.instance;
 
   @override
+  Future<HangEventPoll?> getIndividualPoll(
+      String eventId, String eventPollId) async {
+    DocumentSnapshot eventPollSnapshot = await _firebaseFirestore
+        .collection('hangEvents')
+        .doc(eventId)
+        .collection("polls")
+        .doc(eventPollId)
+        .get();
+    if (eventPollSnapshot.exists) {
+      return HangEventPoll.fromSnapshot(eventPollSnapshot);
+    }
+    return null;
+  }
+
+  @override
   Future<List<HangEventPoll>> getActiveEventPolls(String eventId) async {
     List<HangEventPoll> activePolls = await getEventPolls(eventId, true);
     return activePolls;

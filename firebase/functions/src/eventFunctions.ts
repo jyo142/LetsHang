@@ -306,6 +306,116 @@ export const onEventDiscussionCreated = onDocumentCreated(
   },
 );
 
+export const onEventAnnouncementCreated = onDocumentCreated(
+  "/hangEvents/{eventId}/announcements/{eventAnnouncementId}",
+  async (snap) => {
+    if (!snap.data) {
+      info("No data");
+      return;
+    }
+
+    const eventSnapshot = await db
+      .collection("hangEvents")
+      .doc(snap.params.eventId)
+      .get();
+
+    const nonRejectedUserInvites = await db
+      .collection("hangEvents")
+      .doc(snap.params.eventId)
+      .collection("invites")
+      .where("status", "!=", "rejected")
+      .get();
+
+    if (!nonRejectedUserInvites.empty) {
+      for (const curUserInvite of nonRejectedUserInvites.docs) {
+        const userId = curUserInvite.data().user.userId;
+        if (userId) {
+          const creatingUser = snap.data.get("creatingUser");
+          if (userId !== creatingUser.userId) {
+            // only send the announcement notifications to the users that did not create the announcement
+            const userSnapshot = await db.collection("users").doc(userId).get();
+            info("Sending Announcement to user : ", userId);
+            const newNotification = await addNotification(
+              userSnapshot.id,
+              `EVENT ANNOUNCEMENT : ${snap.data.get("announcementContent")}`,
+              { eventId: snap.params.eventId },
+              snap.data.get("invitingUser"),
+              eventSnapshot.get("eventEndDate"),
+              "eventAnnouncement",
+            );
+
+            await sendNotification(
+              userSnapshot,
+              `Announcement for event : ${eventSnapshot.get("eventName")}`,
+              `EVENT ANNOUNCEMENT : ${snap.data.get("announcementContent")}`,
+              newNotification.id,
+              snap.params.eventId,
+              "Event",
+              "Announcement",
+            );
+          }
+        }
+      }
+    }
+  },
+);
+
+export const onEventPollCreated = onDocumentCreated(
+  "/hangEvents/{eventId}/polls/{eventPollId}",
+  async (snap) => {
+    if (!snap.data) {
+      info("No data");
+      return;
+    }
+
+    const eventSnapshot = await db
+      .collection("hangEvents")
+      .doc(snap.params.eventId)
+      .get();
+
+    const nonRejectedUserInvites = await db
+      .collection("hangEvents")
+      .doc(snap.params.eventId)
+      .collection("invites")
+      .where("status", "!=", "rejected")
+      .get();
+
+    if (!nonRejectedUserInvites.empty) {
+      for (const curUserInvite of nonRejectedUserInvites.docs) {
+        const userId = curUserInvite.data().user.userId;
+        if (userId) {
+          const creatingUser = snap.data.get("creatingUser");
+          if (userId !== creatingUser.userId) {
+            // only send the announcement notifications to the users that did not create the announcement
+            const userSnapshot = await db.collection("users").doc(userId).get();
+            info("Sending Poll notification to user : ", userId);
+            const newNotification = await addNotification(
+              userSnapshot.id,
+              `NEW POLL : ${snap.data.get("pollName")}`,
+              { eventId: snap.params.eventId },
+              snap.data.get("invitingUser"),
+              eventSnapshot.get("eventEndDate"),
+              "eventPoll",
+            );
+
+            await sendNotification(
+              userSnapshot,
+              `New poll for event : ${eventSnapshot.get("eventName")}`,
+              `NEW POLL : ${snap.data.get("pollName")}`,
+              newNotification.id,
+              snap.params.eventId,
+              "Event",
+              "NewPoll",
+              {
+                eventPollId: snap.params.eventPollId,
+              },
+            );
+          }
+        }
+      }
+    }
+  },
+);
 const handleUserPromotionEvent = async (
   eventSnapshot: DocumentSnapshot,
   userSnapshot: DocumentSnapshot,

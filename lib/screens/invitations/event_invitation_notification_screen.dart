@@ -73,9 +73,10 @@ class EventInvitationNotificationScreenView extends StatelessWidget {
                 notification: notificationsState.currentNotificationDetails!,
                 inviteType: InviteType.event,
                 invitationContent: EventInvitationContent(
-                    notification:
-                        notificationsState.currentNotificationDetails!,
-                    event: eventOverviewState.individualHangEvent!));
+                  notification: notificationsState.currentNotificationDetails!,
+                  event: eventOverviewState.individualHangEvent!,
+                  showHomeIcon: true,
+                ));
           }
           return Column(
             children: [

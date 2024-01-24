@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/group_overview/group_overview_bloc.dart';
@@ -102,12 +103,7 @@ class GroupsView extends StatelessWidget {
             child: InkWell(
               // on Tap function used and call back function os defined here
               onTap: () async {
-                bool? shouldRefresh = await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => GroupDetailsScreen(
-                        groupId: groupInvites[index].group.id),
-                  ),
-                );
+                context.push("/groupDetails/${groupInvites[index].group.id}");
               },
               child: GroupCard(
                   onEdit: () async {

@@ -1,16 +1,14 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:letshang/assets/MainTheme.dart';
-import 'package:letshang/blocs/app/app_bloc.dart';
-import 'package:letshang/blocs/event_responsibilities/hang_event_responsibilities_bloc.dart';
+import 'package:letshang/blocs/event_announcements/hang_event_announcements_bloc.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/screens/events/event_details_fab.dart';
 import 'package:letshang/services/message_service.dart';
-import 'package:letshang/widgets/avatars/attendees_avatar.dart';
 import 'package:letshang/widgets/cards/user_event_card.dart';
 import 'package:letshang/widgets/lh_button.dart';
 
@@ -32,10 +30,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     context
         .read<HangEventOverviewBloc>()
         .add(LoadIndividualEvent(eventId: widget.eventId));
-    context.read<HangEventResponsibilitiesBloc>().add(
-        LoadUserEventResponsibilities(
-            eventId: widget.eventId,
-            userId: (context.read<AppBloc>().state).authenticatedUser!.id!));
+    context
+        .read<HangEventAnnouncementsBloc>()
+        .add(LoadEventAnnouncements(eventId: widget.eventId));
   }
 
   @override
@@ -284,14 +281,20 @@ class _EventDetailsView extends StatelessWidget {
                                         backgroundColor:
                                             const Color(0xFFF4F8FA),
                                       )),
-                                  Container(
-                                      margin: const EdgeInsets.only(top: 20),
-                                      child: Row(children: [
-                                        AttendeesAvatars(
-                                            userInvites: state
-                                                .individualHangEvent!
-                                                .userInvites),
-                                      ])),
+                                  // Container(
+                                  //     margin: const EdgeInsets.only(top: 20),
+                                  //     child: Row(children: [
+                                  //       AttendeesAvatars(
+                                  //           userInvites: state
+                                  //               .individualHangEvent!
+                                  //               .userInvites),
+                                  //     ])),
+                                  SizedBox(
+                                    height: 20,
+                                  ),
+                                  _EventAnnouncementsView(
+                                    hangEvent: state.individualHangEvent!,
+                                  )
                                 ],
                               );
                             }
@@ -305,59 +308,100 @@ class _EventDetailsView extends StatelessWidget {
   }
 }
 
-class _EventResponsibilitiesView extends StatelessWidget {
+class _EventAnnouncementsView extends StatefulWidget {
+  const _EventAnnouncementsView({Key? key, required this.hangEvent})
+      : super(key: key);
   final HangEvent hangEvent;
 
-  const _EventResponsibilitiesView({Key? key, required this.hangEvent})
-      : super(key: key);
+  @override
+  State createState() {
+    return _EventAnnouncementsViewState();
+  }
+}
+
+class _EventAnnouncementsViewState extends State<_EventAnnouncementsView> {
+  final CarouselController _controller = CarouselController();
+  int _current = 1;
+
   @override
   Widget build(BuildContext mainContext) {
-    return BlocBuilder<HangEventResponsibilitiesBloc,
-        HangEventResponsibilitiesState>(
+    return BlocBuilder<HangEventAnnouncementsBloc, HangEventAnnouncementsState>(
       builder: (context, state) {
+        if (state.hangEventAnnouncementsStateStatus ==
+            HangEventAnnouncementsStateStatus.loading) {
+          return const Center(child: CircularProgressIndicator());
+        }
         return Column(
           children: [
-            Container(
-                margin: const EdgeInsets.only(top: 30),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Responsibilities',
-                      style: Theme.of(context).textTheme.bodyText1,
-                    ),
-                    InkWell(
-                      // on Tap function used and call back function os defined here
-                      onTap: () async {
-                        mainContext.push("/eventResponsibilities",
-                            extra: hangEvent);
-                      },
-                      child: Text(
-                        'View All',
-                        style: Theme.of(context).textTheme.linkText,
-                      ),
-                    ),
-                  ],
-                )),
-            Container(
-                margin: const EdgeInsets.only(top: 30),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF4F8FA),
-                  borderRadius: BorderRadius.circular(10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  'Announcements (${state.eventAnnouncements!.length})',
+                  style: Theme.of(context).textTheme.bodyText1,
                 ),
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Expanded(
-                        child: Text(
-                      'You have ${state.activeUserEventResponsibilities} active responsibilities and ${state.completedUserEventResponsibilities} completed responsibilities for this event',
-                      style: Theme.of(context).textTheme.bodyText1,
-                      softWrap: true,
-                    ))
-                  ],
-                ))
+              ],
+            ),
+            CarouselSlider(
+              carouselController: _controller,
+              options: CarouselOptions(
+                  height: 150,
+                  onPageChanged: (index, reason) {
+                    setState(() {
+                      _current = index;
+                    });
+                  }),
+              items: state.eventAnnouncements!.map((i) {
+                return InkWell(
+                  onTap: () {
+                    final alert = AlertDialog(
+                      alignment: Alignment.center,
+                      title: const Center(child: Text("Annoucement")),
+                      content: Text(i.announcementContent,
+                          style: Theme.of(context).textTheme.headline4),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              context.pop();
+                            },
+                            child: const Text("Close")),
+                      ],
+                    );
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return alert;
+                      },
+                    );
+                  },
+                  child: Center(
+                      child: Text(
+                    i.announcementContent,
+                    style: Theme.of(context).textTheme.headline6,
+                  )),
+                );
+              }).toList(),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: state.eventAnnouncements!.asMap().entries.map((entry) {
+                return GestureDetector(
+                  onTap: () => _controller.animateToPage(entry.key),
+                  child: Container(
+                    width: 12.0,
+                    height: 12.0,
+                    margin:
+                        EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: (Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.black)
+                            .withOpacity(_current == entry.key ? 0.9 : 0.4)),
+                  ),
+                );
+              }).toList(),
+            ),
           ],
         );
       },

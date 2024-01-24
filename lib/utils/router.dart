@@ -17,12 +17,15 @@ import 'package:letshang/screens/events/event_discussions_screen.dart';
 import 'package:letshang/screens/events/view_all_event_polls.dart';
 import 'package:letshang/screens/events/view_all_event_responsibilities.dart';
 import 'package:letshang/screens/events/view_individual_poll.dart';
+import 'package:letshang/screens/events/view_individual_poll_notification.dart';
 import 'package:letshang/screens/events_screen.dart';
 import 'package:letshang/screens/groups/group_details_screen.dart';
 import 'package:letshang/screens/groups/group_details_shell.dart';
 import 'package:letshang/screens/groups/view_all_members.dart';
 import 'package:letshang/screens/groups_screen.dart';
 import 'package:letshang/screens/home_screen.dart';
+import 'package:letshang/screens/invitations/event_invitation_notification_screen.dart';
+import 'package:letshang/screens/invitations/group_invitation_notification_screen.dart';
 import 'package:letshang/screens/profile/username_pic_screen.dart';
 import 'package:letshang/screens/sign_up_screen.dart';
 import 'package:letshang/screens/unauthorized_screen.dart';
@@ -188,6 +191,24 @@ abstract class AppRouter {
                 hangEventId: state.pathParameters["eventId"]!,
               ),
             ),
+            GoRoute(
+              name: "eventInvitationNotification",
+              path:
+                  "/eventInvitationNotification/:userId/:eventId/:notificationId",
+              builder: (context, state) => EventInvitationNotificationScreen(
+                userId: state.pathParameters["userId"]!,
+                eventId: state.pathParameters["eventId"]!,
+                notificationId: state.pathParameters["notificationId"]!,
+              ),
+            ),
+            GoRoute(
+              name: "eventPollNotification",
+              path: "/eventPollNotification/:eventId/:eventPollId",
+              builder: (context, state) => ViewIndividualPollNotification(
+                eventId: state.pathParameters["eventId"]!,
+                pollId: state.pathParameters["eventPollId"]!,
+              ),
+            ),
           ]),
       GoRoute(
         name: "editEvent",
@@ -217,7 +238,17 @@ abstract class AppRouter {
                       curGroup: state.extra as Group,
                     ),
                   ),
-                ])
+                ]),
+            GoRoute(
+              name: "groupInvitationNotification",
+              path:
+                  "/groupInvitationNotification/:userId/:groupId/:notificationId",
+              builder: (context, state) => GroupInvitationNotificationScreen(
+                userId: state.pathParameters["userId"]!,
+                groupId: state.pathParameters["groupId"]!,
+                notificationId: state.pathParameters["notificationId"]!,
+              ),
+            ),
           ]),
     ],
     redirect: (context, state) async {

@@ -10,34 +10,25 @@ import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/appbar/lh_app_bar.dart';
 import 'package:letshang/widgets/lh_button.dart';
 
-class ViewIndividualPoll extends StatefulWidget {
+class ViewIndividualPoll extends StatelessWidget {
   final HangEventPoll eventPoll;
 
   const ViewIndividualPoll({Key? key, required this.eventPoll})
       : super(key: key);
 
   @override
-  State createState() {
-    return _ViewIndividualEventPollsState();
-  }
-}
-
-class _ViewIndividualEventPollsState extends State<ViewIndividualPoll> {
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const LHAppBar(screenName: 'View Individual Event Poll'),
       body: BlocProvider(
-        create: (context) =>
-            IndividualEventPollBloc(curEventPoll: widget.eventPoll)
-              ..add(LoadIndividualPollResults(
-                  eventId: widget.eventPoll.event!.eventId,
-                  pollId: widget.eventPoll.id!)),
+        create: (context) => IndividualEventPollBloc(curEventPoll: eventPoll)
+          ..add(LoadIndividualPollResults(
+              eventId: eventPoll.event!.eventId, pollId: eventPoll.id!)),
         child: SafeArea(
             child: Padding(
           padding: const EdgeInsets.only(
               left: 16.0, right: 16.0, bottom: 20.0, top: 20.0),
-          child: _ViewIndividualEventPollsView(eventPoll: widget.eventPoll),
+          child: _ViewIndividualEventPollsView(eventPoll: eventPoll),
         )),
       ),
     );

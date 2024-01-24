@@ -55,6 +55,7 @@ export const sendNotification = async (
   entityId: string,
   entityType: string,
   notificationType: string,
+  extraData?: object,
 ) => {
   info(`PENDING : sending notifiation to user ${curUserSnapshot.get("email")}`);
   const userFCMToken = curUserSnapshot.get("fcmToken");
@@ -77,6 +78,7 @@ export const sendNotification = async (
         entityId,
         entityType,
         notificationType,
+        ...extraData,
       },
     });
     info(

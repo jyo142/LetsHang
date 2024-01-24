@@ -4,7 +4,6 @@ import 'package:letshang/layouts/invitation_layout.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:letshang/models/notifications_model.dart';
-import 'package:letshang/screens/app_screen.dart';
 import 'package:letshang/widgets/avatars/attendees_avatar.dart';
 import 'package:letshang/widgets/cards/user_event_card.dart';
 import 'package:intl/intl.dart';
@@ -61,11 +60,7 @@ class _EventInvitationContentView extends StatelessWidget {
                       color: Color(0xFF9BADBD),
                     ),
                     onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const AppScreen(),
-                        ),
-                      );
+                      context.go("/home");
                     },
                   ),
                 ] else ...[

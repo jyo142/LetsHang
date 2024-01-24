@@ -66,7 +66,7 @@ class _ViewAllEventPollsView extends StatelessWidget {
       },
       builder: (context, state) {
         if (state.hangEventPollsStateStatus ==
-            HangEventPollsStateStatus.loadingEventPolls) {
+            HangEventPollsStateStatus.loading) {
           return const Center(child: CircularProgressIndicator());
         }
         if (state.hangEventPollsStateStatus ==

@@ -1,6 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:letshang/models/events/hang_event_announcement.dart';
+import 'package:letshang/models/hang_user_model.dart';
+import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/repositories/event_announcements/base_event_announcements_repository.dart';
 import 'package:letshang/repositories/event_announcements/event_announcements_repository.dart';
 
@@ -17,24 +19,24 @@ class AddEventAnnouncementBloc
             addEventAnnouncementStateStatus:
                 AddEventAnnouncementStateStatus.initial)) {
     on<AnnouncementContentChanged>((event, emit) async {
-      var ee = state.copyWith(announcementContent: event.announcementContent);
       emit(state.copyWith(announcementContent: event.announcementContent));
     });
     on<SubmitAddAnnouncement>((event, emit) async {
       emit(state.copyWith(
           addEventAnnouncementStateStatus:
               AddEventAnnouncementStateStatus.loading));
-      // emit(await _mapAddEventAnnouncement(event.eventId));
+      emit(await _mapAddEventAnnouncement(event.eventId, event.creatingUser));
     });
   }
 
   Future<AddEventAnnouncementState> _mapAddEventAnnouncement(
-      String eventId) async {
+      String eventId, HangUserPreview creatingUser) async {
     try {
       await _eventAnnouncementsRepository.addEventAnnouncement(
           eventId,
           HangEventAnnouncement(
               announcementContent: state.announcementContent!.trim(),
+              creatingUser: creatingUser,
               creationDate: DateTime.now()));
 
       return state.copyWith(

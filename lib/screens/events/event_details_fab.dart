@@ -104,6 +104,17 @@ class EventDetailsFAB extends StatelessWidget {
                       ;
                     }
                   }),
+              SpeedDialChild(
+                  child: const Icon(Icons.announcement),
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  label: 'Add Participant',
+                  onTap: () {
+                    context.push(
+                      "/eventParticipants",
+                      extra: state.individualHangEvent,
+                    );
+                  }),
             ],
           );
         }

@@ -15,6 +15,7 @@ class EventAnnouncementsRepository extends BaseEventAnnouncementsRepository {
         .collection('hangEvents')
         .doc(eventId)
         .collection("announcements")
+        .orderBy("creationDate", descending: true)
         .get();
 
     final allEventAnnouncementSnapshots =

@@ -73,9 +73,10 @@ class GroupInvitationNotificationScreenView extends StatelessWidget {
                 notification: notificationsState.currentNotificationDetails!,
                 inviteType: InviteType.event,
                 invitationContent: GroupInvitationContent(
-                    notification:
-                        notificationsState.currentNotificationDetails!,
-                    group: groupOverviewState.individualGroup!));
+                  notification: notificationsState.currentNotificationDetails!,
+                  group: groupOverviewState.individualGroup!,
+                  showHomeIcon: true,
+                ));
           }
           return Column(
             children: [

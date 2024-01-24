@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/event_announcements/add_event_announcement_bloc.dart';
+import 'package:letshang/blocs/event_announcements/hang_event_announcements_bloc.dart';
+import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/services/message_service.dart';
@@ -40,6 +43,7 @@ class _EventDetailsAddAnnouncementViewState
 
   @override
   Widget build(BuildContext context) {
+    final curUser = (context.read<AppBloc>().state).authenticatedUser!;
     return Scaffold(
         appBar: AppBar(
           elevation: 0,
@@ -113,7 +117,10 @@ class _EventDetailsAddAnnouncementViewState
                                         context
                                             .read<AddEventAnnouncementBloc>()
                                             .add(SubmitAddAnnouncement(
-                                                eventId: widget.hangEventId));
+                                                eventId: widget.hangEventId,
+                                                creatingUser:
+                                                    HangUserPreview.fromUser(
+                                                        curUser)));
                                       }
                                     }),
                               ],
@@ -125,6 +132,9 @@ class _EventDetailsAddAnnouncementViewState
                 if (state.addEventAnnouncementStateStatus ==
                     AddEventAnnouncementStateStatus
                         .successfullyAddedAnnouncement) {
+                  context
+                      .read<HangEventAnnouncementsBloc>()
+                      .add(LoadEventAnnouncements(eventId: widget.hangEventId));
                   MessageService.showSuccessMessage(
                       content: "Announcement successfully added",
                       context: context);

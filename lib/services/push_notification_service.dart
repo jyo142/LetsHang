@@ -2,12 +2,12 @@ import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:letshang/main.dart';
+import 'package:letshang/screens/events/event_details_screen.dart';
 import 'package:letshang/screens/invitations/event_invitation_notification_screen.dart';
-import 'package:letshang/screens/notifications_screen.dart';
+import 'package:letshang/utils/router.dart';
 
 class PushNotificationService {
   static final FirebaseMessaging firebaseMessageService =
@@ -38,25 +38,48 @@ class PushNotificationService {
     final notificationType = dataMap.containsKey("notificationType")
         ? dataMap["notificationType"]
         : null;
-    if (notificationType != null && notificationType == "Invitation") {
-      if (entityType != null) {
-        if (entityType == "Event") {
-          navigatorKey.currentState?.push(MaterialPageRoute(
-            builder: (context) => EventInvitationNotificationScreen(
-              userId: dataMap["userId"],
-              eventId: dataMap["entityId"],
-              notificationId: dataMap["notificationId"],
-            ),
-          ));
+    if (notificationType != null) {
+      if (notificationType == "Invitation") {
+        if (entityType != null) {
+          if (entityType == "Event") {
+            AppRouter.lhRouterConfig.go(
+                "/eventInvitationNotification/${dataMap["userId"]}/${dataMap["entityId"]}/${dataMap["notificationId"]}");
+          }
+          if (entityType == "Group") {
+            AppRouter.lhRouterConfig.go(
+                "/groupInvitationNotification/${dataMap["userId"]}/${dataMap["entityId"]}/${dataMap["notificationId"]}");
+          }
         }
-        if (entityType == "Group") {
-          navigatorKey.currentState?.push(MaterialPageRoute(
-            builder: (context) => EventInvitationNotificationScreen(
-              userId: dataMap["userId"],
-              eventId: dataMap["entityId"],
-              notificationId: dataMap["notificationId"],
-            ),
-          ));
+      } else if (notificationType == "Announcement") {
+        if (entityType != null) {
+          if (entityType == "Event") {
+            AppRouter.lhRouterConfig.go("/eventDetails/${dataMap["entityId"]}");
+          }
+          // if (entityType == "Group") {
+          //   navigatorKey.currentState?.push(MaterialPageRoute(
+          //     builder: (context) => EventInvitationNotificationScreen(
+          //       userId: dataMap["userId"],
+          //       eventId: dataMap["entityId"],
+          //       notificationId: dataMap["notificationId"],
+          //     ),
+          //   ));
+          // }
+        }
+      } else if (notificationType == "NewPoll") {
+        if (entityType != null) {
+          if (entityType == "Event") {
+            AppRouter.lhRouterConfig.go(
+                "/eventPollNotification/${dataMap["entityId"]}/${dataMap["eventPollId"]}");
+          }
+          // if (entityType == "Group") {
+          //   navigatorKey.currentState?.push(MaterialPageRoute(
+          //     builder: (context) => EventInvitationNotificationScreen(
+          //       userId: dataMap["userId"],
+          //       eventId: dataMap["entityId"],
+          //       notificationId: dataMap["notificationId"],
+          //     ),
+          //   ));
+          // }
         }
       }
     }

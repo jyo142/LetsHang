@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:googleapis/photoslibrary/v1.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
-import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/invitations/invitations_bloc.dart';
 import 'package:letshang/blocs/notifications/notifications_bloc.dart';
 import 'package:letshang/models/invite.dart';

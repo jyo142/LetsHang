@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:letshang/models/hang_event_preview.dart';
+import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/utils/firebase_utils.dart';
 
 class HangEventPoll extends Equatable {
@@ -9,6 +10,7 @@ class HangEventPoll extends Equatable {
   final List<String> pollOptions;
   final DateTime creationDate;
   final DateTime? completedDate;
+  final HangUserPreview creatingUser;
   final HangEventPreview? event;
 
   const HangEventPoll(
@@ -16,6 +18,7 @@ class HangEventPoll extends Equatable {
       required this.pollName,
       required this.pollOptions,
       required this.creationDate,
+      required this.creatingUser,
       this.completedDate,
       this.event});
 
@@ -25,6 +28,7 @@ class HangEventPoll extends Equatable {
             pollName: hangEventPoll.pollName,
             pollOptions: hangEventPoll.pollOptions,
             creationDate: hangEventPoll.creationDate,
+            creatingUser: hangEventPoll.creatingUser,
             event: hangEventPoll.event,
             completedDate: hangEventPoll.completedDate);
 
@@ -34,12 +38,14 @@ class HangEventPoll extends Equatable {
       List<String>? pollOptions,
       DateTime? creationDate,
       HangEventPreview? event,
+      HangUserPreview? creatingUser,
       DateTime? completedDate}) {
     return HangEventPoll(
         id: id ?? this.id,
         pollName: pollName ?? this.pollName,
         pollOptions: pollOptions ?? this.pollOptions,
         creationDate: creationDate ?? this.creationDate,
+        creatingUser: creatingUser ?? this.creatingUser,
         event: event ?? this.event,
         completedDate: completedDate ?? this.completedDate);
   }
@@ -54,6 +60,7 @@ class HangEventPoll extends Equatable {
         pollName: map['pollName'],
         pollOptions: List<String>.from(map["pollOptions"]),
         creationDate: map["creationDate"].toDate(),
+        creatingUser: HangUserPreview.fromMap(map["creatingUser"]),
         event: HangEventPreview.fromMap(map["event"]),
         completedDate: map.getFromMap("completedDate", (key) => key.toDate()));
 
@@ -66,6 +73,7 @@ class HangEventPoll extends Equatable {
       'pollName': pollName,
       'pollOptions': pollOptions,
       'creationDate': Timestamp.fromDate(creationDate),
+      'creatingUser': creatingUser.toDocument(),
       'event': event?.toDocument(),
       'completedDate':
           completedDate != null ? Timestamp.fromDate(completedDate!) : null
@@ -74,6 +82,13 @@ class HangEventPoll extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [id, pollName, pollOptions, creationDate, event, completedDate];
+  List<Object?> get props => [
+        id,
+        pollName,
+        pollOptions,
+        creationDate,
+        event,
+        creatingUser,
+        completedDate
+      ];
 }
