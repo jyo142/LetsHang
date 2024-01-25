@@ -3,6 +3,7 @@ import {
   onDocumentCreated,
   onDocumentDeleted,
   onDocumentUpdated,
+  QueryDocumentSnapshot,
 } from "firebase-functions/v2/firestore";
 import { error, info } from "firebase-functions/logger";
 import { db } from ".";
@@ -18,6 +19,7 @@ import {
   removeUserDiscussionForUser,
   removeUserFromDiscussion,
 } from "./discussionUtils";
+import { DocumentReference } from "firebase-admin/firestore";
 
 export const onUserInvitedToEvent = onDocumentCreated(
   "/hangEvents/{eventId}/invites/{userId}",
@@ -384,38 +386,58 @@ export const onEventPollCreated = onDocumentCreated(
       for (const curUserInvite of nonRejectedUserInvites.docs) {
         const userId = curUserInvite.data().user.userId;
         if (userId) {
-          const creatingUser = snap.data.get("creatingUser");
-          if (userId !== creatingUser.userId) {
-            // only send the announcement notifications to the users that did not create the announcement
-            const userSnapshot = await db.collection("users").doc(userId).get();
-            info("Sending Poll notification to user : ", userId);
-            const newNotification = await addNotification(
-              userSnapshot.id,
-              `NEW POLL : ${snap.data.get("pollName")}`,
-              { eventId: snap.params.eventId },
-              snap.data.get("invitingUser"),
-              eventSnapshot.get("eventEndDate"),
-              "eventPoll",
-            );
-
-            await sendNotification(
-              userSnapshot,
-              `New poll for event : ${eventSnapshot.get("eventName")}`,
-              `NEW POLL : ${snap.data.get("pollName")}`,
-              newNotification.id,
-              snap.params.eventId,
-              "Event",
-              "NewPoll",
-              {
-                eventPollId: snap.params.eventPollId,
-              },
-            );
-          }
+          const userDoc = db.collection("users").doc(userId);
+          // send notification to user
+          await sendEventPollNotificationToUser(
+            userId,
+            snap.params.eventId,
+            snap.params.eventPollId,
+            snap.data,
+            eventSnapshot,
+            userDoc,
+          );
         }
       }
     }
   },
 );
+
+const sendEventPollNotificationToUser = async (
+  userId: string,
+  eventId: string,
+  eventPollId: string,
+  pollData: QueryDocumentSnapshot,
+  eventSnapshot: DocumentSnapshot,
+  userDoc: DocumentReference,
+) => {
+  const creatingUser = pollData.get("creatingUser");
+  if (userId !== creatingUser.userId) {
+    // only send the announcement notifications to the users that did not create the announcement
+    const userSnapshot = await userDoc.get();
+    info("Sending Poll notification to user : ", userId);
+    const newNotification = await addNotification(
+      userSnapshot.id,
+      `NEW POLL : ${pollData.get("pollName")}`,
+      { eventId },
+      pollData.get("invitingUser"),
+      eventSnapshot.get("eventEndDate"),
+      "eventPoll",
+    );
+
+    await sendNotification(
+      userSnapshot,
+      `New poll for event : ${eventSnapshot.get("eventName")}`,
+      `NEW POLL : ${pollData.get("pollName")}`,
+      newNotification.id,
+      eventId,
+      "Event",
+      "NewPoll",
+      {
+        eventPollId,
+      },
+    );
+  }
+};
 const handleUserPromotionEvent = async (
   eventSnapshot: DocumentSnapshot,
   userSnapshot: DocumentSnapshot,

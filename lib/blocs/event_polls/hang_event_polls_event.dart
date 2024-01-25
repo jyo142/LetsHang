@@ -25,3 +25,13 @@ class LoadEventPolls extends HangEventPollsEvent {
   @override
   List<Object> get props => [eventId];
 }
+
+class LoadUserEventPollCount extends HangEventPollsEvent {
+  final String eventId;
+  final String userId;
+
+  const LoadUserEventPollCount({required this.eventId, required this.userId});
+
+  @override
+  List<Object> get props => [eventId, userId];
+}

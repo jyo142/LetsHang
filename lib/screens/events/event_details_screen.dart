@@ -2,7 +2,9 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/event_announcements/hang_event_announcements_bloc.dart';
+import 'package:letshang/blocs/event_polls/hang_event_polls_bloc.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/invite.dart';
@@ -11,6 +13,7 @@ import 'package:letshang/screens/events/event_details_fab.dart';
 import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/cards/user_event_card.dart';
 import 'package:letshang/widgets/lh_button.dart';
+import 'package:badges/badges.dart' as badges;
 
 class EventDetailsScreen extends StatefulWidget {
   final String eventId;
@@ -60,50 +63,8 @@ class _EventDetailsView extends StatelessWidget {
     double width = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      drawer: Drawer(
-        // Add a ListView to the drawer. This ensures the user can scroll
-        // through the options in the drawer if there isn't enough vertical
-        // space to fit everything.
-        child: ListView(
-          // Important: Remove any padding from the ListView.
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-              child: Text('Drawer Header'),
-            ),
-            ListTile(
-              title: const Text('Participants'),
-              onTap: () {
-                context.pop();
-                context.push("/eventParticipants", extra: curEvent);
-
-                // Update the state of the app.
-                // ...
-              },
-            ),
-            ListTile(
-              title: const Text('Responsibilities'),
-              onTap: () {
-                context.pop();
-                context.push("/eventResponsibilities", extra: curEvent);
-                // Update the state of the app.
-                // ...
-              },
-            ),
-            ListTile(
-              title: const Text('Polls'),
-              onTap: () {
-                context.pop();
-                context.push("/eventPolls", extra: curEvent);
-                // Update the state of the app.
-                // ...
-              },
-            ),
-          ],
-        ),
+      drawer: _EventDetailsDrawer(
+        curEvent: curEvent,
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -405,6 +366,95 @@ class _EventAnnouncementsViewState extends State<_EventAnnouncementsView> {
           ],
         );
       },
+    );
+  }
+}
+
+class _EventDetailsDrawer extends StatefulWidget {
+  final HangEvent curEvent;
+
+  const _EventDetailsDrawer({Key? key, required this.curEvent})
+      : super(key: key);
+
+  @override
+  State createState() {
+    return _EventDetailsDrawerState();
+  }
+}
+
+class _EventDetailsDrawerState extends State<_EventDetailsDrawer> {
+  @override
+  void initState() {
+    final curUser = (context.read<AppBloc>().state).authenticatedUser!;
+
+    super.initState();
+    context.read<HangEventPollsBloc>().add(LoadUserEventPollCount(
+        eventId: widget.curEvent.id, userId: curUser.id!));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget? getTrailingPollWidget(HangEventPollsState hangEventPollsState) {
+      if (hangEventPollsState.hangEventPollsStateStatus ==
+          HangEventPollsStateStatus.loadingUserEventPollCount) {
+        return CircularProgressIndicator();
+      }
+      if (hangEventPollsState.countNewUserPolls != null &&
+          hangEventPollsState.countNewUserPolls! > 0) {
+        return badges.Badge(
+          badgeContent: Text(hangEventPollsState.countNewUserPolls.toString()),
+        );
+      }
+      return null;
+    }
+
+    return Drawer(
+      // Add a ListView to the drawer. This ensures the user can scroll
+      // through the options in the drawer if there isn't enough vertical
+      // space to fit everything.
+      child: ListView(
+        // Important: Remove any padding from the ListView.
+        padding: EdgeInsets.zero,
+        children: [
+          const DrawerHeader(
+            decoration: BoxDecoration(
+              color: Colors.blue,
+            ),
+            child: Text('Drawer Header'),
+          ),
+          ListTile(
+              title: const Text('Participants'),
+              onTap: () {
+                context.pop();
+                context.push("/eventParticipants", extra: widget.curEvent);
+              },
+              trailing: badges.Badge(
+                badgeContent: Text("33"),
+              )),
+          ListTile(
+            title: const Text('Responsibilities'),
+            onTap: () {
+              context.pop();
+              context.push("/eventResponsibilities", extra: widget.curEvent);
+              // Update the state of the app.
+              // ...
+            },
+          ),
+          BlocBuilder<HangEventPollsBloc, HangEventPollsState>(
+            builder: (context, state) {
+              return ListTile(
+                  title: const Text('Polls'),
+                  onTap: () {
+                    context.pop();
+                    context.push("/eventPolls", extra: widget.curEvent);
+                    // Update the state of the app.
+                    // ...
+                  },
+                  trailing: getTrailingPollWidget(state));
+            },
+          ),
+        ],
+      ),
     );
   }
 }

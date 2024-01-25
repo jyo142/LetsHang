@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:letshang/models/events/hang_event_poll.dart';
 import 'package:letshang/models/events/hang_event_poll_result.dart';
+import 'package:letshang/models/events/user_hang_event_poll.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/hang_event_preview.dart';
 import 'package:letshang/repositories/polls/base_event_poll_repository.dart';
@@ -69,6 +70,17 @@ class EventPollRepository extends BaseEventPollRepository {
 
     // save to db
     await hangEventPollRef.doc(savingPoll.id).set(savingPoll.toDocument());
+
+    CollectionReference userEventPollRef = _firebaseFirestore
+        .collection('users')
+        .doc(savingPoll.creatingUser.userId)
+        .collection("eventPolls")
+        .doc(eventId)
+        .collection("polls");
+    // add a user event poll to notify user that they need to fill out the poll
+    await addUpdateUserEventPoll(
+        userEventPollRef, savingPoll.creatingUser.userId, savingPoll.id!);
+
     return savingPoll;
   }
 
@@ -106,7 +118,41 @@ class EventPollRepository extends BaseEventPollRepository {
         .doc(savingPollResult.id)
         .set(savingPollResult.toDocument());
 
+    CollectionReference userEventPollRef = _firebaseFirestore
+        .collection('users')
+        .doc(savingPollResult.pollUser.userId)
+        .collection("eventPolls")
+        .doc(eventId)
+        .collection("polls");
+    // after adding the poll result make sure to add a user poll to indicate that the user filled out the poll
+    await addUpdateUserEventPoll(userEventPollRef,
+        savingPollResult.pollUser.userId, savingPollResult.pollId);
     return savingPollResult;
+  }
+
+  Future<void> addUpdateUserEventPoll(CollectionReference userEventPollRef,
+      String userId, String pollId) async {
+    QuerySnapshot userEventPollQuerySnap =
+        await userEventPollRef.where("pollId", isEqualTo: pollId).get();
+
+    if (userEventPollQuerySnap.size == 0) {
+      UserHangEventPoll newUserHangEventPoll = UserHangEventPoll(
+          id: userEventPollRef.doc().id,
+          userId: userId,
+          pollId: pollId,
+          completedDate: DateTime.now());
+      userEventPollRef
+          .doc(newUserHangEventPoll.id)
+          .set(newUserHangEventPoll.toDocument());
+    } else {
+      Map<String, dynamic> userEventPollMap =
+          userEventPollQuerySnap.docs[0].data() as Map<String, dynamic>;
+      UserHangEventPoll curUserEventPoll =
+          UserHangEventPoll.fromMap(userEventPollMap);
+      curUserEventPoll =
+          curUserEventPoll.copyWith(completedDate: DateTime.now());
+      userEventPollRef.doc(curUserEventPoll.id).set(curUserEventPoll);
+    }
   }
 
   @override
@@ -120,5 +166,20 @@ class EventPollRepository extends BaseEventPollRepository {
         .collection("results")
         .doc(pollResultId)
         .delete();
+  }
+
+  @override
+  Future<int> getNewUserPollCount(String eventId, String userId) async {
+    AggregateQuerySnapshot hangEventPollResultsSnapshots =
+        await _firebaseFirestore
+            .collection('users')
+            .doc(userId)
+            .collection("eventPolls")
+            .doc(eventId)
+            .collection("polls")
+            .where("completionDate", isNull: true)
+            .count()
+            .get();
+    return hangEventPollResultsSnapshots.count;
   }
 }

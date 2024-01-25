@@ -14,4 +14,6 @@ abstract class BaseEventPollRepository {
       String eventId, HangEventPollResult pollResult);
   Future<void> removePollResult(
       String eventId, String pollId, String pollResultId);
+
+  Future<int> getNewUserPollCount(String eventId, String userId);
 }

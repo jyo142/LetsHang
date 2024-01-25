@@ -26,6 +26,12 @@ class HangEventPollsBloc
           hangEventPollsStateStatus: HangEventPollsStateStatus.loading));
       emit(await _mapLoadEventPolls(event.eventId));
     });
+    on<LoadUserEventPollCount>((event, emit) async {
+      emit(state.copyWith(
+          hangEventPollsStateStatus:
+              HangEventPollsStateStatus.loadingUserEventPollCount));
+      emit(await _mapLoadUserEventPollCount(event.eventId, event.userId));
+    });
   }
 
   Future<HangEventPollsState> _mapLoadIndividualEventPoll(
@@ -65,6 +71,24 @@ class HangEventPollsBloc
       return state.copyWith(
           hangEventPollsStateStatus: HangEventPollsStateStatus.error,
           errorMessage: 'Unable to get polls for event.');
+    }
+  }
+
+  Future<HangEventPollsState> _mapLoadUserEventPollCount(
+      String eventId, String userId) async {
+    try {
+      int retrievedUserEventPollCount =
+          await _eventPollRepository.getNewUserPollCount(eventId, userId);
+
+      return state.copyWith(
+        hangEventPollsStateStatus:
+            HangEventPollsStateStatus.retrievedUserEventPollCount,
+        countNewUserPolls: retrievedUserEventPollCount,
+      );
+    } catch (_) {
+      return state.copyWith(
+          hangEventPollsStateStatus: HangEventPollsStateStatus.error,
+          errorMessage: 'Unable to get user information for event polls.');
     }
   }
 }

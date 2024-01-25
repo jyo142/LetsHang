@@ -1,13 +1,9 @@
 import 'package:bloc/bloc.dart';
-import 'package:googleapis/compute/v1.dart';
 import 'package:letshang/models/events/hang_event_poll.dart';
-import 'package:letshang/models/events/hang_event_responsibility.dart';
 import 'package:equatable/equatable.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/repositories/polls/base_event_poll_repository.dart';
 import 'package:letshang/repositories/polls/event_poll_repository.dart';
-import 'package:letshang/repositories/responsibilities/base_responsibilities_repository.dart';
-import 'package:letshang/repositories/responsibilities/responsibilities_repository.dart';
 
 part 'create_event_poll_state.dart';
 part 'create_event_poll_event.dart';
