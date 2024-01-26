@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:letshang/models/events/hang_event_responsibility.dart';
+import 'package:letshang/models/events/user_hang_event_responsibility.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/hang_event_preview.dart';
 import 'package:letshang/repositories/responsibilities/base_responsibilities_repository.dart';
@@ -87,7 +88,54 @@ class ResponsibilitiesRepository extends BaseResponsibilitiesRepository {
     await hangEventResponsibilityRef
         .doc(savingResponsibility.id)
         .set(savingResponsibility.toDocument());
+
+    // add user responsibility for the assigned user
+    CollectionReference userEventResponsibilityRef = _firebaseFirestore
+        .collection('users')
+        .doc(savingResponsibility.assignedUser.userId)
+        .collection("eventResponsibilities")
+        .doc(eventId)
+        .collection("responsibilities");
+    await addUpdateUserEventResponsibility(
+        userEventResponsibilityRef,
+        savingResponsibility.assignedUser.userId,
+        savingResponsibility.id!,
+        false);
     return savingResponsibility;
+  }
+
+  Future<void> addUpdateUserEventResponsibility(
+      CollectionReference userEventResponsibilityRef,
+      String userId,
+      String responsibilityId,
+      bool isCompleted) async {
+    QuerySnapshot userEventResponsibilityQuerySnap =
+        await userEventResponsibilityRef
+            .where("eventResponsibilityId", isEqualTo: responsibilityId)
+            .get();
+
+    if (userEventResponsibilityQuerySnap.size == 0) {
+      UserHangEventResponsibility newUserHangEventResponsibility =
+          UserHangEventResponsibility(
+              id: userEventResponsibilityRef.doc().id,
+              userId: userId,
+              eventResponsibilityId: responsibilityId,
+              completedDate: isCompleted ? DateTime.now() : null);
+      userEventResponsibilityRef
+          .doc(newUserHangEventResponsibility.id)
+          .set(newUserHangEventResponsibility.toDocument());
+    } else {
+      Map<String, dynamic> userEventResponsibilityMap =
+          userEventResponsibilityQuerySnap.docs[0].data()
+              as Map<String, dynamic>;
+      UserHangEventResponsibility curUserEventResponsibility =
+          UserHangEventResponsibility.fromMap(userEventResponsibilityMap);
+      curUserEventResponsibility =
+          curUserEventResponsibility.copyWith(completedDate: DateTime.now());
+      userEventResponsibilityRef
+          .doc(curUserEventResponsibility.id)
+          .set(curUserEventResponsibility);
+    }
   }
 
   @override
@@ -105,5 +153,31 @@ class ResponsibilitiesRepository extends BaseResponsibilitiesRepository {
     await hangEventResponsibilityRef
         .doc(withCompletedDate.id)
         .set(withCompletedDate.toDocument());
+
+    // update the user responsibility to completed
+    CollectionReference userEventResponsibiliyRef = _firebaseFirestore
+        .collection('users')
+        .doc(toComplete.assignedUser.userId)
+        .collection("eventResponsibilities")
+        .doc(eventId)
+        .collection("responsibilities");
+    await addUpdateUserEventResponsibility(userEventResponsibiliyRef,
+        toComplete.assignedUser.userId, toComplete.id!, true);
+  }
+
+  @override
+  Future<int> getNonCompletedUserResponsibilityCount(
+      String eventId, String userId) async {
+    AggregateQuerySnapshot hangEventResponsibilityResultsSnapshots =
+        await _firebaseFirestore
+            .collection('users')
+            .doc(userId)
+            .collection("eventResponsibilities")
+            .doc(eventId)
+            .collection("responsibilities")
+            .where("completedDate", isNull: true)
+            .count()
+            .get();
+    return hangEventResponsibilityResultsSnapshots.count;
   }
 }

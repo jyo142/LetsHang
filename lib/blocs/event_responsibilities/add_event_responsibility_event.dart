@@ -27,9 +27,9 @@ class ResponsibilityContentChanged extends AddEventResponsibilityEvent {
 
 class AddResponsibility extends AddEventResponsibilityEvent {
   final String eventId;
-
-  const AddResponsibility({required this.eventId});
+  final HangUserPreview creatingUser;
+  const AddResponsibility({required this.eventId, required this.creatingUser});
 
   @override
-  List<Object> get props => [eventId];
+  List<Object> get props => [eventId, creatingUser];
 }

@@ -20,6 +20,7 @@ class HangEventOverviewBloc
     extends Bloc<HangEventOverviewEvent, HangEventOverviewState> {
   final BaseUserInvitesRepository _userInvitesRepository;
   final BaseHangEventRepository _hangEventRepository;
+
   // constructor
   HangEventOverviewBloc()
       : _userInvitesRepository = UserInvitesRepository(),

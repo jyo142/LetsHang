@@ -23,14 +23,6 @@ class HangEventResponsibilitiesBloc extends Bloc<HangEventResponsibilitiesEvent,
               .loadingEventResponsibilities));
       emit(await _mapLoadEventResponsibilities(event.eventId));
     });
-    on<LoadUserEventResponsibilities>((event, emit) async {
-      emit(state.copyWith(
-          eventResponsibilitiesStateStatus: HangEventResponsibilitiesStateStatus
-              .loadingEventResponsibilities));
-      emit(
-          await _mapLoadUserEventResponsibilities(event.eventId, event.userId));
-    });
-
     on<CompleteEventResponsibility>((event, emit) async {
       emit(state.copyWith(
           eventResponsibilitiesStateStatus: HangEventResponsibilitiesStateStatus
@@ -55,22 +47,6 @@ class HangEventResponsibilitiesBloc extends Bloc<HangEventResponsibilitiesEvent,
           activeEventResponsibilities: retrievedActiveEventResponsibilities,
           completedEventResponsibilities:
               retrievedCompletedEventResponsibilities);
-    } catch (_) {
-      return state.copyWith(
-          eventResponsibilitiesStateStatus:
-              HangEventResponsibilitiesStateStatus.error,
-          errorMessage: 'Unable to get responsibilities for event.');
-    }
-  }
-
-  Future<HangEventResponsibilitiesState> _mapLoadUserEventResponsibilities(
-      String eventId, String userId) async {
-    try {
-      List<HangEventResponsibility>? retrievedUserEventResponsibilities =
-          await _responsibilitiesRepository.getUserResponsibilitiesForEvent(
-              eventId, userId);
-      return state
-          .withUserResponsibilityData(retrievedUserEventResponsibilities);
     } catch (_) {
       return state.copyWith(
           eventResponsibilitiesStateStatus:

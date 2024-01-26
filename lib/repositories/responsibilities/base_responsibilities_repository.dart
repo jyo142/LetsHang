@@ -13,4 +13,7 @@ abstract class BaseResponsibilitiesRepository {
 
   Future<void> completeEventResponsibility(
       String eventId, HangEventResponsibility toComplete);
+
+  Future<int> getNonCompletedUserResponsibilityCount(
+      String eventId, String userId);
 }

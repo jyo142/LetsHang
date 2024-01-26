@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/event_announcements/hang_event_announcements_bloc.dart';
-import 'package:letshang/blocs/event_polls/hang_event_polls_bloc.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
+import 'package:letshang/blocs/hang_event_overview/user_event_incomplete_status_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,10 +29,15 @@ class EventDetailsScreen extends StatefulWidget {
 class _EventDetailsScreenState extends State<EventDetailsScreen> {
   @override
   void initState() {
+    final curUser = (context.read<AppBloc>().state).authenticatedUser!;
+
     super.initState();
     context
         .read<HangEventOverviewBloc>()
         .add(LoadIndividualEvent(eventId: widget.eventId));
+    context.read<UserEventIncompleteStatusBloc>().add(
+        GetUserEventIncompleteStatus(
+            eventId: widget.eventId, userId: curUser.id!));
     context
         .read<HangEventAnnouncementsBloc>()
         .add(LoadEventAnnouncements(eventId: widget.eventId));
@@ -74,7 +79,7 @@ class _EventDetailsView extends StatelessWidget {
               context.push("/eventDiscussions/${curEvent.id}");
             }),
       ),
-      floatingActionButton: EventDetailsFAB(),
+      floatingActionButton: const EventDetailsFAB(),
       backgroundColor: Colors.white,
       body: SafeArea(
           child: SizedBox(
@@ -105,14 +110,28 @@ class _EventDetailsView extends StatelessWidget {
                   },
                 ),
                 IconButton(
-                  icon: const Icon(
-                    Icons.menu,
-                    color: Color(0xFF9BADBD),
+                  icon: BlocBuilder<UserEventIncompleteStatusBloc,
+                      UserEventIncompleteStatusState>(
+                    builder: (context, state) {
+                      if (state.hasIncomplete) {
+                        return const badges.Badge(
+                          badgeContent: Text(""),
+                          child: Icon(
+                            Icons.menu,
+                            color: Color(0xFF9BADBD),
+                          ),
+                        );
+                      }
+                      return const Icon(
+                        Icons.menu,
+                        color: Color(0xFF9BADBD),
+                      );
+                    },
                   ),
                   onPressed: () {
                     Scaffold.of(context).openDrawer();
                   },
-                ),
+                )
               ]);
             }),
             Positioned(
@@ -227,8 +246,8 @@ class _EventDetailsView extends StatelessWidget {
                                   ),
                                   Container(
                                     margin: const EdgeInsets.only(top: 20),
-                                    child: Row(
-                                      children: const [
+                                    child: const Row(
+                                      children: [
                                         Icon(Icons.location_on_outlined),
                                       ],
                                     ),
@@ -250,7 +269,7 @@ class _EventDetailsView extends StatelessWidget {
                                   //               .individualHangEvent!
                                   //               .userInvites),
                                   //     ])),
-                                  SizedBox(
+                                  const SizedBox(
                                     height: 20,
                                   ),
                                   _EventAnnouncementsView(
@@ -259,7 +278,7 @@ class _EventDetailsView extends StatelessWidget {
                                 ],
                               );
                             }
-                            return Text("Unable to get event details");
+                            return const Text("Unable to get event details");
                           },
                         ))))),
           ],
@@ -351,8 +370,8 @@ class _EventAnnouncementsViewState extends State<_EventAnnouncementsView> {
                   child: Container(
                     width: 12.0,
                     height: 12.0,
-                    margin:
-                        EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 4.0),
                     decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: (Theme.of(context).brightness == Brightness.dark
@@ -385,24 +404,22 @@ class _EventDetailsDrawer extends StatefulWidget {
 class _EventDetailsDrawerState extends State<_EventDetailsDrawer> {
   @override
   void initState() {
-    final curUser = (context.read<AppBloc>().state).authenticatedUser!;
-
     super.initState();
-    context.read<HangEventPollsBloc>().add(LoadUserEventPollCount(
-        eventId: widget.curEvent.id, userId: curUser.id!));
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget? getTrailingPollWidget(HangEventPollsState hangEventPollsState) {
-      if (hangEventPollsState.hangEventPollsStateStatus ==
-          HangEventPollsStateStatus.loadingUserEventPollCount) {
-        return CircularProgressIndicator();
+    Widget? getTrailingWidget(
+        UserEventIncompleteStatusState userEventIncompleteStatusState,
+        int Function(UserEventIncompleteStatusState) countGetter) {
+      if (userEventIncompleteStatusState.userEventIncompleteStatusStateStatus ==
+          UserEventIncompleteStatusStateStatus.loading) {
+        return const CircularProgressIndicator();
       }
-      if (hangEventPollsState.countNewUserPolls != null &&
-          hangEventPollsState.countNewUserPolls! > 0) {
+      if (countGetter(userEventIncompleteStatusState) > 0) {
         return badges.Badge(
-          badgeContent: Text(hangEventPollsState.countNewUserPolls.toString()),
+          badgeContent:
+              Text(countGetter(userEventIncompleteStatusState).toString()),
         );
       }
       return null;
@@ -428,29 +445,42 @@ class _EventDetailsDrawerState extends State<_EventDetailsDrawer> {
                 context.pop();
                 context.push("/eventParticipants", extra: widget.curEvent);
               },
-              trailing: badges.Badge(
+              trailing: const badges.Badge(
                 badgeContent: Text("33"),
               )),
-          ListTile(
-            title: const Text('Responsibilities'),
-            onTap: () {
-              context.pop();
-              context.push("/eventResponsibilities", extra: widget.curEvent);
-              // Update the state of the app.
-              // ...
-            },
-          ),
-          BlocBuilder<HangEventPollsBloc, HangEventPollsState>(
+          BlocBuilder<UserEventIncompleteStatusBloc,
+              UserEventIncompleteStatusState>(
             builder: (context, state) {
               return ListTile(
-                  title: const Text('Polls'),
-                  onTap: () {
-                    context.pop();
-                    context.push("/eventPolls", extra: widget.curEvent);
-                    // Update the state of the app.
-                    // ...
-                  },
-                  trailing: getTrailingPollWidget(state));
+                title: const Text('Responsibilities'),
+                onTap: () {
+                  context.pop();
+                  context.push("/eventResponsibilities",
+                      extra: widget.curEvent);
+                },
+                trailing: getTrailingWidget(
+                    state,
+                    (hangEventOverviewState) =>
+                        hangEventOverviewState.incompleteResponsibilitiesCount),
+              );
+            },
+          ),
+          BlocBuilder<UserEventIncompleteStatusBloc,
+              UserEventIncompleteStatusState>(
+            builder: (context, state) {
+              return ListTile(
+                title: const Text('Polls'),
+                onTap: () {
+                  context.pop();
+                  context.push("/eventPolls", extra: widget.curEvent);
+                  // Update the state of the app.
+                  // ...
+                },
+                trailing: getTrailingWidget(
+                    state,
+                    (hangEventOverviewState) =>
+                        hangEventOverviewState.incompletePollCount),
+              );
             },
           ),
         ],

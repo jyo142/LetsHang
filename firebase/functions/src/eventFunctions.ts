@@ -45,33 +45,33 @@ export const onUserInvitedToEvent = onDocumentCreated(
       const newNotification = await addNotification(
         snap.params.userId,
         `You have been invited to the event : ${eventSnapshot.get(
-          "eventName",
+          "eventName"
         )}`,
         { eventId: snap.params.eventId },
         snap.data.get("invitingUser"),
         eventSnapshot.get("eventEndDate"),
-        "invitation",
+        "invitation"
       );
 
       await sendNotification(
         userSnapshot,
         "New Event Invitation",
         `Hello ${userSnapshot.get(
-          "name",
+          "name"
         )}, you have been invited to the event :  ${eventSnapshot.get(
-          "eventName",
+          "eventName"
         )}`,
         newNotification.id,
         snap.params.eventId,
         "Event",
-        "Invitation",
+        "Invitation"
       );
     } else {
       error(
-        `Unable to send notification to user ${snap.params.userId} for event ${snap.params.eventId}`,
+        `Unable to send notification to user ${snap.params.userId} for event ${snap.params.eventId}`
       );
     }
-  },
+  }
 );
 
 export const onUserEventInviteChanged = onDocumentUpdated(
@@ -113,7 +113,7 @@ export const onUserEventInviteChanged = onDocumentUpdated(
         newUserInviteTitle,
         snap.params.userId,
         snap.params.eventId,
-        newUserInviteData?.get("invitingUser"),
+        newUserInviteData?.get("invitingUser")
       );
     }
     if (isStatusDifferent) {
@@ -122,7 +122,7 @@ export const onUserEventInviteChanged = onDocumentUpdated(
         userSnapshot,
         newUserInviteStatus,
         snap.params.eventId,
-        newUserInviteData?.get("invitingUser"),
+        newUserInviteData?.get("invitingUser")
       );
 
       if (newUserInviteStatus === "accepted") {
@@ -148,7 +148,7 @@ export const onUserEventInviteChanged = onDocumentUpdated(
             snap.params.userId,
             eventDiscussionsColRef,
             mainEventDiscussionSnap,
-            newUserDiscussionMember,
+            newUserDiscussionMember
           );
 
           const mainDiscussionSnap = mainEventDiscussionSnap.docs[0];
@@ -156,7 +156,7 @@ export const onUserEventInviteChanged = onDocumentUpdated(
           const newDiscussionMembers = mainDiscussionData.discussionMembers;
           if (
             !newDiscussionMembers.some(
-              (u: any) => u.userId === newUserDiscussionMember.userId,
+              (u: any) => u.userId === newUserDiscussionMember.userId
             )
           ) {
             newDiscussionMembers.push(newUserDiscussionMember);
@@ -166,17 +166,17 @@ export const onUserEventInviteChanged = onDocumentUpdated(
           await createUserDiscussionsFromEvent(
             mainDiscussionSnap,
             newDiscussionMembers,
-            snap.params.eventId,
+            snap.params.eventId
           );
         } else {
           info(
             "UNABLE TO FIND MAIN EVENT DISCUSSION FOR EVENT ",
-            snap.params.eventId,
+            snap.params.eventId
           );
         }
       }
     }
-  },
+  }
 );
 
 export const onUserEventInviteDeleted = onDocumentDeleted(
@@ -213,12 +213,12 @@ export const onUserEventInviteDeleted = onDocumentDeleted(
       await removeUserFromDiscussion(
         snap.params.userId,
         hangEventDiscussionsColRef,
-        mainEventDiscussionSnap,
+        mainEventDiscussionSnap
       );
     } else {
       info(
         "UNABLE TO FIND MAIN EVENT DISCUSSION FOR EVENT ",
-        snap.params.eventId,
+        snap.params.eventId
       );
     }
 
@@ -235,12 +235,12 @@ export const onUserEventInviteDeleted = onDocumentDeleted(
       await removeUserDiscussionForUser(
         snap.params.userId,
         userDiscussionDiscussionsColRef,
-        eventUserDiscussionSnap.docs[0].id,
+        eventUserDiscussionSnap.docs[0].id
       );
     } else {
       info("UNABLE TO FIND USER DISCUSSION FOR EVENT ", snap.params.eventId);
     }
-  },
+  }
 );
 
 export const onEventDiscussionModified = onDocumentUpdated(
@@ -268,15 +268,15 @@ export const onEventDiscussionModified = onDocumentUpdated(
     // create user discussions for all users in the event discussion
     const newDiscussionMembers = findNewDiscussionMembers(
       oldDiscussionData.get("discussionMembers"),
-      newDiscussionData.get("discussionMembers"),
+      newDiscussionData.get("discussionMembers")
     );
 
     await createUserDiscussionsFromEvent(
       snapData,
       newDiscussionMembers,
-      snap.params.eventId,
+      snap.params.eventId
     );
-  },
+  }
 );
 
 export const onEventDiscussionCreated = onDocumentCreated(
@@ -303,9 +303,9 @@ export const onEventDiscussionCreated = onDocumentCreated(
     await createUserDiscussionsFromEvent(
       snapData,
       discussionMembers,
-      snap.params.eventId,
+      snap.params.eventId
     );
-  },
+  }
 );
 
 export const onEventAnnouncementCreated = onDocumentCreated(
@@ -343,7 +343,7 @@ export const onEventAnnouncementCreated = onDocumentCreated(
               { eventId: snap.params.eventId },
               snap.data.get("invitingUser"),
               eventSnapshot.get("eventEndDate"),
-              "eventAnnouncement",
+              "eventAnnouncement"
             );
 
             await sendNotification(
@@ -353,13 +353,13 @@ export const onEventAnnouncementCreated = onDocumentCreated(
               newNotification.id,
               snap.params.eventId,
               "Event",
-              "Announcement",
+              "Announcement"
             );
           }
         }
       }
     }
-  },
+  }
 );
 
 export const onEventPollCreated = onDocumentCreated(
@@ -394,12 +394,43 @@ export const onEventPollCreated = onDocumentCreated(
             snap.params.eventPollId,
             snap.data,
             eventSnapshot,
-            userDoc,
+            userDoc
           );
         }
       }
     }
-  },
+  }
+);
+
+export const onEventResponsibilityCreated = onDocumentCreated(
+  "/hangEvents/{eventId}/responsibilities/{eventResponsibilityId}",
+  async (snap) => {
+    if (!snap.data) {
+      info("No data");
+      return;
+    }
+
+    const eventSnapshot = await db
+      .collection("hangEvents")
+      .doc(snap.params.eventId)
+      .get();
+
+    const assignedUser = snap.data.get("assignedUser");
+    const userSnapshot = await db
+      .collection("users")
+      .doc(assignedUser.userId)
+      .get();
+
+    // send notification to user
+    await sendEventResponsibilityNotificationToUser(
+      assignedUser.userId,
+      snap.params.eventId,
+      snap.params.eventResponsibilityId,
+      snap.data,
+      eventSnapshot,
+      userSnapshot
+    );
+  }
 );
 
 const sendEventPollNotificationToUser = async (
@@ -408,7 +439,7 @@ const sendEventPollNotificationToUser = async (
   eventPollId: string,
   pollData: QueryDocumentSnapshot,
   eventSnapshot: DocumentSnapshot,
-  userDoc: DocumentReference,
+  userDoc: DocumentReference
 ) => {
   const creatingUser = pollData.get("creatingUser");
   if (userId !== creatingUser.userId) {
@@ -421,7 +452,7 @@ const sendEventPollNotificationToUser = async (
       { eventId },
       pollData.get("invitingUser"),
       eventSnapshot.get("eventEndDate"),
-      "eventPoll",
+      "eventPoll"
     );
 
     await sendNotification(
@@ -434,9 +465,43 @@ const sendEventPollNotificationToUser = async (
       "NewPoll",
       {
         eventPollId,
-      },
+      }
     );
   }
+};
+
+const sendEventResponsibilityNotificationToUser = async (
+  userId: string,
+  eventId: string,
+  eventResponsibilityId: string,
+  responsibilityData: QueryDocumentSnapshot,
+  eventSnapshot: DocumentSnapshot,
+  userSnapshot: DocumentSnapshot
+) => {
+  // only send the announcement notifications to the users that did not create the announcement
+  info("Sending Responsibility notification to user : ", userId);
+  const creatingUser = responsibilityData.get("creatingUser");
+  const newNotification = await addNotification(
+    userId,
+    "NEW EVENT RESPONSIBILITY",
+    { eventId },
+    creatingUser,
+    eventSnapshot.get("eventEndDate"),
+    "eventResponsibility"
+  );
+
+  await sendNotification(
+    userSnapshot,
+    `New responsibility for event : ${eventSnapshot.get("eventName")}`,
+    `${creatingUser.name} has assigned you a responsibility for this event`,
+    newNotification.id,
+    eventId,
+    "Event",
+    "NewResponsibility",
+    {
+      eventResponsibilityId,
+    }
+  );
 };
 const handleUserPromotionEvent = async (
   eventSnapshot: DocumentSnapshot,
@@ -444,7 +509,7 @@ const handleUserPromotionEvent = async (
   newUserInviteTitle: string,
   userId: string,
   eventId: string,
-  invitingUser?: any,
+  invitingUser?: any
 ) => {
   if (
     eventSnapshot.exists &&
@@ -454,25 +519,25 @@ const handleUserPromotionEvent = async (
     const newNotification = await addNotification(
       userId,
       `You have been promoted to admin for the event : ${eventSnapshot.get(
-        "eventName",
+        "eventName"
       )}`,
       { eventId: eventId },
       invitingUser,
       eventSnapshot.get("eventEndDate"),
-      "promotion",
+      "promotion"
     );
     await sendNotification(
       userSnapshot,
       "Event Admin Promotion",
       `Hello ${userSnapshot.get(
-        "name",
+        "name"
       )}, you have been promoted to admin for the event : ${eventSnapshot.get(
-        "eventName",
+        "eventName"
       )}`,
       newNotification.id,
       eventId,
       "Event",
-      "Promotion",
+      "Promotion"
     );
   } else {
     error(`Unable to send notification to user ${userId} for event ${eventId}`);
@@ -481,7 +546,7 @@ const handleUserPromotionEvent = async (
 
 const sendGoogleCalendarInvite = async (
   userId: string,
-  eventSnapshot: DocumentSnapshot,
+  eventSnapshot: DocumentSnapshot
 ) => {
   info("Sending google calendar invite");
   const userSettingsSnapshot = await db
@@ -536,7 +601,7 @@ const handleUserStatusChange = async (
   userSnapshot: DocumentSnapshot,
   newUserStatus: string,
   eventId: string,
-  invitingUser?: any,
+  invitingUser?: any
 ) => {
   const eventOwner = eventSnapshot.get("eventOwner");
   if (eventSnapshot.exists && userSnapshot.exists) {
@@ -544,7 +609,7 @@ const handleUserStatusChange = async (
       "Event",
       newUserStatus,
       userSnapshot,
-      eventSnapshot.get("eventName"),
+      eventSnapshot.get("eventName")
     );
     const newNotification = await addNotification(
       eventOwner.userId,
@@ -553,7 +618,7 @@ const handleUserStatusChange = async (
         eventId: eventId,
       },
       invitingUser,
-      eventSnapshot.get("eventEndDate"),
+      eventSnapshot.get("eventEndDate")
     );
 
     await sendNotification(
@@ -563,11 +628,11 @@ const handleUserStatusChange = async (
       newNotification.id,
       eventId,
       "Event",
-      "",
+      ""
     );
   } else {
     error(
-      `Unable to send notification to user ${eventOwner.email} for event ${eventId}`,
+      `Unable to send notification to user ${eventOwner.email} for event ${eventId}`
     );
   }
 };

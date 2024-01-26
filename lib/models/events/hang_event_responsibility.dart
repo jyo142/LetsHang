@@ -8,6 +8,7 @@ class HangEventResponsibility extends Equatable {
   final String? id;
   final String responsibilityContent;
   final HangUserPreview assignedUser;
+  final HangUserPreview creatingUser;
   final DateTime creationDate;
   final HangEventPreview? event;
   final DateTime? completedDate;
@@ -16,6 +17,7 @@ class HangEventResponsibility extends Equatable {
       {this.id,
       required this.responsibilityContent,
       required this.assignedUser,
+      required this.creatingUser,
       required this.creationDate,
       this.event,
       this.completedDate});
@@ -27,6 +29,7 @@ class HangEventResponsibility extends Equatable {
             responsibilityContent:
                 hangEventResponsibility.responsibilityContent,
             assignedUser: hangEventResponsibility.assignedUser,
+            creatingUser: hangEventResponsibility.creatingUser,
             creationDate: hangEventResponsibility.creationDate,
             event: hangEventResponsibility.event,
             completedDate: hangEventResponsibility.completedDate);
@@ -35,6 +38,7 @@ class HangEventResponsibility extends Equatable {
       {String? id,
       String? messageContent,
       HangUserPreview? assignedUser,
+      HangUserPreview? creatingUser,
       DateTime? creationDate,
       HangEventPreview? event,
       DateTime? completedDate}) {
@@ -42,6 +46,7 @@ class HangEventResponsibility extends Equatable {
         id: id ?? this.id,
         responsibilityContent: messageContent ?? this.responsibilityContent,
         assignedUser: assignedUser ?? this.assignedUser,
+        creatingUser: creatingUser ?? this.creatingUser,
         creationDate: creationDate ?? this.creationDate,
         event: event ?? this.event,
         completedDate: completedDate ?? this.completedDate);
@@ -56,6 +61,7 @@ class HangEventResponsibility extends Equatable {
         id: map['id'],
         responsibilityContent: map['responsibilityContent'],
         assignedUser: HangUserPreview.fromMap(map['assignedUser']),
+        creatingUser: HangUserPreview.fromMap(map['creatingUser']),
         creationDate: map["creationDate"].toDate(),
         event: HangEventPreview.fromMap(map["event"]),
         completedDate: map.getFromMap("completedDate", (key) => key.toDate()));
@@ -68,6 +74,7 @@ class HangEventResponsibility extends Equatable {
       'id': id,
       'responsibilityContent': responsibilityContent,
       'assignedUser': assignedUser.toDocument(),
+      'creatingUser': creatingUser.toDocument(),
       'creationDate': Timestamp.fromDate(creationDate),
       'event': event?.toDocument(),
       'completedDate':
@@ -81,6 +88,7 @@ class HangEventResponsibility extends Equatable {
         id,
         responsibilityContent,
         assignedUser,
+        creatingUser,
         creationDate,
         event,
         completedDate

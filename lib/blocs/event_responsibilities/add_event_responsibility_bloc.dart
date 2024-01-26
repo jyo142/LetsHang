@@ -27,18 +27,19 @@ class AddEventResponsibilityBloc
       emit(state.copyWith(
           addEventResponsibilityStateStatus:
               AddEventResponsibilityStateStatus.addingEventResponsibility));
-      emit(await _mapAddEventResponsibility(event.eventId));
+      emit(await _mapAddEventResponsibility(event.eventId, event.creatingUser));
     });
   }
 
   Future<AddEventResponsibilityState> _mapAddEventResponsibility(
-      String eventId) async {
+      String eventId, HangUserPreview creatingUser) async {
     try {
       await _responsibilitiesRepository.addEventResponsibility(
           eventId,
           HangEventResponsibility(
               responsibilityContent: state.responsibilityContent!,
               assignedUser: state.responsibilityUser!,
+              creatingUser: creatingUser,
               creationDate: DateTime.now()));
 
       return state.copyWith(

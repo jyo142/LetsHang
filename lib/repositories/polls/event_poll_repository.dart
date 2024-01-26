@@ -78,8 +78,8 @@ class EventPollRepository extends BaseEventPollRepository {
         .doc(eventId)
         .collection("polls");
     // add a user event poll to notify user that they need to fill out the poll
-    await addUpdateUserEventPoll(
-        userEventPollRef, savingPoll.creatingUser.userId, savingPoll.id!);
+    await addUpdateUserEventPoll(userEventPollRef,
+        savingPoll.creatingUser.userId, savingPoll.id!, false);
 
     return savingPoll;
   }
@@ -126,12 +126,12 @@ class EventPollRepository extends BaseEventPollRepository {
         .collection("polls");
     // after adding the poll result make sure to add a user poll to indicate that the user filled out the poll
     await addUpdateUserEventPoll(userEventPollRef,
-        savingPollResult.pollUser.userId, savingPollResult.pollId);
+        savingPollResult.pollUser.userId, savingPollResult.pollId, true);
     return savingPollResult;
   }
 
   Future<void> addUpdateUserEventPoll(CollectionReference userEventPollRef,
-      String userId, String pollId) async {
+      String userId, String pollId, bool isCompleted) async {
     QuerySnapshot userEventPollQuerySnap =
         await userEventPollRef.where("pollId", isEqualTo: pollId).get();
 
@@ -140,7 +140,7 @@ class EventPollRepository extends BaseEventPollRepository {
           id: userEventPollRef.doc().id,
           userId: userId,
           pollId: pollId,
-          completedDate: DateTime.now());
+          completedDate: isCompleted ? DateTime.now() : null);
       userEventPollRef
           .doc(newUserHangEventPoll.id)
           .set(newUserHangEventPoll.toDocument());
@@ -169,7 +169,8 @@ class EventPollRepository extends BaseEventPollRepository {
   }
 
   @override
-  Future<int> getNewUserPollCount(String eventId, String userId) async {
+  Future<int> getNonCompletedUserPollCount(
+      String eventId, String userId) async {
     AggregateQuerySnapshot hangEventPollResultsSnapshots =
         await _firebaseFirestore
             .collection('users')
@@ -177,7 +178,7 @@ class EventPollRepository extends BaseEventPollRepository {
             .collection("eventPolls")
             .doc(eventId)
             .collection("polls")
-            .where("completionDate", isNull: true)
+            .where("completedDate", isNull: true)
             .count()
             .get();
     return hangEventPollResultsSnapshots.count;
