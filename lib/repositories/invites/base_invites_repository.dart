@@ -62,4 +62,5 @@ abstract class BaseUserInvitesRepository {
   // accepted invites
   Future<List<UserInvite>> getEventAcceptedUserInvites(String eventId);
   Future<List<UserInvite>> getGroupAcceptedUserInvites(String groupId);
+  Future<int> getEventAcceptedUserInvitesCount(String eventId);
 }

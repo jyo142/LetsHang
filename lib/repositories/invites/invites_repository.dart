@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
-import 'package:googleapis/photoslibrary/v1.dart';
 import 'package:letshang/models/event_invite.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:letshang/models/group_invite.dart';
@@ -980,6 +979,22 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
     List<UserInvite> acceptedGroupUserInvites =
         await getAcceptedUserInvites(groupInviteCollectionRef);
     return acceptedGroupUserInvites;
+  }
+
+  @override
+  Future<int> getEventAcceptedUserInvitesCount(String eventId) async {
+    AggregateQuerySnapshot acceptedInvitesCount = await _firebaseFirestore
+        .collection("hangEvents")
+        .doc(eventId)
+        .collection("invites")
+        .where("status", whereIn: [
+          describeEnum(InviteStatus.accepted),
+          describeEnum(InviteStatus.owner)
+        ])
+        .count()
+        .get();
+
+    return acceptedInvitesCount.count;
   }
 
   Future<List<UserInvite>> getAcceptedUserInvites(

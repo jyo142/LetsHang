@@ -1,48 +1,52 @@
-part of 'user_event_incomplete_status_bloc.dart';
+part of 'user_hang_event_status_bloc.dart';
 
-enum UserEventIncompleteStatusStateStatus {
+enum UserEventStatusStateStatus {
   initial,
   loading,
   retrievedUserIncompleteStatus,
   error
 }
 
-class UserEventIncompleteStatusState extends Equatable {
-  final UserEventIncompleteStatusStateStatus
-      userEventIncompleteStatusStateStatus;
+class UserEventStatusState extends Equatable {
+  final UserEventStatusStateStatus userEventStatusStateStatus;
   final int incompleteResponsibilitiesCount;
   final int incompletePollCount;
+  final int eventParticipantsCount;
   final bool hasIncomplete;
 
-  const UserEventIncompleteStatusState({
-    required this.userEventIncompleteStatusStateStatus,
+  const UserEventStatusState({
+    required this.userEventStatusStateStatus,
     this.incompleteResponsibilitiesCount = 0,
     this.incompletePollCount = 0,
+    this.eventParticipantsCount = 0,
     this.hasIncomplete = false,
   });
 
-  UserEventIncompleteStatusState copyWith({
-    UserEventIncompleteStatusStateStatus? userEventIncompleteStatusStateStatus,
+  UserEventStatusState copyWith({
+    UserEventStatusStateStatus? userEventStatusStateStatus,
     int? incompleteResponsibilitiesCount,
     int? incompletePollCount,
+    int? eventParticipantsCount,
     bool? hasIncomplete,
   }) {
-    return UserEventIncompleteStatusState(
-      userEventIncompleteStatusStateStatus:
-          userEventIncompleteStatusStateStatus ??
-              this.userEventIncompleteStatusStateStatus,
+    return UserEventStatusState(
+      userEventStatusStateStatus:
+          userEventStatusStateStatus ?? this.userEventStatusStateStatus,
       incompleteResponsibilitiesCount: incompleteResponsibilitiesCount ??
           this.incompleteResponsibilitiesCount,
       incompletePollCount: incompletePollCount ?? this.incompletePollCount,
+      eventParticipantsCount:
+          eventParticipantsCount ?? this.eventParticipantsCount,
       hasIncomplete: hasIncomplete ?? this.hasIncomplete,
     );
   }
 
   @override
   List<Object?> get props => [
-        userEventIncompleteStatusStateStatus,
+        userEventStatusStateStatus,
         incompleteResponsibilitiesCount,
         incompletePollCount,
+        eventParticipantsCount,
         hasIncomplete
       ];
 }

@@ -5,12 +5,13 @@ import 'package:intl/intl.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/event_announcements/hang_event_announcements_bloc.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
-import 'package:letshang/blocs/hang_event_overview/user_event_incomplete_status_bloc.dart';
+import 'package:letshang/blocs/hang_event_overview/user_hang_event_status_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/screens/events/event_details_fab.dart';
 import 'package:letshang/services/message_service.dart';
+import 'package:letshang/widgets/cards/event_announcement_card.dart';
 import 'package:letshang/widgets/cards/user_event_card.dart';
 import 'package:letshang/widgets/lh_button.dart';
 import 'package:badges/badges.dart' as badges;
@@ -35,9 +36,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     context
         .read<HangEventOverviewBloc>()
         .add(LoadIndividualEvent(eventId: widget.eventId));
-    context.read<UserEventIncompleteStatusBloc>().add(
-        GetUserEventIncompleteStatus(
-            eventId: widget.eventId, userId: curUser.id!));
+    context
+        .read<UserHangEventStatusBloc>()
+        .add(GetUserEventStatus(eventId: widget.eventId, userId: curUser.id!));
     context
         .read<HangEventAnnouncementsBloc>()
         .add(LoadEventAnnouncements(eventId: widget.eventId));
@@ -110,8 +111,8 @@ class _EventDetailsView extends StatelessWidget {
                   },
                 ),
                 IconButton(
-                  icon: BlocBuilder<UserEventIncompleteStatusBloc,
-                      UserEventIncompleteStatusState>(
+                  icon: BlocBuilder<UserHangEventStatusBloc,
+                      UserEventStatusState>(
                     builder: (context, state) {
                       if (state.hasIncomplete) {
                         return const badges.Badge(
@@ -354,11 +355,11 @@ class _EventAnnouncementsViewState extends State<_EventAnnouncementsView> {
                       },
                     );
                   },
-                  child: Center(
-                      child: Text(
-                    i.announcementContent,
-                    style: Theme.of(context).textTheme.headline6,
-                  )),
+                  child: Padding(
+                      padding: EdgeInsets.only(left: 5, right: 5),
+                      child: EventAnnouncementCard(
+                        announcementContent: i.announcementContent,
+                      )),
                 );
               }).toList(),
             ),
@@ -408,19 +409,36 @@ class _EventDetailsDrawerState extends State<_EventDetailsDrawer> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    Widget? getTrailingWidget(
-        UserEventIncompleteStatusState userEventIncompleteStatusState,
-        int Function(UserEventIncompleteStatusState) countGetter) {
-      if (userEventIncompleteStatusState.userEventIncompleteStatusStateStatus ==
-          UserEventIncompleteStatusStateStatus.loading) {
+  Widget build(
+    BuildContext context,
+  ) {
+    Widget? getTrailingWidget(UserEventStatusState userEventStatusState,
+        bool isAlert, int Function(UserEventStatusState) countGetter) {
+      if (userEventStatusState.userEventStatusStateStatus ==
+          UserEventStatusStateStatus.loading) {
         return const CircularProgressIndicator();
       }
-      if (countGetter(userEventIncompleteStatusState) > 0) {
-        return badges.Badge(
-          badgeContent:
-              Text(countGetter(userEventIncompleteStatusState).toString()),
-        );
+      if (countGetter(userEventStatusState) > 0) {
+        if (isAlert) {
+          return badges.Badge(
+            badgeContent: Text(countGetter(userEventStatusState).toString(),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyText2!
+                    .merge(const TextStyle(color: Colors.white))),
+          );
+        } else {
+          return badges.Badge(
+            badgeStyle: badges.BadgeStyle(
+              badgeColor: Color(0xFF0287BF),
+            ),
+            badgeContent: Text(countGetter(userEventStatusState).toString(),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyText2!
+                    .merge(const TextStyle(color: Colors.white))),
+          );
+        }
       }
       return null;
     }
@@ -439,17 +457,23 @@ class _EventDetailsDrawerState extends State<_EventDetailsDrawer> {
             ),
             child: Text('Drawer Header'),
           ),
-          ListTile(
-              title: const Text('Participants'),
-              onTap: () {
-                context.pop();
-                context.push("/eventParticipants", extra: widget.curEvent);
-              },
-              trailing: const badges.Badge(
-                badgeContent: Text("33"),
-              )),
-          BlocBuilder<UserEventIncompleteStatusBloc,
-              UserEventIncompleteStatusState>(
+          BlocBuilder<UserHangEventStatusBloc, UserEventStatusState>(
+            builder: (context, state) {
+              return ListTile(
+                title: const Text('Participants'),
+                onTap: () {
+                  context.pop();
+                  context.push("/eventParticipants", extra: widget.curEvent);
+                },
+                trailing: getTrailingWidget(
+                    state,
+                    false,
+                    (hangEventOverviewState) =>
+                        hangEventOverviewState.eventParticipantsCount),
+              );
+            },
+          ),
+          BlocBuilder<UserHangEventStatusBloc, UserEventStatusState>(
             builder: (context, state) {
               return ListTile(
                 title: const Text('Responsibilities'),
@@ -460,13 +484,13 @@ class _EventDetailsDrawerState extends State<_EventDetailsDrawer> {
                 },
                 trailing: getTrailingWidget(
                     state,
+                    true,
                     (hangEventOverviewState) =>
                         hangEventOverviewState.incompleteResponsibilitiesCount),
               );
             },
           ),
-          BlocBuilder<UserEventIncompleteStatusBloc,
-              UserEventIncompleteStatusState>(
+          BlocBuilder<UserHangEventStatusBloc, UserEventStatusState>(
             builder: (context, state) {
               return ListTile(
                 title: const Text('Polls'),
@@ -478,6 +502,7 @@ class _EventDetailsDrawerState extends State<_EventDetailsDrawer> {
                 },
                 trailing: getTrailingWidget(
                     state,
+                    true,
                     (hangEventOverviewState) =>
                         hangEventOverviewState.incompletePollCount),
               );
