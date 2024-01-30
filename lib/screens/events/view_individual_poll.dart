@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_polls/flutter_polls.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
+import 'package:letshang/blocs/event_polls/hang_event_polls_bloc.dart';
 import 'package:letshang/blocs/event_polls/individual_event_poll_bloc.dart';
+import 'package:letshang/blocs/hang_event_overview/user_hang_event_status_bloc.dart';
 import 'package:letshang/models/events/hang_event_poll.dart';
 import 'package:letshang/models/events/hang_event_poll_result.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
@@ -56,6 +58,10 @@ class _ViewIndividualEventPollsView extends StatelessWidget {
               context: context);
           context.read<IndividualEventPollBloc>().add(LoadIndividualPollResults(
               eventId: eventPoll.event!.eventId, pollId: eventPoll.id!));
+          context.read<HangEventPollsBloc>().add(LoadEventPolls(
+              eventId: eventPoll.event!.eventId, userId: curUser.id!));
+          context.read<UserHangEventStatusBloc>().add(UpdateUserEventPollStatus(
+              eventId: eventPoll.event!.eventId, userId: curUser.id!));
         }
       },
       builder: (context, state) {
@@ -87,6 +93,7 @@ class _ViewIndividualEventPollsView extends StatelessWidget {
                 onPressed: () {
                   context.read<IndividualEventPollBloc>().add(ResetPollVote(
                       eventId: eventPoll.event!.eventId,
+                      userId: curUser.id!,
                       pollId: eventPoll.id!,
                       pollResultId:
                           state.userIdToPollResult![curUser.id]!.id!));

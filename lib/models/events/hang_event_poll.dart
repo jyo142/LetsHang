@@ -4,6 +4,16 @@ import 'package:letshang/models/hang_event_preview.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/utils/firebase_utils.dart';
 
+class HangEventPollWithResultCount {
+  final HangEventPoll eventPoll;
+  final int resultCount;
+  final bool userCompleted;
+  const HangEventPollWithResultCount(
+      {required this.eventPoll,
+      required this.resultCount,
+      required this.userCompleted});
+}
+
 class HangEventPoll extends Equatable {
   final String? id;
   final String pollName;

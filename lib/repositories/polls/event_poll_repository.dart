@@ -51,6 +51,53 @@ class EventPollRepository extends BaseEventPollRepository {
   }
 
   @override
+  Future<List<HangEventPollWithResultCount>> getActiveEventPollsWithResultCount(
+      String eventId, String userId) async {
+    List<HangEventPoll> activePolls = await getEventPolls(eventId, true);
+
+    List<HangEventPollWithResultCount> results =
+        await Future.wait(activePolls.map((e) async {
+      final pollResultCount = await getResultCountForPoll(eventId, e.id!);
+      final hasUserCompleted =
+          await hasUserCompletedPoll(eventId, e.id!, userId);
+      return HangEventPollWithResultCount(
+          eventPoll: e,
+          resultCount: pollResultCount,
+          userCompleted: hasUserCompleted);
+    }));
+
+    return results;
+  }
+
+  Future<int> getResultCountForPoll(String eventId, String pollId) async {
+    AggregateQuerySnapshot pollResultCountQuery = await _firebaseFirestore
+        .collection('hangEvents')
+        .doc(eventId)
+        .collection("polls")
+        .doc(pollId)
+        .collection("results")
+        .count()
+        .get();
+
+    return pollResultCountQuery.count;
+  }
+
+  Future<bool> hasUserCompletedPoll(
+      String eventId, String pollId, String userId) async {
+    AggregateQuerySnapshot pollResultCountQuery = await _firebaseFirestore
+        .collection('hangEvents')
+        .doc(eventId)
+        .collection("polls")
+        .doc(pollId)
+        .collection("results")
+        .where("pollUser.userId", isEqualTo: userId)
+        .count()
+        .get();
+
+    return pollResultCountQuery.count != 0;
+  }
+
+  @override
   Future<HangEventPoll> addEventPoll(
       String eventId, HangEventPoll newPoll) async {
     CollectionReference hangEventPollRef = _firebaseFirestore
@@ -149,15 +196,18 @@ class EventPollRepository extends BaseEventPollRepository {
           userEventPollQuerySnap.docs[0].data() as Map<String, dynamic>;
       UserHangEventPoll curUserEventPoll =
           UserHangEventPoll.fromMap(userEventPollMap);
-      curUserEventPoll =
-          curUserEventPoll.copyWith(completedDate: DateTime.now());
-      userEventPollRef.doc(curUserEventPoll.id).set(curUserEventPoll);
+      curUserEventPoll = isCompleted
+          ? curUserEventPoll.copyWith(completedDate: DateTime.now())
+          : curUserEventPoll.resetCompletionDate();
+      userEventPollRef
+          .doc(curUserEventPoll.id)
+          .set(curUserEventPoll.toDocument());
     }
   }
 
   @override
   Future<void> removePollResult(
-      String eventId, String pollId, String pollResultId) async {
+      String eventId, String userId, String pollId, String pollResultId) async {
     await _firebaseFirestore
         .collection('hangEvents')
         .doc(eventId)
@@ -166,6 +216,15 @@ class EventPollRepository extends BaseEventPollRepository {
         .collection("results")
         .doc(pollResultId)
         .delete();
+
+    // update the user event poll collection to reset the completed date
+    CollectionReference userEventPollRef = _firebaseFirestore
+        .collection('users')
+        .doc(userId)
+        .collection("eventPolls")
+        .doc(eventId)
+        .collection("polls");
+    await addUpdateUserEventPoll(userEventPollRef, userId, pollId, false);
   }
 
   @override

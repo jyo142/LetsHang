@@ -24,6 +24,14 @@ class UserHangEventPoll extends Equatable {
         completedDate: completedDate ?? this.completedDate);
   }
 
+  UserHangEventPoll resetCompletionDate() {
+    return UserHangEventPoll(
+        id: this.id,
+        pollId: this.pollId,
+        userId: this.userId,
+        completedDate: null);
+  }
+
   static UserHangEventPoll fromSnapshot(DocumentSnapshot snap) {
     return fromMap(snap.data() as Map<String, dynamic>);
   }

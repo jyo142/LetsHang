@@ -37,7 +37,7 @@ class IndividualEventPollBloc
           individualEventPollStateStatus:
               IndividualEventPollStateStatus.loading));
       emit(await _resetPollVote(
-          event.eventId, event.pollId, event.pollResultId));
+          event.eventId, event.userId, event.pollId, event.pollResultId));
     });
   }
 
@@ -72,15 +72,15 @@ class IndividualEventPollBloc
     } catch (_) {
       return state.copyWith(
           individualEventPollStateStatus: IndividualEventPollStateStatus.error,
-          errorMessage: 'Unable to retrieve poll results for event.');
+          errorMessage: 'Unable to save poll results for event.');
     }
   }
 
   Future<IndividualEventPollState> _resetPollVote(
-      String eventId, String pollId, String pollResultId) async {
+      String eventId, String userId, String pollId, String pollResultId) async {
     try {
       await _eventPollRepository.removePollResult(
-          eventId, pollId, pollResultId);
+          eventId, userId, pollId, pollResultId);
 
       return state.copyWith(
           individualEventPollStateStatus:

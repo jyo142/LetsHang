@@ -33,18 +33,26 @@ class UserHangEventStatusBloc
         userId: event.userId,
       ));
     });
+    on<UpdateUserEventPollStatus>((event, emit) async {
+      emit(state.copyWith(
+          userEventStatusStateStatus: UserEventStatusStateStatus.loading));
+      emit(await _mapLoadUserEventPollStatus(
+        eventId: event.eventId,
+        userId: event.userId,
+      ));
+    });
   }
 
   Future<UserEventStatusState> _mapLoadUserEventIncompleteStatus({
     required String userId,
     required String eventId,
   }) async {
-    int pollIncompleteCount = await getStatusCount((userId, eventId) async {
+    int responsibilityIncompleteCount =
+        await getStatusCount((userId, eventId) async {
       return await _responsibilitiesRepository
           .getNonCompletedUserResponsibilityCount(eventId, userId);
     }, userId, eventId);
-    int responsibilityIncompleteCount =
-        await getStatusCount((userId, eventId) async {
+    int pollIncompleteCount = await getStatusCount((userId, eventId) async {
       return await _eventPollRepository.getNonCompletedUserPollCount(
           eventId, userId);
     }, userId, eventId);
@@ -60,6 +68,22 @@ class UserHangEventStatusBloc
         eventParticipantsCount: eventParticipantsCount,
         hasIncomplete:
             pollIncompleteCount > 0 || responsibilityIncompleteCount > 0);
+  }
+
+  Future<UserEventStatusState> _mapLoadUserEventPollStatus({
+    required String userId,
+    required String eventId,
+  }) async {
+    int pollIncompleteCount = await getStatusCount((userId, eventId) async {
+      return await _eventPollRepository.getNonCompletedUserPollCount(
+          eventId, userId);
+    }, userId, eventId);
+    return state.copyWith(
+        userEventStatusStateStatus:
+            UserEventStatusStateStatus.retrievedUserIncompleteStatus,
+        incompletePollCount: pollIncompleteCount,
+        hasIncomplete: state.incompleteResponsibilitiesCount > 0 &&
+            pollIncompleteCount > 0);
   }
 
   Future<int> getStatusCount(Future<int> Function(String, String) getCountFunc,

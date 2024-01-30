@@ -1,12 +1,8 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:letshang/blocs/user_settings/user_settings_bloc.dart';
 import 'package:letshang/models/discussions/discussion_model.dart';
-import 'package:letshang/models/discussions/event_discussions_model.dart';
-import 'package:letshang/models/notifications_model.dart';
 import 'package:letshang/repositories/discussions/base_discussions_repository.dart';
 import 'package:letshang/repositories/discussions/discussions_repository.dart';
-import 'package:letshang/repositories/notifications/notifications_repository.dart';
 import 'package:equatable/equatable.dart';
 
 part 'discussions_state.dart';

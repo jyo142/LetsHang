@@ -16,3 +16,13 @@ class GetUserEventStatus extends UserHangEventStatusEvent {
   @override
   List<Object> get props => [eventId, userId];
 }
+
+class UpdateUserEventPollStatus extends UserHangEventStatusEvent {
+  final String eventId;
+  final String userId;
+  const UpdateUserEventPollStatus(
+      {required this.eventId, required this.userId});
+
+  @override
+  List<Object> get props => [eventId, userId];
+}

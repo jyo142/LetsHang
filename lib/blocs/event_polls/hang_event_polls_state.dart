@@ -11,7 +11,7 @@ enum HangEventPollsStateStatus {
 class HangEventPollsState extends Equatable {
   final HangEventPollsStateStatus hangEventPollsStateStatus;
   final HangEventPoll? individualEventPoll;
-  final List<HangEventPoll>? activeEventPolls;
+  final List<HangEventPollWithResultCount>? activeEventPolls;
   final String? errorMessage;
 
   const HangEventPollsState(
@@ -23,7 +23,7 @@ class HangEventPollsState extends Equatable {
   HangEventPollsState copyWith(
       {HangEventPollsStateStatus? hangEventPollsStateStatus,
       HangEventPoll? individualEventPoll,
-      List<HangEventPoll>? activeEventPolls,
+      List<HangEventPollWithResultCount>? activeEventPolls,
       String? errorMessage}) {
     return HangEventPollsState(
         hangEventPollsStateStatus:

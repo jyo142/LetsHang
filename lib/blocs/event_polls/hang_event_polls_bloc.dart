@@ -24,7 +24,7 @@ class HangEventPollsBloc
     on<LoadEventPolls>((event, emit) async {
       emit(state.copyWith(
           hangEventPollsStateStatus: HangEventPollsStateStatus.loading));
-      emit(await _mapLoadEventPolls(event.eventId));
+      emit(await _mapLoadEventPolls(event.eventId, event.userId));
     });
   }
 
@@ -51,10 +51,12 @@ class HangEventPollsBloc
     }
   }
 
-  Future<HangEventPollsState> _mapLoadEventPolls(String eventId) async {
+  Future<HangEventPollsState> _mapLoadEventPolls(
+      String eventId, String userId) async {
     try {
-      List<HangEventPoll>? retrievedActiveEventPolls =
-          await _eventPollRepository.getActiveEventPolls(eventId);
+      List<HangEventPollWithResultCount>? retrievedActiveEventPolls =
+          await _eventPollRepository.getActiveEventPollsWithResultCount(
+              eventId, userId);
 
       return state.copyWith(
         hangEventPollsStateStatus:

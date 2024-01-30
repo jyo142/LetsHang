@@ -4,6 +4,8 @@ import 'package:letshang/models/events/hang_event_poll_result.dart';
 abstract class BaseEventPollRepository {
   Future<List<HangEventPoll>> getActiveEventPolls(String eventId);
   Future<HangEventPoll?> getIndividualPoll(String eventId, String eventPollId);
+  Future<List<HangEventPollWithResultCount>> getActiveEventPollsWithResultCount(
+      String eventId, String userId);
 
   Future<HangEventPoll> addEventPoll(String eventId, HangEventPoll newPoll);
 
@@ -13,7 +15,7 @@ abstract class BaseEventPollRepository {
   Future<HangEventPollResult> addPollResult(
       String eventId, HangEventPollResult pollResult);
   Future<void> removePollResult(
-      String eventId, String pollId, String pollResultId);
+      String eventId, String userId, String pollId, String pollResultId);
 
   Future<int> getNonCompletedUserPollCount(String eventId, String userId);
 }

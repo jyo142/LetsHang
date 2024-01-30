@@ -36,14 +36,16 @@ class SubmitPollVote extends IndividualEventPollEvent {
 
 class ResetPollVote extends IndividualEventPollEvent {
   final String eventId;
+  final String userId;
   final String pollId;
   final String pollResultId;
 
   const ResetPollVote(
       {required this.eventId,
+      required this.userId,
       required this.pollId,
       required this.pollResultId});
 
   @override
-  List<Object> get props => [eventId, pollId, pollResultId];
+  List<Object> get props => [eventId, userId, pollId, pollResultId];
 }

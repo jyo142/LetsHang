@@ -3,8 +3,6 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:letshang/blocs/edit_hang_events/edit_hang_events_event.dart';
 import 'package:letshang/blocs/edit_hang_events/edit_hang_events_state.dart';
-import 'package:letshang/models/discussions/discussion_metadata.dart';
-import 'package:letshang/models/discussions/discussion_model.dart';
 import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/hang_event_preview.dart';

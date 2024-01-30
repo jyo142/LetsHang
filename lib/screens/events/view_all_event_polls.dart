@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/event_polls/hang_event_polls_bloc.dart';
 import 'package:letshang/models/events/hang_event_poll.dart';
 import 'package:letshang/models/hang_event_model.dart';
@@ -23,10 +24,12 @@ class ViewAllEventPolls extends StatefulWidget {
 class _ViewAllEventPollsState extends State<ViewAllEventPolls> {
   @override
   void initState() {
+    final curUser = (context.read<AppBloc>().state).authenticatedUser!;
+
     super.initState();
     context
         .read<HangEventPollsBloc>()
-        .add(LoadEventPolls(eventId: widget.hangEvent.id));
+        .add(LoadEventPolls(eventId: widget.hangEvent.id, userId: curUser.id!));
   }
 
   @override
@@ -92,9 +95,11 @@ class _ViewAllEventPollsView extends StatelessWidget {
                         final shouldRefresh =
                             await context.push("/createPoll", extra: hangEvent);
                         if (shouldRefresh as bool? ?? false) {
-                          context
-                              .read<HangEventPollsBloc>()
-                              .add(LoadEventPolls(eventId: hangEvent.id));
+                          final curUser = (context.read<AppBloc>().state)
+                              .authenticatedUser!;
+
+                          context.read<HangEventPollsBloc>().add(LoadEventPolls(
+                              eventId: hangEvent.id, userId: curUser.id!));
                           ;
                         }
                       },
@@ -202,7 +207,7 @@ class _ViewAllEventPollsView extends StatelessWidget {
 }
 
 class _EventPollsListView extends StatelessWidget {
-  final List<HangEventPoll> eventPolls;
+  final List<HangEventPollWithResultCount> eventPolls;
 
   const _EventPollsListView({Key? key, required this.eventPolls})
       : super(key: key);
@@ -216,7 +221,7 @@ class _EventPollsListView extends StatelessWidget {
               return Container(
                 margin: const EdgeInsets.only(top: 10),
                 child: HangEventPollCard(
-                  eventPoll: eventPolls[index],
+                  eventPollWithResultCount: eventPolls[index],
                 ),
               );
             }));
