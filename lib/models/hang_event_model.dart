@@ -6,7 +6,15 @@ import 'hang_user_preview_model.dart';
 
 enum HangEventType { public, private }
 
-enum HangEventStage { started, mainDetails, addingUsers, complete }
+enum HangEventStage {
+  started,
+  nameDescription,
+  dateTime,
+  location,
+  mainDetails,
+  addingUsers,
+  complete
+}
 
 class HangEvent extends HasUserInvites {
   final HangUserPreview eventOwner;

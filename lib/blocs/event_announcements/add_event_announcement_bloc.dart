@@ -1,7 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:letshang/models/events/hang_event_announcement.dart';
-import 'package:letshang/models/hang_user_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/repositories/event_announcements/base_event_announcements_repository.dart';
 import 'package:letshang/repositories/event_announcements/event_announcements_repository.dart';

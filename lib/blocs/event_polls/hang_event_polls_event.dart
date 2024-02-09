@@ -17,11 +17,31 @@ class LoadIndividualEventPoll extends HangEventPollsEvent {
   List<Object> get props => [eventId, eventPollId];
 }
 
-class LoadEventPolls extends HangEventPollsEvent {
+class LoadAllEventPolls extends HangEventPollsEvent {
   final String eventId;
   final String userId;
 
-  const LoadEventPolls({required this.eventId, required this.userId});
+  const LoadAllEventPolls({required this.eventId, required this.userId});
+
+  @override
+  List<Object> get props => [eventId, userId];
+}
+
+class LoadActiveEventPolls extends HangEventPollsEvent {
+  final String eventId;
+  final String userId;
+
+  const LoadActiveEventPolls({required this.eventId, required this.userId});
+
+  @override
+  List<Object> get props => [eventId, userId];
+}
+
+class LoadCompletedEventPolls extends HangEventPollsEvent {
+  final String eventId;
+  final String userId;
+
+  const LoadCompletedEventPolls({required this.eventId, required this.userId});
 
   @override
   List<Object> get props => [eventId, userId];

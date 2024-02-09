@@ -134,7 +134,7 @@ class ResponsibilitiesRepository extends BaseResponsibilitiesRepository {
           curUserEventResponsibility.copyWith(completedDate: DateTime.now());
       userEventResponsibilityRef
           .doc(curUserEventResponsibility.id)
-          .set(curUserEventResponsibility);
+          .set(curUserEventResponsibility.toDocument());
     }
   }
 

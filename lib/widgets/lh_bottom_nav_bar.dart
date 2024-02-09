@@ -52,7 +52,8 @@ class LHBottomNavBar extends StatelessWidget {
           ),
         ),
         onPressed: () {
-          context.pushNamed("editEvent");
+          // context.pushNamed("editEvent");
+          context.pushNamed("createEvent");
         },
         //params
       ),

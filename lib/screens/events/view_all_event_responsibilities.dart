@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/event_responsibilities/hang_event_responsibilities_bloc.dart';
+import 'package:letshang/blocs/hang_event_overview/user_hang_event_status_bloc.dart';
 import 'package:letshang/models/events/hang_event_responsibility.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/services/message_service.dart';
@@ -52,6 +54,8 @@ class _ViewAllEventResponsibilitiesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final curUser = (context.read<AppBloc>().state).authenticatedUser!;
+
     return BlocConsumer<HangEventResponsibilitiesBloc,
         HangEventResponsibilitiesState>(
       listener: (context, state) {
@@ -64,6 +68,9 @@ class _ViewAllEventResponsibilitiesView extends StatelessWidget {
           context
               .read<HangEventResponsibilitiesBloc>()
               .add(LoadEventResponsibilities(eventId: hangEvent.id));
+          context.read<UserHangEventStatusBloc>().add(
+              UpdateUserEventResponsibilityStatus(
+                  eventId: hangEvent.id, userId: curUser.id!));
         }
       },
       builder: (context, state) {
@@ -94,14 +101,9 @@ class _ViewAllEventResponsibilitiesView extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   OutlinedButton(
-                      onPressed: () async {
-                        final shouldRefresh = await context
-                            .push("/addEventResponsibility", extra: hangEvent);
-                        if (shouldRefresh as bool? ?? false) {
-                          context.read<HangEventResponsibilitiesBloc>().add(
-                              LoadEventResponsibilities(eventId: hangEvent.id));
-                          ;
-                        }
+                      onPressed: () {
+                        context.push("/addEventResponsibility",
+                            extra: hangEvent);
                       },
                       style: OutlinedButton.styleFrom(
                         backgroundColor: Colors.white,

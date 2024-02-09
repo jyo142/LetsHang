@@ -11,25 +11,25 @@ enum HangEventPollsStateStatus {
 class HangEventPollsState extends Equatable {
   final HangEventPollsStateStatus hangEventPollsStateStatus;
   final HangEventPoll? individualEventPoll;
-  final List<HangEventPollWithResultCount>? activeEventPolls;
+  final List<HangEventPollWithResultCount>? allEventPolls;
   final String? errorMessage;
 
   const HangEventPollsState(
       {required this.hangEventPollsStateStatus,
       this.individualEventPoll,
-      this.activeEventPolls,
+      this.allEventPolls,
       this.errorMessage});
 
   HangEventPollsState copyWith(
       {HangEventPollsStateStatus? hangEventPollsStateStatus,
       HangEventPoll? individualEventPoll,
-      List<HangEventPollWithResultCount>? activeEventPolls,
+      List<HangEventPollWithResultCount>? allEventPolls,
       String? errorMessage}) {
     return HangEventPollsState(
         hangEventPollsStateStatus:
             hangEventPollsStateStatus ?? this.hangEventPollsStateStatus,
         individualEventPoll: individualEventPoll ?? this.individualEventPoll,
-        activeEventPolls: activeEventPolls ?? this.activeEventPolls,
+        allEventPolls: allEventPolls ?? this.allEventPolls,
         errorMessage: errorMessage ?? this.errorMessage);
   }
 
@@ -37,7 +37,7 @@ class HangEventPollsState extends Equatable {
   List<Object?> get props => [
         hangEventPollsStateStatus,
         individualEventPoll,
-        activeEventPolls,
+        allEventPolls,
         errorMessage,
       ];
 }

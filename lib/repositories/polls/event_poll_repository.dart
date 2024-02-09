@@ -28,18 +28,16 @@ class EventPollRepository extends BaseEventPollRepository {
   }
 
   @override
-  Future<List<HangEventPoll>> getActiveEventPolls(String eventId) async {
-    List<HangEventPoll> activePolls = await getEventPolls(eventId, true);
-    return activePolls;
+  Future<List<HangEventPoll>> getAllEventPolls(String eventId) async {
+    List<HangEventPoll> allPolls = await getEventPolls(eventId);
+    return allPolls;
   }
 
-  Future<List<HangEventPoll>> getEventPolls(
-      String eventId, bool isActive) async {
+  Future<List<HangEventPoll>> getEventPolls(String eventId) async {
     QuerySnapshot snapshots = await _firebaseFirestore
         .collection('hangEvents')
         .doc(eventId)
         .collection("polls")
-        .where("completedDate", isNull: isActive)
         .get();
 
     final allEventPollSnapshots =
@@ -51,9 +49,9 @@ class EventPollRepository extends BaseEventPollRepository {
   }
 
   @override
-  Future<List<HangEventPollWithResultCount>> getActiveEventPollsWithResultCount(
+  Future<List<HangEventPollWithResultCount>> getAllEventPollsWithResultCount(
       String eventId, String userId) async {
-    List<HangEventPoll> activePolls = await getEventPolls(eventId, true);
+    List<HangEventPoll> activePolls = await getEventPolls(eventId);
 
     List<HangEventPollWithResultCount> results =
         await Future.wait(activePolls.map((e) async {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/event_polls/create_event_poll_bloc.dart';
+import 'package:letshang/blocs/event_polls/hang_event_polls_bloc.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -87,6 +88,8 @@ class _EventDetailsCreatePollViewState
                     CreateEventPollStateStatus.successfullyCreatedPoll) {
                   MessageService.showSuccessMessage(
                       content: "Poll successfully created", context: context);
+                  context.read<HangEventPollsBloc>().add(LoadActiveEventPolls(
+                      eventId: widget.hangEventId, userId: curUser.id!));
                   Navigator.pop(context, true);
                 }
               },

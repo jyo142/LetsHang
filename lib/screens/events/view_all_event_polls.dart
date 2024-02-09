@@ -27,9 +27,8 @@ class _ViewAllEventPollsState extends State<ViewAllEventPolls> {
     final curUser = (context.read<AppBloc>().state).authenticatedUser!;
 
     super.initState();
-    context
-        .read<HangEventPollsBloc>()
-        .add(LoadEventPolls(eventId: widget.hangEvent.id, userId: curUser.id!));
+    context.read<HangEventPollsBloc>().add(
+        LoadAllEventPolls(eventId: widget.hangEvent.id, userId: curUser.id!));
   }
 
   @override
@@ -91,17 +90,8 @@ class _ViewAllEventPollsView extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   OutlinedButton(
-                      onPressed: () async {
-                        final shouldRefresh =
-                            await context.push("/createPoll", extra: hangEvent);
-                        if (shouldRefresh as bool? ?? false) {
-                          final curUser = (context.read<AppBloc>().state)
-                              .authenticatedUser!;
-
-                          context.read<HangEventPollsBloc>().add(LoadEventPolls(
-                              eventId: hangEvent.id, userId: curUser.id!));
-                          ;
-                        }
+                      onPressed: () {
+                        context.push("/createPoll", extra: hangEvent);
                       },
                       style: OutlinedButton.styleFrom(
                         backgroundColor: Colors.white,
@@ -132,7 +122,7 @@ class _ViewAllEventPollsView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Text(
-                        'ACTIVE POLLS (${state.activeEventPolls != null ? state.activeEventPolls!.length : 0})',
+                        'ALL POLLS (${state.allEventPolls != null ? state.allEventPolls!.length : 0})',
                         style: Theme.of(context)
                             .textTheme
                             .bodyText1!
@@ -140,8 +130,8 @@ class _ViewAllEventPollsView extends StatelessWidget {
                       )
                     ],
                   ))),
-          if (state.activeEventPolls != null) ...[
-            _EventPollsListView(eventPolls: state.activeEventPolls!),
+          if (state.allEventPolls != null) ...[
+            _EventPollsListView(eventPolls: state.allEventPolls!),
           ] else
             Container(
                 margin: const EdgeInsets.only(top: 30),
@@ -156,50 +146,12 @@ class _ViewAllEventPollsView extends StatelessWidget {
                   children: [
                     Expanded(
                         child: Text(
-                      'No active responsibilities for this event',
+                      'No active polls for this event',
                       style: Theme.of(context).textTheme.bodyText1,
                       softWrap: true,
                     ))
                   ],
                 )),
-          // Flexible(
-          //     child: Container(
-          //         margin: const EdgeInsets.only(top: 30),
-          //         child: Row(
-          //           mainAxisAlignment: MainAxisAlignment.start,
-          //           children: [
-          //             Text(
-          //               'COMPLETED RESPONSIBILITIES (${state.completedEventResponsibilities != null ? state.completedEventResponsibilities!.length : 0})',
-          //               style: Theme.of(context)
-          //                   .textTheme
-          //                   .bodyText1!
-          //                   .merge(const TextStyle(color: Color(0x8004152D))),
-          //             )
-          //           ],
-          //         ))),
-          // if (state.completedEventResponsibilities != null) ...[
-          //   _ResponsibilitiesListView(
-          //       responsibilities: state.completedEventResponsibilities!),
-          // ] else
-          //   Container(
-          //       margin: const EdgeInsets.only(top: 30),
-          //       width: double.infinity,
-          //       decoration: BoxDecoration(
-          //         color: const Color(0xFFF4F8FA),
-          //         borderRadius: BorderRadius.circular(10),
-          //       ),
-          //       padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-          //       child: Row(
-          //         mainAxisAlignment: MainAxisAlignment.center,
-          //         children: [
-          //           Expanded(
-          //               child: Text(
-          //             'No completed responsibilities for this event',
-          //             style: Theme.of(context).textTheme.bodyText1,
-          //             softWrap: true,
-          //           ))
-          //         ],
-          //       )),
         ]);
       },
     );
@@ -220,7 +172,7 @@ class _EventPollsListView extends StatelessWidget {
             itemBuilder: (BuildContext context, int index) {
               return Container(
                 margin: const EdgeInsets.only(top: 10),
-                child: HangEventPollCard(
+                child: HangEventPollResultCard(
                   eventPollWithResultCount: eventPolls[index],
                 ),
               );

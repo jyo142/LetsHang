@@ -8,6 +8,9 @@ import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/screens/discussions/user_discussions_screen.dart';
 import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:letshang/screens/event_participants_screen.dart';
+import 'package:letshang/screens/events/create_event/create_event_screen.dart';
+import 'package:letshang/screens/events/create_event/create_event_shell.dart';
+import 'package:letshang/screens/events/create_event/type_of_event_screen.dart';
 import 'package:letshang/screens/events/event_details_add_announcement.dart';
 import 'package:letshang/screens/events/event_details_add_responsibility.dart';
 import 'package:letshang/screens/events/event_details_create_poll.dart';
@@ -37,6 +40,8 @@ final _shellNavigatorHomeKey =
     GlobalKey<NavigatorState>(debugLabel: 'shellHome');
 final _shellNavigatorEventsKey =
     GlobalKey<NavigatorState>(debugLabel: 'shellEvents');
+final _shellNavigatorCreateEventsKey =
+    GlobalKey<NavigatorState>(debugLabel: 'shellCreateEvents');
 final _shellNavigatorGroupsKey =
     GlobalKey<NavigatorState>(debugLabel: 'shellGroups');
 final _shellNavigatorDiscussionsKey =
@@ -208,6 +213,19 @@ abstract class AppRouter {
                 eventId: state.pathParameters["eventId"]!,
                 pollId: state.pathParameters["eventPollId"]!,
               ),
+            ),
+          ]),
+      ShellRoute(
+          navigatorKey: _shellNavigatorCreateEventsKey,
+          builder: (context, state, child) {
+            // the UI shell
+            return CreateEventShell(child: child);
+          },
+          routes: [
+            GoRoute(
+              name: "createEvent",
+              path: "/createEvent",
+              builder: (context, state) => const CreateEventScreen(),
             ),
           ]),
       GoRoute(

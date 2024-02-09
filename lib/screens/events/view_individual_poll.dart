@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_polls/flutter_polls.dart';
+import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/event_polls/hang_event_polls_bloc.dart';
 import 'package:letshang/blocs/event_polls/individual_event_poll_bloc.dart';
@@ -47,6 +48,37 @@ class _ViewIndividualEventPollsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final curUser = (context.read<AppBloc>().state).authenticatedUser!;
 
+    void startResetVote(BuildContext context, String pollResultId) {
+      showDialog(
+        context: context,
+        builder: (BuildContext alertContext) {
+          return AlertDialog(
+            title: const Text("Confirm Reset Vote"),
+            content: const Text("Are you sure you want to reset your vote?"),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    alertContext.read<IndividualEventPollBloc>().add(
+                        ResetPollVote(
+                            eventId: eventPoll.event!.eventId,
+                            userId: curUser.id!,
+                            pollId: eventPoll.id!,
+                            pollResultId: pollResultId));
+                    alertContext.pop();
+                  },
+                  child: const Text("Reset")),
+              TextButton(
+                  onPressed: () {
+                    alertContext.pop();
+                  },
+                  child: const Text("Cancel"))
+            ],
+          );
+          ;
+        },
+      );
+    }
+
     return BlocConsumer<IndividualEventPollBloc, IndividualEventPollState>(
       listener: (context, state) {
         if (state.individualEventPollStateStatus ==
@@ -58,7 +90,7 @@ class _ViewIndividualEventPollsView extends StatelessWidget {
               context: context);
           context.read<IndividualEventPollBloc>().add(LoadIndividualPollResults(
               eventId: eventPoll.event!.eventId, pollId: eventPoll.id!));
-          context.read<HangEventPollsBloc>().add(LoadEventPolls(
+          context.read<HangEventPollsBloc>().add(LoadActiveEventPolls(
               eventId: eventPoll.event!.eventId, userId: curUser.id!));
           context.read<UserHangEventStatusBloc>().add(UpdateUserEventPollStatus(
               eventId: eventPoll.event!.eventId, userId: curUser.id!));
@@ -91,12 +123,8 @@ class _ViewIndividualEventPollsView extends StatelessWidget {
               LHButton(
                 buttonText: "Reset Vote",
                 onPressed: () {
-                  context.read<IndividualEventPollBloc>().add(ResetPollVote(
-                      eventId: eventPoll.event!.eventId,
-                      userId: curUser.id!,
-                      pollId: eventPoll.id!,
-                      pollResultId:
-                          state.userIdToPollResult![curUser.id]!.id!));
+                  startResetVote(
+                      context, state.userIdToPollResult![curUser.id]!.id!);
                 },
               )
             ]

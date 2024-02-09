@@ -9,6 +9,10 @@ class LHTextFormField extends StatelessWidget {
   final bool? readOnly;
   final bool? enabled;
   final TextInputType? keyboardType;
+  final int? maxLength;
+  final int? maxLines;
+  final FormFieldValidator? validator;
+  final String? errorText;
   const LHTextFormField(
       {Key? key,
       required this.labelText,
@@ -17,12 +21,19 @@ class LHTextFormField extends StatelessWidget {
       this.onChanged,
       this.readOnly = false,
       this.enabled = true,
+      this.maxLength,
+      this.maxLines,
+      this.validator,
+      this.errorText,
       this.keyboardType = TextInputType.text})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      maxLength: maxLength,
+      maxLines: maxLines,
+      validator: validator,
       readOnly: readOnly ?? false,
       enabled: enabled,
       onChanged: (enabled ?? false) ? onChanged : null,
@@ -32,6 +43,7 @@ class LHTextFormField extends StatelessWidget {
         fillColor: backgroundColor,
         filled: true,
         labelText: labelText,
+        errorText: errorText,
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.0),
             borderSide: const BorderSide(color: Colors.white)),

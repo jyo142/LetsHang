@@ -41,6 +41,14 @@ class UserHangEventStatusBloc
         userId: event.userId,
       ));
     });
+    on<UpdateUserEventResponsibilityStatus>((event, emit) async {
+      emit(state.copyWith(
+          userEventStatusStateStatus: UserEventStatusStateStatus.loading));
+      emit(await _mapLoadUserEventResponsibilityStatus(
+        eventId: event.eventId,
+        userId: event.userId,
+      ));
+    });
   }
 
   Future<UserEventStatusState> _mapLoadUserEventIncompleteStatus({
@@ -82,8 +90,25 @@ class UserHangEventStatusBloc
         userEventStatusStateStatus:
             UserEventStatusStateStatus.retrievedUserIncompleteStatus,
         incompletePollCount: pollIncompleteCount,
-        hasIncomplete: state.incompleteResponsibilitiesCount > 0 &&
+        hasIncomplete: state.incompleteResponsibilitiesCount > 0 ||
             pollIncompleteCount > 0);
+  }
+
+  Future<UserEventStatusState> _mapLoadUserEventResponsibilityStatus({
+    required String userId,
+    required String eventId,
+  }) async {
+    int responsibilitiesIncompleteCount =
+        await getStatusCount((userId, eventId) async {
+      return await _responsibilitiesRepository
+          .getNonCompletedUserResponsibilityCount(eventId, userId);
+    }, userId, eventId);
+    return state.copyWith(
+        userEventStatusStateStatus:
+            UserEventStatusStateStatus.retrievedUserIncompleteStatus,
+        incompleteResponsibilitiesCount: responsibilitiesIncompleteCount,
+        hasIncomplete: state.incompletePollCount > 0 ||
+            responsibilitiesIncompleteCount > 0);
   }
 
   Future<int> getStatusCount(Future<int> Function(String, String) getCountFunc,

@@ -19,7 +19,6 @@ class HangEventPoll extends Equatable {
   final String pollName;
   final List<String> pollOptions;
   final DateTime creationDate;
-  final DateTime? completedDate;
   final HangUserPreview creatingUser;
   final HangEventPreview? event;
 
@@ -29,18 +28,17 @@ class HangEventPoll extends Equatable {
       required this.pollOptions,
       required this.creationDate,
       required this.creatingUser,
-      this.completedDate,
       this.event});
 
   HangEventPoll.withId(String id, HangEventPoll hangEventPoll)
       : this(
-            id: id,
-            pollName: hangEventPoll.pollName,
-            pollOptions: hangEventPoll.pollOptions,
-            creationDate: hangEventPoll.creationDate,
-            creatingUser: hangEventPoll.creatingUser,
-            event: hangEventPoll.event,
-            completedDate: hangEventPoll.completedDate);
+          id: id,
+          pollName: hangEventPoll.pollName,
+          pollOptions: hangEventPoll.pollOptions,
+          creationDate: hangEventPoll.creationDate,
+          creatingUser: hangEventPoll.creatingUser,
+          event: hangEventPoll.event,
+        );
 
   HangEventPoll copyWith(
       {String? id,
@@ -51,13 +49,13 @@ class HangEventPoll extends Equatable {
       HangUserPreview? creatingUser,
       DateTime? completedDate}) {
     return HangEventPoll(
-        id: id ?? this.id,
-        pollName: pollName ?? this.pollName,
-        pollOptions: pollOptions ?? this.pollOptions,
-        creationDate: creationDate ?? this.creationDate,
-        creatingUser: creatingUser ?? this.creatingUser,
-        event: event ?? this.event,
-        completedDate: completedDate ?? this.completedDate);
+      id: id ?? this.id,
+      pollName: pollName ?? this.pollName,
+      pollOptions: pollOptions ?? this.pollOptions,
+      creationDate: creationDate ?? this.creationDate,
+      creatingUser: creatingUser ?? this.creatingUser,
+      event: event ?? this.event,
+    );
   }
 
   static HangEventPoll fromSnapshot(DocumentSnapshot snap) {
@@ -66,13 +64,13 @@ class HangEventPoll extends Equatable {
 
   static HangEventPoll fromMap(Map<String, dynamic> map) {
     HangEventPoll model = HangEventPoll(
-        id: map['id'],
-        pollName: map['pollName'],
-        pollOptions: List<String>.from(map["pollOptions"]),
-        creationDate: map["creationDate"].toDate(),
-        creatingUser: HangUserPreview.fromMap(map["creatingUser"]),
-        event: HangEventPreview.fromMap(map["event"]),
-        completedDate: map.getFromMap("completedDate", (key) => key.toDate()));
+      id: map['id'],
+      pollName: map['pollName'],
+      pollOptions: List<String>.from(map["pollOptions"]),
+      creationDate: map["creationDate"].toDate(),
+      creatingUser: HangUserPreview.fromMap(map["creatingUser"]),
+      event: HangEventPreview.fromMap(map["event"]),
+    );
 
     return model;
   }
@@ -85,8 +83,6 @@ class HangEventPoll extends Equatable {
       'creationDate': Timestamp.fromDate(creationDate),
       'creatingUser': creatingUser.toDocument(),
       'event': event?.toDocument(),
-      'completedDate':
-          completedDate != null ? Timestamp.fromDate(completedDate!) : null
     };
     return retVal;
   }
@@ -99,6 +95,5 @@ class HangEventPoll extends Equatable {
         creationDate,
         event,
         creatingUser,
-        completedDate
       ];
 }

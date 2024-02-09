@@ -2,19 +2,58 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:letshang/models/events/hang_event_poll.dart';
 
-class HangEventPollCard extends StatelessWidget {
+class HangEventPollResultCard extends StatelessWidget {
   final HangEventPollWithResultCount eventPollWithResultCount;
-  const HangEventPollCard({
+  const HangEventPollResultCard({
     Key? key,
     required this.eventPollWithResultCount,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    return HangEventPollCard(
+      eventPoll: eventPollWithResultCount.eventPoll,
+      resultData: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            "${eventPollWithResultCount.resultCount} votes",
+            style: Theme.of(context).textTheme.bodyText1,
+          ),
+          if (eventPollWithResultCount.userCompleted) ...[
+            Row(
+              children: [
+                Icon(
+                  Icons.check,
+                  color: Colors.green,
+                ),
+                SizedBox(
+                  width: 5,
+                ),
+                Text(
+                  "Voted",
+                  style: Theme.of(context).textTheme.bodyText1,
+                ),
+              ],
+            )
+          ]
+        ],
+      ),
+    );
+  }
+}
+
+class HangEventPollCard extends StatelessWidget {
+  final HangEventPoll eventPoll;
+  final Widget? resultData;
+  const HangEventPollCard({Key? key, required this.eventPoll, this.resultData})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return InkWell(
         onTap: () async {
-          context.push("/viewIndividualPoll",
-              extra: eventPollWithResultCount.eventPoll);
+          context.push("/viewIndividualPoll", extra: eventPoll);
         },
         child: Container(
             width: double.infinity,
@@ -26,38 +65,11 @@ class HangEventPollCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 15, right: 15),
-                  child: Text(
-                    eventPollWithResultCount.eventPoll.pollName!,
-                    style: Theme.of(context).textTheme.bodyText1,
-                  ),
+                Text(
+                  eventPoll.pollName!,
+                  style: Theme.of(context).textTheme.bodyText1,
                 ),
-                Column(
-                  children: [
-                    Text(
-                      "${eventPollWithResultCount.resultCount} votes",
-                      style: Theme.of(context).textTheme.bodyText1,
-                    ),
-                    if (eventPollWithResultCount.userCompleted) ...[
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.check,
-                            color: Colors.green,
-                          ),
-                          SizedBox(
-                            width: 5,
-                          ),
-                          Text(
-                            "Completed",
-                            style: Theme.of(context).textTheme.bodyText1,
-                          ),
-                        ],
-                      )
-                    ]
-                  ],
-                )
+                if (resultData != null) resultData!,
               ],
             )));
   }
