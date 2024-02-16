@@ -10,4 +10,4 @@ abstract class CreateEventStep {
   Map<String, String> validate(CreateEventState createEventState);
 }
 
-enum TimeAndDateKnown { yes, no }
+enum CreateEventYesNo { yes, no }

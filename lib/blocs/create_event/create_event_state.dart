@@ -2,7 +2,8 @@ part of 'create_event_bloc.dart';
 
 final List<CreateEventStep> createEventStateSteps = [
   EventNameDescriptionStep(),
-  EventTimeDateStep()
+  EventTimeDateStep(),
+  EventLocationStep()
 ];
 
 enum CreateEventStateStatus {
@@ -20,10 +21,13 @@ class CreateEventState extends Equatable {
   final HangUserPreview eventOwner;
   final String eventName;
   final String eventDescription;
-  final TimeAndDateKnown? timeAndDateKnown;
+  final CreateEventYesNo? timeAndDateKnown;
   final DateTime? eventStartDateTime;
   final DateTime? eventEndDateTime;
   final TimeOfDay? eventStartTime;
+  final int? durationHours;
+  final CreateEventYesNo? eventLocationKnown;
+  final String? eventLocation;
   final bool limitGuestCount;
   final int? maxGuestCount;
   final HangEventType hangEventType;
@@ -46,6 +50,9 @@ class CreateEventState extends Equatable {
     this.eventStartDateTime,
     this.eventEndDateTime,
     this.eventStartTime,
+    this.durationHours,
+    this.eventLocationKnown,
+    this.eventLocation,
     this.limitGuestCount = false,
     this.maxGuestCount = 0,
     this.hangEventType = HangEventType.private,
@@ -77,6 +84,9 @@ class CreateEventState extends Equatable {
             eventStartDateTime: state.eventStartDateTime,
             eventEndDateTime: state.eventEndDateTime,
             eventStartTime: state.eventStartTime,
+            durationHours: state.durationHours,
+            eventLocationKnown: state.eventLocationKnown,
+            eventLocation: state.eventLocation,
             limitGuestCount: state.limitGuestCount,
             maxGuestCount: state.maxGuestCount,
             hangEventType: state.hangEventType,
@@ -94,10 +104,13 @@ class CreateEventState extends Equatable {
       HangUserPreview? eventOwner,
       String? eventName,
       String? eventDescription,
-      TimeAndDateKnown? timeAndDateKnown,
+      CreateEventYesNo? timeAndDateKnown,
       DateTime? eventStartDateTime,
       DateTime? eventEndDateTime,
       TimeOfDay? eventStartTime,
+      int? durationHours,
+      CreateEventYesNo? eventLocationKnown,
+      String? eventLocation,
       bool? limitGuestCount,
       int? maxGuestCount,
       HangEventType? hangEventType,
@@ -118,6 +131,9 @@ class CreateEventState extends Equatable {
         timeAndDateKnown: timeAndDateKnown ?? this.timeAndDateKnown,
         eventStartDateTime: eventStartDateTime ?? this.eventStartDateTime,
         eventStartTime: eventStartTime ?? this.eventStartTime,
+        durationHours: durationHours ?? this.durationHours,
+        eventLocationKnown: eventLocationKnown ?? this.eventLocationKnown,
+        eventLocation: eventLocation ?? this.eventLocation,
         limitGuestCount: limitGuestCount ?? this.limitGuestCount,
         maxGuestCount: maxGuestCount ?? this.maxGuestCount,
         hangEventType: hangEventType ?? this.hangEventType,
@@ -167,12 +183,14 @@ class CreateEventState extends Equatable {
 
   HangEvent createHangEvent(HangEventStage eventStage) {
     return HangEvent(
-        id: "",
+        id: hangEventId,
         eventOwner: eventOwner,
         eventName: eventName,
         eventDescription: eventDescription,
         eventStartDateTime: eventStartDateTime,
         eventEndDateTime: eventEndDateTime,
+        durationHours: durationHours,
+        eventLocation: eventLocation,
         currentStage: eventStage,
         photoURL: photoUrl);
   }
@@ -189,6 +207,9 @@ class CreateEventState extends Equatable {
         eventStartDateTime,
         eventEndDateTime,
         eventStartTime,
+        durationHours,
+        eventLocationKnown,
+        eventLocation,
         limitGuestCount,
         maxGuestCount,
         hangEventType,

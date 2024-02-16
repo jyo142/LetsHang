@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/create_event/create_event_bloc.dart';
 import 'package:letshang/models/events/create_event_model.dart';
 import 'package:letshang/services/message_service.dart';
@@ -45,13 +46,32 @@ class _CreateEventScreenView extends StatelessWidget {
 
         return Column(
           children: [
-            const SizedBox(
-                height: 100,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [Text("EEE")],
-                )),
+            SizedBox(
+              height: 100,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: createEventStateSteps!.asMap().entries.map((entry) {
+                  return GestureDetector(
+                    child: Container(
+                      width: 12.0,
+                      height: 12.0,
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 4.0),
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color:
+                              (Theme.of(context).brightness == Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black)
+                                  .withOpacity(
+                                      state.createEventStepIndex == entry.key
+                                          ? 0.9
+                                          : 0.4)),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
             Expanded(
                 child: Container(
               decoration: const BoxDecoration(
@@ -79,11 +99,17 @@ class _CreateEventScreenView extends StatelessWidget {
                             const SizedBox(
                               height: 20,
                             ),
-                            curCreateEventStep.getStepWidget(state)
+                            Expanded(
+                                child: SingleChildScrollView(
+                                    child: curCreateEventStep
+                                        .getStepWidget(state)))
                           ],
                         )),
+                    SizedBox(
+                      height: 20,
+                    ),
                     Flexible(
-                        flex: 2,
+                        flex: 1,
                         child: SizedBox(
                           width: double.infinity,
                           child: LHButton(
@@ -95,7 +121,29 @@ class _CreateEventScreenView extends StatelessWidget {
                                         stepValidationFunction:
                                             curCreateEventStep.validate));
                               }),
-                        ))
+                        )),
+                    if (state.createEventStepIndex != 0) ...[
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Flexible(
+                          flex: 1,
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: LHButton(
+                                buttonText: 'PREVIOUS',
+                                buttonStyle: Theme.of(context)
+                                    .buttonTheme
+                                    .secondaryButtonStyle,
+                                onPressed: () {
+                                  context
+                                      .read<CreateEventBloc>()
+                                      .add(MovePreviousStep(
+                                        stepId: curCreateEventStep.stepId,
+                                      ));
+                                }),
+                          ))
+                    ]
                   ],
                 ),
               ),

@@ -11,6 +11,7 @@ import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/repositories/hang_event/base_hang_event_repository.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
 import 'package:equatable/equatable.dart';
+import 'package:letshang/widgets/events/create_event/event_location_step.dart';
 import 'package:letshang/widgets/events/create_event/event_name_description_step.dart';
 import 'package:letshang/widgets/events/create_event/time_date_step.dart';
 
@@ -36,6 +37,18 @@ class CreateEventBloc extends Bloc<CreateEventEvent, CreateEventState> {
     on<TimeAndDateKnownChanged>((event, emit) {
       emit(state.copyWith(timeAndDateKnown: event.timeAndDateKnown));
     });
+    on<EventStartDateChanged>((event, emit) {
+      emit(state.copyWith(eventStartDateTime: event.eventStartDate));
+    });
+    on<EventStartTimeChanged>((event, emit) {
+      emit(state.copyWith(eventStartTime: event.eventStartTime));
+    });
+    on<EventDurationChanged>((event, emit) {
+      emit(state.copyWith(durationHours: event.durationHours));
+    });
+    on<EventLocationChanged>((event, emit) {
+      emit(state.copyWith(eventLocation: event.eventLocation));
+    });
     on<MoveNextStep>((event, emit) async {
       bool validationResult = await _validateFormStep(
           event.stepId, event.stepValidationFunction, emit);
@@ -46,6 +59,11 @@ class CreateEventBloc extends Bloc<CreateEventEvent, CreateEventState> {
         emit(state.copyWith(
             createEventStateStatus: CreateEventStateStatus.nextStep));
       }
+    });
+    on<MovePreviousStep>((event, emit) async {
+      emit(state.copyWith(
+          createEventStepIndex: state.createEventStepIndex - 1,
+          createEventStateStatus: CreateEventStateStatus.nextStep));
     });
   }
 
@@ -90,10 +108,21 @@ class CreateEventBloc extends Bloc<CreateEventEvent, CreateEventState> {
             break;
           }
       }
-      await _hangEventRepository.addHangEvent(state.createHangEvent(newStage));
-      return state.copyWith(
-          createEventStepIndex: state.createEventStepIndex + 1,
-          createEventStateStatus: CreateEventStateStatus.submittedStep);
+
+      if (state.hangEventId.isEmpty) {
+        HangEvent createdEvent = await _hangEventRepository
+            .addHangEvent(state.createHangEvent(newStage));
+        return state.copyWith(
+            hangEventId: createdEvent.id,
+            createEventStepIndex: state.createEventStepIndex + 1,
+            createEventStateStatus: CreateEventStateStatus.submittedStep);
+      } else {
+        await _hangEventRepository
+            .editHangEvent(state.createHangEvent(newStage));
+        return state.copyWith(
+            createEventStepIndex: state.createEventStepIndex + 1,
+            createEventStateStatus: CreateEventStateStatus.submittedStep);
+      }
     } catch (_) {
       return state.copyWith(
           createEventStateStatus: CreateEventStateStatus.error,

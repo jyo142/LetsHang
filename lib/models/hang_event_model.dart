@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:letshang/models/has_user_invites.dart';
 import 'package:letshang/models/user_invite_model.dart';
+import 'package:letshang/utils/firebase_utils.dart';
 import 'hang_user_preview_model.dart';
 
 enum HangEventType { public, private }
@@ -22,6 +23,8 @@ class HangEvent extends HasUserInvites {
   final String eventDescription;
   late final DateTime? eventStartDateTime;
   late final DateTime? eventEndDateTime;
+  final int? durationHours;
+  final String? eventLocation;
   final HangEventStage currentStage;
   final String? photoURL;
   HangEvent(
@@ -31,6 +34,8 @@ class HangEvent extends HasUserInvites {
       this.eventDescription = '',
       this.eventStartDateTime,
       this.eventEndDateTime,
+      this.durationHours,
+      this.eventLocation,
       List<UserInvite>? userInvites,
       this.currentStage = HangEventStage.started,
       this.photoURL = ''})
@@ -44,6 +49,8 @@ class HangEvent extends HasUserInvites {
             eventDescription: event.eventDescription,
             eventEndDateTime: event.eventEndDateTime,
             eventStartDateTime: event.eventStartDateTime,
+            durationHours: event.durationHours,
+            eventLocation: event.eventLocation,
             userInvites: event.userInvites,
             currentStage: event.currentStage,
             photoURL: event.photoURL);
@@ -60,6 +67,8 @@ class HangEvent extends HasUserInvites {
       String? eventDescription,
       DateTime? eventStartDateTime,
       DateTime? eventEndDateTime,
+      int? durationHours,
+      String? eventLocation,
       List<UserInvite>? userInvites,
       HangEventStage? currentStage,
       String? photoUrl}) {
@@ -70,6 +79,8 @@ class HangEvent extends HasUserInvites {
         eventDescription: eventDescription ?? this.eventDescription,
         eventStartDateTime: eventStartDateTime ?? this.eventStartDateTime,
         eventEndDateTime: eventEndDateTime ?? this.eventEndDateTime,
+        durationHours: durationHours ?? this.durationHours,
+        eventLocation: eventLocation ?? this.eventLocation,
         userInvites: userInvites ?? this.userInvites,
         currentStage: currentStage ?? this.currentStage,
         photoURL: photoURL ?? this.photoURL);
@@ -86,6 +97,8 @@ class HangEvent extends HasUserInvites {
         eventDescription: map['eventDescription'],
         eventStartDateTime: startDateTimestamp?.toDate(),
         eventEndDateTime: endDateTimestamp?.toDate(),
+        durationHours: map.getFromMap("durationHours", (key) => key),
+        eventLocation: map.getFromMap("eventLocation", (key) => key),
         userInvites: userInvites ?? [],
         currentStage: HangEventStage.values
             .firstWhere((e) => describeEnum(e) == map["currentStage"]),
@@ -105,6 +118,8 @@ class HangEvent extends HasUserInvites {
       'eventEndDateTime': eventEndDateTime != null
           ? Timestamp.fromDate(eventEndDateTime!)
           : null,
+      'durationHours': durationHours,
+      'eventLocation': eventLocation,
       'currentStage': describeEnum(currentStage),
       'photoUrl': photoURL.toString()
     };
@@ -118,6 +133,8 @@ class HangEvent extends HasUserInvites {
         eventDescription,
         eventStartDateTime,
         eventEndDateTime,
+        durationHours,
+        eventLocation,
         userInvites,
         currentStage,
         photoURL
