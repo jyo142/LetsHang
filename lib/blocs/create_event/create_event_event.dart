@@ -9,6 +9,17 @@ abstract class CreateEventEvent extends Equatable {
 
 class LoadEventStep extends CreateEventEvent {}
 
+// used if an event is already created and want to continue event creation.
+// need to load the previous details
+class LoadCurrentEventDetails extends CreateEventEvent {
+  const LoadCurrentEventDetails({required this.eventId});
+
+  final String eventId;
+
+  @override
+  List<Object> get props => [eventId];
+}
+
 class EventNameChanged extends CreateEventEvent {
   const EventNameChanged({required this.eventName});
 

@@ -7,8 +7,24 @@ import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/lh_button.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class CreateEventScreen extends StatelessWidget {
-  const CreateEventScreen({Key? key}) : super(key: key);
+class CreateEventScreen extends StatefulWidget {
+  final String? hangEventId;
+  const CreateEventScreen({Key? key, this.hangEventId}) : super(key: key);
+
+  @override
+  _CreateEventScreenState createState() => _CreateEventScreenState();
+}
+
+class _CreateEventScreenState extends State<CreateEventScreen> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.hangEventId?.isNotEmpty ?? false) {
+      context
+          .read<CreateEventBloc>()
+          .add(LoadCurrentEventDetails(eventId: widget.hangEventId!));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +57,10 @@ class _CreateEventScreenView extends StatelessWidget {
     return SafeArea(
         child: BlocConsumer<CreateEventBloc, CreateEventState>(
       builder: (context, state) {
+        if (state.createEventStateStatus ==
+            CreateEventStateStatus.loadingEventDetails) {
+          return const Center(child: CircularProgressIndicator());
+        }
         CreateEventStep curCreateEventStep =
             createEventStateSteps.elementAt(state.createEventStepIndex);
 

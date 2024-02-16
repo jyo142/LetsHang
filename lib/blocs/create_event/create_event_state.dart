@@ -8,6 +8,8 @@ final List<CreateEventStep> createEventStateSteps = [
 
 enum CreateEventStateStatus {
   initial,
+  loadingEventDetails,
+  loadedEventDetails,
   loadingStep,
   submittedStep,
   nextStep,
@@ -15,6 +17,11 @@ enum CreateEventStateStatus {
 }
 
 class CreateEventState extends Equatable {
+  final Map<HangEventStage, int> stageToIndexMap = {
+    HangEventStage.nameDescription: 0,
+    HangEventStage.dateTime: 1,
+    HangEventStage.location: 2
+  };
   final CreateEventStateStatus createEventStateStatus;
   final int createEventStepIndex;
   final String hangEventId;
@@ -193,6 +200,29 @@ class CreateEventState extends Equatable {
         eventLocation: eventLocation,
         currentStage: eventStage,
         photoURL: photoUrl);
+  }
+
+  CreateEventState convertEventToState(HangEvent currentEvent) {
+    return CreateEventState(
+      createEventStateStatus: CreateEventStateStatus.loadedEventDetails,
+      createEventStepIndex:
+          stageToIndexMap.containsKey(currentEvent.currentStage)
+              ? stageToIndexMap[currentEvent.currentStage]!
+              : 0,
+      hangEventId: currentEvent.id,
+      eventOwner: currentEvent.eventOwner,
+      eventName: currentEvent.eventName,
+      eventDescription: currentEvent.eventDescription,
+      timeAndDateKnown: currentEvent.eventStartDateTime != null
+          ? CreateEventYesNo.yes
+          : CreateEventYesNo.no,
+      eventStartDateTime: currentEvent.eventStartDateTime,
+      durationHours: currentEvent.durationHours,
+      eventLocationKnown: currentEvent.eventLocation != null
+          ? CreateEventYesNo.yes
+          : CreateEventYesNo.no,
+      eventLocation: currentEvent.eventLocation,
+    );
   }
 
   @override

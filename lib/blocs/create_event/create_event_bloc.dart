@@ -11,6 +11,8 @@ import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/repositories/hang_event/base_hang_event_repository.dart';
 import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
 import 'package:equatable/equatable.dart';
+import 'package:letshang/repositories/invites/base_invites_repository.dart';
+import 'package:letshang/repositories/invites/invites_repository.dart';
 import 'package:letshang/widgets/events/create_event/event_location_step.dart';
 import 'package:letshang/widgets/events/create_event/event_name_description_step.dart';
 import 'package:letshang/widgets/events/create_event/time_date_step.dart';
@@ -21,13 +23,19 @@ part 'create_event_state.dart';
 class CreateEventBloc extends Bloc<CreateEventEvent, CreateEventState> {
   final HangUserPreview creatingUser;
   final BaseHangEventRepository _hangEventRepository;
-
+  final BaseUserInvitesRepository _userInvitesRepository;
   // constructor
   CreateEventBloc({required this.creatingUser})
       : _hangEventRepository = HangEventRepository(),
+        _userInvitesRepository = UserInvitesRepository(),
         super(CreateEventState(
             eventOwner: creatingUser,
             createEventStateStatus: CreateEventStateStatus.initial)) {
+    on<LoadCurrentEventDetails>((event, emit) async {
+      emit(state.copyWith(
+          createEventStateStatus: CreateEventStateStatus.loadingEventDetails));
+      emit(await _mapLoadCurrentEventDetails(event.eventId));
+    });
     on<EventNameChanged>((event, emit) {
       emit(state.copyWith(eventName: event.eventName));
     });
@@ -65,6 +73,16 @@ class CreateEventBloc extends Bloc<CreateEventEvent, CreateEventState> {
           createEventStepIndex: state.createEventStepIndex - 1,
           createEventStateStatus: CreateEventStateStatus.nextStep));
     });
+  }
+
+  Future<CreateEventState> _mapLoadCurrentEventDetails(String eventId) async {
+    HangEvent? foundEvent = await _hangEventRepository.getEventById(eventId);
+    if (foundEvent != null) {
+      return state.convertEventToState(foundEvent);
+    }
+    return state.copyWith(
+        createEventStateStatus: CreateEventStateStatus.error,
+        errorMessage: 'Unable to retrieve event details');
   }
 
   Future<bool> _validateFormStep(
@@ -112,6 +130,13 @@ class CreateEventBloc extends Bloc<CreateEventEvent, CreateEventState> {
       if (state.hangEventId.isEmpty) {
         HangEvent createdEvent = await _hangEventRepository
             .addHangEvent(state.createHangEvent(newStage));
+        await _userInvitesRepository.addUserEventInvite(
+            createdEvent,
+            UserInvite(
+                user: creatingUser,
+                status: InviteStatus.owner,
+                title: InviteTitle.organizer,
+                type: InviteType.event));
         return state.copyWith(
             hangEventId: createdEvent.id,
             createEventStepIndex: state.createEventStepIndex + 1,

@@ -34,7 +34,7 @@ class EventTimeDateStep implements CreateEventStep {
         }
         if (createEventState.eventStartTime == null) {
           stepMap.putIfAbsent(
-              "eventStartTime", () => "Please enter a start date time");
+              "eventStartTime", () => "Please enter a start time");
         }
         if (createEventState.durationHours == null ||
             createEventState.durationHours == 0) {
@@ -163,6 +163,11 @@ class EventTimeDateStepWidget extends StatelessWidget {
                           backgroundColor: const Color(0xFFECEEF4),
                           enabled: false,
                           readOnly: true,
+                          errorText: curStepValidationMap
+                                      ?.containsKey("eventStartDateTime") ??
+                                  false
+                              ? curStepValidationMap!["eventStartDateTime"]
+                              : null,
                         )),
                   ),
                   const SizedBox(

@@ -225,7 +225,9 @@ abstract class AppRouter {
             GoRoute(
               name: "createEvent",
               path: "/createEvent",
-              builder: (context, state) => const CreateEventScreen(),
+              builder: (context, state) => CreateEventScreen(
+                hangEventId: state.uri.queryParameters["eventId"],
+              ),
             ),
           ]),
       GoRoute(
