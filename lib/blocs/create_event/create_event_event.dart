@@ -67,6 +67,15 @@ class MovePreviousStep extends CreateEventEvent {
   List<Object> get props => [stepId];
 }
 
+class MoveExactStage extends CreateEventEvent {
+  const MoveExactStage({required this.eventStage});
+
+  final HangEventStage eventStage;
+
+  @override
+  List<Object> get props => [eventStage];
+}
+
 class EventStartDateChanged extends CreateEventEvent {
   const EventStartDateChanged({required this.eventStartDate});
 
@@ -94,6 +103,15 @@ class EventDurationChanged extends CreateEventEvent {
   List<Object> get props => [durationHours];
 }
 
+class EventLocationKnownChanged extends CreateEventEvent {
+  const EventLocationKnownChanged({required this.eventLocationKnown});
+
+  final CreateEventYesNo eventLocationKnown;
+
+  @override
+  List<Object> get props => [eventLocationKnown];
+}
+
 class EventLocationChanged extends CreateEventEvent {
   const EventLocationChanged({required this.eventLocation});
 
@@ -101,4 +119,36 @@ class EventLocationChanged extends CreateEventEvent {
 
   @override
   List<Object> get props => [eventLocation];
+}
+
+class IsRecurringEventChanged extends CreateEventEvent {
+  const IsRecurringEventChanged(
+      {required this.stepId,
+      required this.isRecurringEvent,
+      required this.fieldName});
+
+  final String stepId;
+  final CreateEventYesNo isRecurringEvent;
+  final String fieldName;
+
+  @override
+  List<Object> get props => [stepId, isRecurringEvent, fieldName];
+}
+
+class RecurringTypeChanged extends CreateEventEvent {
+  const RecurringTypeChanged({required this.recurringType});
+
+  final HangEventRecurringType recurringType;
+
+  @override
+  List<Object> get props => [recurringType];
+}
+
+class RecurringFrequencyChanged extends CreateEventEvent {
+  const RecurringFrequencyChanged({required this.recurringFrequency});
+
+  final int recurringFrequency;
+
+  @override
+  List<Object> get props => [recurringFrequency];
 }

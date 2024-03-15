@@ -62,7 +62,7 @@ class _CreateEventScreenView extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
         CreateEventStep curCreateEventStep =
-            createEventStateSteps.elementAt(state.createEventStepIndex);
+            state.createEventStateSteps.elementAt(state.createEventStepIndex);
 
         return Column(
           children: [
@@ -70,7 +70,8 @@ class _CreateEventScreenView extends StatelessWidget {
               height: 100,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: createEventStateSteps!.asMap().entries.map((entry) {
+                children:
+                    state.createEventStateSteps!.asMap().entries.map((entry) {
                   return GestureDetector(
                     child: Container(
                       width: 12.0,

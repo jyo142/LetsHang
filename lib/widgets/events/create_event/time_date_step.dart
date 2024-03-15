@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:letshang/blocs/create_event/create_event_bloc.dart';
 import 'package:letshang/models/events/create_event_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/utils/date_time_utils.dart';
 import 'package:letshang/widgets/lh_text_form_field.dart';
 import 'package:intl/intl.dart';
 import 'package:letshang/assets/Constants.dart' as constants;
@@ -96,13 +97,6 @@ class EventTimeDateStepWidget extends StatelessWidget {
       }
     }
 
-    String changeTimeToString(TimeOfDay tod) {
-      final now = DateTime.now();
-      final dt = DateTime(now.year, now.month, now.day, tod.hour, tod.minute);
-      final format = DateFormat.jm(); //"6:00 AM"
-      return format.format(dt);
-    }
-
     return Form(
         key: formKey,
         child: Column(
@@ -181,7 +175,7 @@ class EventTimeDateStepWidget extends StatelessWidget {
                           },
                           child: LHTextFormField(
                             labelText: createEventState.eventStartTime != null
-                                ? changeTimeToString(
+                                ? DateTimeUtils.changeTimeToString(
                                     createEventState.eventStartTime!)
                                 : 'Time',
                             backgroundColor: const Color(0xFFECEEF4),

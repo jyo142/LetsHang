@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:letshang/models/events/create_event_model.dart';
+import 'package:letshang/models/events/hang_event_recurring_settings.dart';
 import 'package:letshang/models/group_model.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/hang_user_model.dart';
@@ -13,8 +14,10 @@ import 'package:letshang/repositories/hang_event/hang_event_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:letshang/repositories/invites/base_invites_repository.dart';
 import 'package:letshang/repositories/invites/invites_repository.dart';
+import 'package:letshang/widgets/events/create_event/create_event_review_step.dart';
 import 'package:letshang/widgets/events/create_event/event_location_step.dart';
 import 'package:letshang/widgets/events/create_event/event_name_description_step.dart';
+import 'package:letshang/widgets/events/create_event/event_recurring_step.dart';
 import 'package:letshang/widgets/events/create_event/time_date_step.dart';
 
 part 'create_event_event.dart';
@@ -54,8 +57,31 @@ class CreateEventBloc extends Bloc<CreateEventEvent, CreateEventState> {
     on<EventDurationChanged>((event, emit) {
       emit(state.copyWith(durationHours: event.durationHours));
     });
+    on<EventLocationKnownChanged>((event, emit) {
+      emit(state.copyWith(eventLocationKnown: event.eventLocationKnown));
+    });
     on<EventLocationChanged>((event, emit) {
       emit(state.copyWith(eventLocation: event.eventLocation));
+    });
+    on<IsRecurringEventChanged>((event, emit) {
+      // clear the validation value
+      Map<String, Map<String, String>> formStepValidationMap =
+          Map.from(state.formStepValidationMap);
+
+      Map<String, String>? curStepMap = formStepValidationMap[event.stepId];
+      if (curStepMap != null) {
+        curStepMap[event.fieldName] = "";
+        formStepValidationMap.update(event.stepId, (value) => curStepMap);
+        emit(state.copyWith(formStepValidationMap: formStepValidationMap));
+      }
+
+      emit(state.copyWith(isRecurringEvent: event.isRecurringEvent));
+    });
+    on<RecurringTypeChanged>((event, emit) {
+      emit(state.copyWith(recurringType: event.recurringType));
+    });
+    on<RecurringFrequencyChanged>((event, emit) {
+      emit(state.copyWith(recurringFrequency: event.recurringFrequency));
     });
     on<MoveNextStep>((event, emit) async {
       bool validationResult = await _validateFormStep(
@@ -72,6 +98,9 @@ class CreateEventBloc extends Bloc<CreateEventEvent, CreateEventState> {
       emit(state.copyWith(
           createEventStepIndex: state.createEventStepIndex - 1,
           createEventStateStatus: CreateEventStateStatus.nextStep));
+    });
+    on<MoveExactStage>((event, emit) async {
+      emit(state.moveToStage(event.eventStage));
     });
   }
 
@@ -108,6 +137,7 @@ class CreateEventBloc extends Bloc<CreateEventEvent, CreateEventState> {
     HangEventStage newStage;
     HangEventStage currentStage =
         HangEventStage.values.firstWhere((element) => element.name == stepId);
+    List<CreateEventStep>? newCreateEventSteps;
     try {
       switch (currentStage) {
         case HangEventStage.nameDescription:
@@ -117,7 +147,31 @@ class CreateEventBloc extends Bloc<CreateEventEvent, CreateEventState> {
           }
         case HangEventStage.dateTime:
           {
+            if (state.timeAndDateKnown == CreateEventYesNo.yes) {
+              newStage = HangEventStage.recurringEvent;
+              // add the location step right after this step
+              int currentStepIndex = state.createEventStateSteps
+                  .indexWhere((element) => element.stepId == stepId);
+              newCreateEventSteps = List.of(state.createEventStateSteps);
+              bool hasRecurringEventStep = newCreateEventSteps.any((element) =>
+                  element.stepId == HangEventStage.recurringEvent.name);
+              if (!hasRecurringEventStep) {
+                newCreateEventSteps.insert(
+                    currentStepIndex + 1, EventRecurringStep());
+              }
+            } else {
+              newStage = HangEventStage.location;
+            }
+            break;
+          }
+        case HangEventStage.recurringEvent:
+          {
             newStage = HangEventStage.location;
+            break;
+          }
+        case HangEventStage.location:
+          {
+            newStage = HangEventStage.review;
             break;
           }
         default:
@@ -127,9 +181,11 @@ class CreateEventBloc extends Bloc<CreateEventEvent, CreateEventState> {
           }
       }
 
+      String? createdEventId;
       if (state.hangEventId.isEmpty) {
         HangEvent createdEvent = await _hangEventRepository
             .addHangEvent(state.createHangEvent(newStage));
+        createdEventId = createdEvent.id;
         await _userInvitesRepository.addUserEventInvite(
             createdEvent,
             UserInvite(
@@ -137,17 +193,15 @@ class CreateEventBloc extends Bloc<CreateEventEvent, CreateEventState> {
                 status: InviteStatus.owner,
                 title: InviteTitle.organizer,
                 type: InviteType.event));
-        return state.copyWith(
-            hangEventId: createdEvent.id,
-            createEventStepIndex: state.createEventStepIndex + 1,
-            createEventStateStatus: CreateEventStateStatus.submittedStep);
       } else {
         await _hangEventRepository
             .editHangEvent(state.createHangEvent(newStage));
-        return state.copyWith(
-            createEventStepIndex: state.createEventStepIndex + 1,
-            createEventStateStatus: CreateEventStateStatus.submittedStep);
       }
+      return state.copyWith(
+          hangEventId: createdEventId,
+          createEventStepIndex: state.createEventStepIndex + 1,
+          createEventStateStatus: CreateEventStateStatus.submittedStep,
+          createEventStateSteps: newCreateEventSteps);
     } catch (_) {
       return state.copyWith(
           createEventStateStatus: CreateEventStateStatus.error,

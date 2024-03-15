@@ -1,11 +1,5 @@
 part of 'create_event_bloc.dart';
 
-final List<CreateEventStep> createEventStateSteps = [
-  EventNameDescriptionStep(),
-  EventTimeDateStep(),
-  EventLocationStep()
-];
-
 enum CreateEventStateStatus {
   initial,
   loadingEventDetails,
@@ -20,8 +14,11 @@ class CreateEventState extends Equatable {
   final Map<HangEventStage, int> stageToIndexMap = {
     HangEventStage.nameDescription: 0,
     HangEventStage.dateTime: 1,
-    HangEventStage.location: 2
+    HangEventStage.recurringEvent: 2,
+    HangEventStage.location: 2,
+    HangEventStage.review: 3
   };
+  late final List<CreateEventStep> createEventStateSteps;
   final CreateEventStateStatus createEventStateStatus;
   final int createEventStepIndex;
   final String hangEventId;
@@ -33,6 +30,9 @@ class CreateEventState extends Equatable {
   final DateTime? eventEndDateTime;
   final TimeOfDay? eventStartTime;
   final int? durationHours;
+  final CreateEventYesNo? isRecurringEvent;
+  final HangEventRecurringType? recurringType;
+  final int? recurringFrequency;
   final CreateEventYesNo? eventLocationKnown;
   final String? eventLocation;
   final bool limitGuestCount;
@@ -48,6 +48,7 @@ class CreateEventState extends Equatable {
   final String? errorMessage;
   CreateEventState({
     required this.createEventStateStatus,
+    List<CreateEventStep>? createEventStateSteps,
     this.hangEventId = '',
     this.createEventStepIndex = 0,
     required this.eventOwner,
@@ -58,6 +59,9 @@ class CreateEventState extends Equatable {
     this.eventEndDateTime,
     this.eventStartTime,
     this.durationHours,
+    this.isRecurringEvent,
+    this.recurringType,
+    this.recurringFrequency,
     this.eventLocationKnown,
     this.eventLocation,
     this.limitGuestCount = false,
@@ -69,7 +73,13 @@ class CreateEventState extends Equatable {
     this.formStepValidationMap = const {},
     this.errorMessage,
     Map<String, UserInvite>? eventUserInvitees,
-  }) {
+  }) : createEventStateSteps = createEventStateSteps ??
+            [
+              EventNameDescriptionStep(),
+              EventTimeDateStep(),
+              EventLocationStep(),
+              CreateEventReviewStep()
+            ] {
     this.eventUserInvitees = eventUserInvitees ??
         {
           eventOwner.userName: UserInvite(
@@ -92,6 +102,9 @@ class CreateEventState extends Equatable {
             eventEndDateTime: state.eventEndDateTime,
             eventStartTime: state.eventStartTime,
             durationHours: state.durationHours,
+            isRecurringEvent: state.isRecurringEvent,
+            recurringType: state.recurringType,
+            recurringFrequency: state.recurringFrequency,
             eventLocationKnown: state.eventLocationKnown,
             eventLocation: state.eventLocation,
             limitGuestCount: state.limitGuestCount,
@@ -106,6 +119,7 @@ class CreateEventState extends Equatable {
 
   CreateEventState copyWith(
       {CreateEventStateStatus? createEventStateStatus,
+      List<CreateEventStep>? createEventStateSteps,
       String? hangEventId,
       int? createEventStepIndex,
       HangUserPreview? eventOwner,
@@ -116,6 +130,9 @@ class CreateEventState extends Equatable {
       DateTime? eventEndDateTime,
       TimeOfDay? eventStartTime,
       int? durationHours,
+      CreateEventYesNo? isRecurringEvent,
+      HangEventRecurringType? recurringType,
+      int? recurringFrequency,
       CreateEventYesNo? eventLocationKnown,
       String? eventLocation,
       bool? limitGuestCount,
@@ -130,6 +147,8 @@ class CreateEventState extends Equatable {
     return CreateEventState(
         createEventStateStatus:
             createEventStateStatus ?? this.createEventStateStatus,
+        createEventStateSteps:
+            createEventStateSteps ?? this.createEventStateSteps,
         createEventStepIndex: createEventStepIndex ?? this.createEventStepIndex,
         hangEventId: hangEventId ?? this.hangEventId,
         eventOwner: eventOwner ?? this.eventOwner,
@@ -139,6 +158,9 @@ class CreateEventState extends Equatable {
         eventStartDateTime: eventStartDateTime ?? this.eventStartDateTime,
         eventStartTime: eventStartTime ?? this.eventStartTime,
         durationHours: durationHours ?? this.durationHours,
+        isRecurringEvent: isRecurringEvent ?? this.isRecurringEvent,
+        recurringType: recurringType ?? this.recurringType,
+        recurringFrequency: recurringFrequency ?? this.recurringFrequency,
         eventLocationKnown: eventLocationKnown ?? this.eventLocationKnown,
         eventLocation: eventLocation ?? this.eventLocation,
         limitGuestCount: limitGuestCount ?? this.limitGuestCount,
@@ -199,35 +221,60 @@ class CreateEventState extends Equatable {
         durationHours: durationHours,
         eventLocation: eventLocation,
         currentStage: eventStage,
-        photoURL: photoUrl);
+        photoURL: photoUrl,
+        recurringSettings: recurringType != null
+            ? HangEventRecurringSettings(
+                recurringType: recurringType!,
+                recurringFrequency: recurringFrequency!)
+            : null);
+  }
+
+  CreateEventState moveToStage(HangEventStage newStage) {
+    int newStageIndex =
+        stageToIndexMap.containsKey(newStage) ? stageToIndexMap[newStage]! : 0;
+    if (isRecurringEvent == CreateEventYesNo.yes) {
+      // the only oddity is when recurring event is populated. If recurring event is populated
+      // then location step is one step up.
+      int recurringEventIndex = stageToIndexMap[HangEventStage.recurringEvent]!;
+      if (newStage == HangEventStage.location ||
+          newStageIndex > recurringEventIndex) {
+        newStageIndex += 1;
+      }
+    }
+    return copyWith(createEventStepIndex: newStageIndex);
   }
 
   CreateEventState convertEventToState(HangEvent currentEvent) {
     return CreateEventState(
-      createEventStateStatus: CreateEventStateStatus.loadedEventDetails,
-      createEventStepIndex:
-          stageToIndexMap.containsKey(currentEvent.currentStage)
-              ? stageToIndexMap[currentEvent.currentStage]!
-              : 0,
-      hangEventId: currentEvent.id,
-      eventOwner: currentEvent.eventOwner,
-      eventName: currentEvent.eventName,
-      eventDescription: currentEvent.eventDescription,
-      timeAndDateKnown: currentEvent.eventStartDateTime != null
-          ? CreateEventYesNo.yes
-          : CreateEventYesNo.no,
-      eventStartDateTime: currentEvent.eventStartDateTime,
-      durationHours: currentEvent.durationHours,
-      eventLocationKnown: currentEvent.eventLocation != null
-          ? CreateEventYesNo.yes
-          : CreateEventYesNo.no,
-      eventLocation: currentEvent.eventLocation,
-    );
+        createEventStateStatus: CreateEventStateStatus.loadedEventDetails,
+        createEventStepIndex:
+            stageToIndexMap.containsKey(currentEvent.currentStage)
+                ? stageToIndexMap[currentEvent.currentStage]!
+                : 0,
+        hangEventId: currentEvent.id,
+        eventOwner: currentEvent.eventOwner,
+        eventName: currentEvent.eventName,
+        eventDescription: currentEvent.eventDescription,
+        timeAndDateKnown: currentEvent.eventStartDateTime != null
+            ? CreateEventYesNo.yes
+            : CreateEventYesNo.no,
+        eventStartDateTime: currentEvent.eventStartDateTime,
+        durationHours: currentEvent.durationHours,
+        eventLocationKnown: currentEvent.eventLocation != null
+            ? CreateEventYesNo.yes
+            : CreateEventYesNo.no,
+        eventLocation: currentEvent.eventLocation,
+        isRecurringEvent: currentEvent.recurringSettings != null
+            ? CreateEventYesNo.yes
+            : CreateEventYesNo.no,
+        recurringType: currentEvent.recurringSettings?.recurringType,
+        recurringFrequency: currentEvent.recurringSettings?.recurringFrequency);
   }
 
   @override
   List<Object?> get props => [
         createEventStateStatus,
+        createEventStateSteps,
         createEventStepIndex,
         hangEventId,
         eventOwner,
@@ -237,6 +284,9 @@ class CreateEventState extends Equatable {
         eventStartDateTime,
         eventEndDateTime,
         eventStartTime,
+        isRecurringEvent,
+        recurringType,
+        recurringFrequency,
         durationHours,
         eventLocationKnown,
         eventLocation,

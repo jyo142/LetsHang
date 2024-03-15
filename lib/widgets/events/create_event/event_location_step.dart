@@ -3,8 +3,6 @@ import 'package:letshang/blocs/create_event/create_event_bloc.dart';
 import 'package:letshang/models/events/create_event_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/widgets/lh_text_form_field.dart';
-import 'package:intl/intl.dart';
-import 'package:letshang/assets/Constants.dart' as constants;
 
 class EventLocationStep implements CreateEventStep {
   @override
@@ -73,7 +71,8 @@ class EventLocationStepWidget extends StatelessWidget {
                     groupValue: createEventState.eventLocationKnown,
                     onChanged: (CreateEventYesNo? value) {
                       context.read<CreateEventBloc>().add(
-                          TimeAndDateKnownChanged(timeAndDateKnown: value!));
+                          EventLocationKnownChanged(
+                              eventLocationKnown: value!));
                     },
                   ),
                 ),
@@ -84,7 +83,8 @@ class EventLocationStepWidget extends StatelessWidget {
                     groupValue: createEventState.eventLocationKnown,
                     onChanged: (CreateEventYesNo? value) {
                       context.read<CreateEventBloc>().add(
-                          TimeAndDateKnownChanged(timeAndDateKnown: value!));
+                          EventLocationKnownChanged(
+                              eventLocationKnown: value!));
                     },
                   ),
                 ),
@@ -101,13 +101,13 @@ class EventLocationStepWidget extends StatelessWidget {
               ),
               LHTextFormField(
                 labelText: 'Event Location',
-                initialValue: createEventState.eventDescription,
+                initialValue: createEventState.eventLocation ?? "",
                 backgroundColor: const Color(0xFFECEEF4),
                 maxLines: 1,
                 onChanged: (value) {
                   context
                       .read<CreateEventBloc>()
-                      .add(EventDescriptionChanged(eventDescription: value));
+                      .add(EventLocationChanged(eventLocation: value));
                 },
                 errorText:
                     curStepValidationMap?.containsKey("eventLocation") ?? false

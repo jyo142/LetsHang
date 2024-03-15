@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:letshang/models/events/hang_event_recurring_settings.dart';
 import 'package:letshang/models/has_user_invites.dart';
 import 'package:letshang/models/user_invite_model.dart';
 import 'package:letshang/utils/firebase_utils.dart';
@@ -11,9 +12,11 @@ enum HangEventStage {
   started,
   nameDescription,
   dateTime,
+  recurringEvent,
   location,
   mainDetails,
   addingUsers,
+  review,
   complete
 }
 
@@ -26,6 +29,7 @@ class HangEvent extends HasUserInvites {
   final int? durationHours;
   final String? eventLocation;
   final HangEventStage currentStage;
+  final HangEventRecurringSettings? recurringSettings;
   final String? photoURL;
   HangEvent(
       {id,
@@ -38,6 +42,7 @@ class HangEvent extends HasUserInvites {
       this.eventLocation,
       List<UserInvite>? userInvites,
       this.currentStage = HangEventStage.started,
+      this.recurringSettings,
       this.photoURL = ''})
       : super(id, userInvites);
 
@@ -53,6 +58,7 @@ class HangEvent extends HasUserInvites {
             eventLocation: event.eventLocation,
             userInvites: event.userInvites,
             currentStage: event.currentStage,
+            recurringSettings: event.recurringSettings,
             photoURL: event.photoURL);
 
   static HangEvent fromSnapshot(DocumentSnapshot snap,
@@ -71,6 +77,7 @@ class HangEvent extends HasUserInvites {
       String? eventLocation,
       List<UserInvite>? userInvites,
       HangEventStage? currentStage,
+      HangEventRecurringSettings? recurringSettings,
       String? photoUrl}) {
     return HangEvent(
         id: id ?? this.id,
@@ -83,6 +90,7 @@ class HangEvent extends HasUserInvites {
         eventLocation: eventLocation ?? this.eventLocation,
         userInvites: userInvites ?? this.userInvites,
         currentStage: currentStage ?? this.currentStage,
+        recurringSettings: recurringSettings ?? this.recurringSettings,
         photoURL: photoURL ?? this.photoURL);
   }
 
@@ -102,6 +110,8 @@ class HangEvent extends HasUserInvites {
         userInvites: userInvites ?? [],
         currentStage: HangEventStage.values
             .firstWhere((e) => describeEnum(e) == map["currentStage"]),
+        recurringSettings: map.getFromMap("recurringSettings",
+            (key) => HangEventRecurringSettings.fromMap(key)),
         photoURL: map['photoUrl']);
     return event;
   }
@@ -121,6 +131,8 @@ class HangEvent extends HasUserInvites {
       'durationHours': durationHours,
       'eventLocation': eventLocation,
       'currentStage': describeEnum(currentStage),
+      'recurringSettings':
+          recurringSettings != null ? recurringSettings!.toDocument() : null,
       'photoUrl': photoURL.toString()
     };
   }
@@ -137,6 +149,7 @@ class HangEvent extends HasUserInvites {
         eventLocation,
         userInvites,
         currentStage,
+        recurringSettings,
         photoURL
       ];
 }
