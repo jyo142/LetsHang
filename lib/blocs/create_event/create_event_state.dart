@@ -6,6 +6,7 @@ enum CreateEventStateStatus {
   loadedEventDetails,
   loadingStep,
   submittedStep,
+  completedEventReview,
   nextStep,
   error
 }

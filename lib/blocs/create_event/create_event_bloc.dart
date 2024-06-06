@@ -197,6 +197,12 @@ class CreateEventBloc extends Bloc<CreateEventEvent, CreateEventState> {
         await _hangEventRepository
             .editHangEvent(state.createHangEvent(newStage));
       }
+      if (newStage == HangEventStage.complete) {
+        return state.copyWith(
+            hangEventId: createdEventId,
+            createEventStateStatus:
+                CreateEventStateStatus.completedEventReview);
+      }
       return state.copyWith(
           hangEventId: createdEventId,
           createEventStepIndex: state.createEventStepIndex + 1,

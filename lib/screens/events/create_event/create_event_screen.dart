@@ -126,7 +126,7 @@ class _CreateEventScreenView extends StatelessWidget {
                                         .getStepWidget(state)))
                           ],
                         )),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
                     Flexible(
@@ -144,7 +144,7 @@ class _CreateEventScreenView extends StatelessWidget {
                               }),
                         )),
                     if (state.createEventStepIndex != 0) ...[
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
                       Flexible(
@@ -173,6 +173,10 @@ class _CreateEventScreenView extends StatelessWidget {
         );
       },
       listener: (BuildContext context, CreateEventState state) {
+        if (state.createEventStateStatus ==
+            CreateEventStateStatus.completedEventReview) {
+          context.push("/eventDetails/${state.hangEventId}");
+        }
         if (state.createEventStateStatus ==
             CreateEventStateStatus.submittedStep) {
           MessageService.showSuccessMessage(
