@@ -135,6 +135,8 @@ class _CreateEventScreenView extends StatelessWidget {
                           width: double.infinity,
                           child: LHButton(
                               buttonText: 'NEXT',
+                              isLoading: state.createEventStateStatus ==
+                                  CreateEventStateStatus.loadingStep,
                               onPressed: () {
                                 context.read<CreateEventBloc>().add(
                                     MoveNextStep(
@@ -153,6 +155,8 @@ class _CreateEventScreenView extends StatelessWidget {
                             width: double.infinity,
                             child: LHButton(
                                 buttonText: 'PREVIOUS',
+                                isLoading: state.createEventStateStatus ==
+                                    CreateEventStateStatus.loadingStep,
                                 buttonStyle: Theme.of(context)
                                     .buttonTheme
                                     .secondaryButtonStyle,
@@ -175,7 +179,7 @@ class _CreateEventScreenView extends StatelessWidget {
       listener: (BuildContext context, CreateEventState state) {
         if (state.createEventStateStatus ==
             CreateEventStateStatus.completedEventReview) {
-          context.push("/eventDetails/${state.hangEventId}");
+          context.push("/eventDetails/${state.hangEventId}", extra: true);
         }
         if (state.createEventStateStatus ==
             CreateEventStateStatus.submittedStep) {

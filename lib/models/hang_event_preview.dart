@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:letshang/models/hang_event_model.dart';
-import 'package:letshang/models/has_user_invites.dart';
 import 'package:letshang/models/user_invite_model.dart';
-import 'hang_user_preview_model.dart';
 import 'package:equatable/equatable.dart';
 
 class HangEventPreview extends Equatable {
@@ -11,7 +8,7 @@ class HangEventPreview extends Equatable {
   final String eventName;
   final String? eventDescription;
   final String? photoURL;
-  HangEventPreview(
+  const HangEventPreview(
       {id,
       required this.eventId,
       required this.eventName,

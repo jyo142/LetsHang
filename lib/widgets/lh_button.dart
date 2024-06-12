@@ -6,13 +6,15 @@ class LHButton extends StatelessWidget {
   final ButtonStyle? buttonStyle;
   final bool? isDisabled;
   final Widget? icon;
+  final bool? isLoading;
   const LHButton(
       {Key? key,
       required String this.buttonText,
       required VoidCallback this.onPressed,
       this.buttonStyle,
       this.isDisabled,
-      this.icon})
+      this.icon,
+      this.isLoading})
       : super(key: key);
 
   @override
@@ -22,15 +24,27 @@ class LHButton extends StatelessWidget {
           icon: icon!,
           style: buttonStyle,
           onPressed: (isDisabled ?? false) ? null : onPressed,
-          label: Text(
-            buttonText,
-          ));
+          label: (isLoading ?? false)
+              ? const SizedBox(
+                  width: 10.0, // set the desired width
+                  height: 10.0, // set the desired height
+                  child: CircularProgressIndicator(),
+                )
+              : Text(
+                  buttonText,
+                ));
     }
     return OutlinedButton(
         onPressed: (isDisabled ?? false) ? null : onPressed,
         style: buttonStyle,
-        child: Text(
-          buttonText,
-        ));
+        child: (isLoading ?? false)
+            ? const SizedBox(
+                width: 10.0, // set the desired width
+                height: 10.0, // set the desired height
+                child: CircularProgressIndicator(),
+              )
+            : Text(
+                buttonText,
+              ));
   }
 }

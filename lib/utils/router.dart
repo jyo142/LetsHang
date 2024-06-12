@@ -138,6 +138,7 @@ abstract class AppRouter {
               path: "/eventDetails/:eventId",
               builder: (context, state) => EventDetailsScreen(
                 eventId: state.pathParameters["eventId"]!,
+                isPreview: state.extra as bool?,
               ),
             ),
             GoRoute(

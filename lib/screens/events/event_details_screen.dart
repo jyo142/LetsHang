@@ -18,8 +18,9 @@ import 'package:badges/badges.dart' as badges;
 
 class EventDetailsScreen extends StatefulWidget {
   final String eventId;
-
-  const EventDetailsScreen({Key? key, required this.eventId}) : super(key: key);
+  final bool? isPreview;
+  const EventDetailsScreen({Key? key, required this.eventId, this.isPreview})
+      : super(key: key);
 
   @override
   State createState() {
@@ -52,7 +53,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             HangEventOverviewStateStatus.loading) {
           return const Center(child: CircularProgressIndicator());
         }
-        return _EventDetailsView(curEvent: state.individualHangEvent!);
+        return _EventDetailsView(
+          curEvent: state.individualHangEvent!,
+          isPreview: widget.isPreview ?? false,
+        );
       },
     );
   }
@@ -60,8 +64,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
 
 class _EventDetailsView extends StatelessWidget {
   final HangEvent curEvent;
+  final bool isPreview;
 
-  const _EventDetailsView({required this.curEvent});
+  const _EventDetailsView({required this.curEvent, required this.isPreview});
 
   @override
   Widget build(BuildContext context) {
@@ -101,15 +106,25 @@ class _EventDetailsView extends StatelessWidget {
             Builder(builder: (context) {
               // this uses the new context to open the drawer properly provided by the Builder
               return Row(children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.arrow_back,
-                    color: Color(0xFF9BADBD),
-                  ),
-                  onPressed: () {
-                    context.pop();
-                  },
-                ),
+                isPreview
+                    ? IconButton(
+                        icon: const Icon(
+                          Icons.home,
+                          color: Color(0xFF9BADBD),
+                        ),
+                        onPressed: () {
+                          context.go("/home");
+                        },
+                      )
+                    : IconButton(
+                        icon: const Icon(
+                          Icons.arrow_back,
+                          color: Color(0xFF9BADBD),
+                        ),
+                        onPressed: () {
+                          context.pop();
+                        },
+                      ),
                 IconButton(
                   icon: BlocBuilder<UserHangEventStatusBloc,
                       UserEventStatusState>(
