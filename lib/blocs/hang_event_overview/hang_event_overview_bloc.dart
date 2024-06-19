@@ -66,9 +66,14 @@ class HangEventOverviewBloc
 
   Future<HangEventOverviewState> _mapLoadUpcomingDraftHangEventsToState(
       {required String userId}) async {
-    List<HangEventInvite> eventsForUser =
+    UpcomingDraftEventInvites upcomingDraftEventInvites =
         await _userInvitesRepository.getUpcomingDraftEventInvites(userId);
 
+    List<HangEventInvite> eventsForUser = [
+      ...upcomingDraftEventInvites.draftEventInvites,
+      ...HangEventInviteUtils.sortEventInvitesByDraftUpcoming(
+          upcomingDraftEventInvites.upcomingEventInvites),
+    ];
     return state.copyWith(
         hangEventOverviewStateStatus:
             HangEventOverviewStateStatus.hangEventsRetrieved,

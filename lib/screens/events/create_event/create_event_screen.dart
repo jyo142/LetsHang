@@ -9,7 +9,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CreateEventScreen extends StatefulWidget {
   final String? hangEventId;
-  const CreateEventScreen({Key? key, this.hangEventId}) : super(key: key);
+  final String?
+      groupId; // this can be populated if wanting to create an event from a group
+  const CreateEventScreen({Key? key, this.hangEventId, this.groupId})
+      : super(key: key);
 
   @override
   _CreateEventScreenState createState() => _CreateEventScreenState();
@@ -19,6 +22,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.groupId?.isNotEmpty ?? false) {
+      context
+          .read<CreateEventBloc>()
+          .add(InitializeGroup(groupId: widget.groupId!));
+    }
     if (widget.hangEventId?.isNotEmpty ?? false) {
       context
           .read<CreateEventBloc>()

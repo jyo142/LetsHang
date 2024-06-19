@@ -34,6 +34,9 @@ class CreateEventBloc extends Bloc<CreateEventEvent, CreateEventState> {
         super(CreateEventState(
             eventOwner: creatingUser,
             createEventStateStatus: CreateEventStateStatus.initial)) {
+    on<InitializeGroup>((event, emit) async {
+      emit(state.copyWith(groupId: event.groupId));
+    });
     on<LoadCurrentEventDetails>((event, emit) async {
       emit(state.copyWith(
           createEventStateStatus: CreateEventStateStatus.loadingEventDetails));
@@ -84,6 +87,7 @@ class CreateEventBloc extends Bloc<CreateEventEvent, CreateEventState> {
       emit(state.copyWith(recurringFrequency: event.recurringFrequency));
     });
     on<MoveNextStep>((event, emit) async {
+      emit(state.copyWith(formStepValidationMap: Map()));
       bool validationResult = await _validateFormStep(
           event.stepId, event.stepValidationFunction, emit);
       if (validationResult) {
@@ -198,6 +202,12 @@ class CreateEventBloc extends Bloc<CreateEventEvent, CreateEventState> {
             .editHangEvent(state.createHangEvent(newStage));
       }
       if (newStage == HangEventStage.complete) {
+        if (state.groupId != null) {
+          // if this event creation is tied to a group then add all the group members as pending invites
+          // to this event
+          await _userInvitesRepository.addGroupAcceptedInvitesToEvent(
+              state.groupId!, state.hangEventId, creatingUser.userId);
+        }
         return state.copyWith(
             hangEventId: createdEventId,
             createEventStateStatus:

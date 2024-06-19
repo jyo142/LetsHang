@@ -441,27 +441,49 @@ export const onEventUpdated = onDocumentUpdated(
       return;
     }
 
-    const newEventData = snap.data?.after;
-    const oldEventData = snap.data?.before;
+    const newEventSnapshot = snap.data?.after;
+    const newEventData = newEventSnapshot.data();
+    const eventId = snap.params.eventId;
 
-    // check if stage changed
-    if (newEventData.get("currentStage") !== oldEventData.get("currentStage")) {
-      const eventOwnerData = newEventData.get("eventOwner");
-      const eventOwnerId = eventOwnerData.userId;
-      const userInviteRef = db
-        .collection("userInvites")
-        .doc(eventOwnerId)
-        .collection("eventInvites")
-        .doc(snap.params.eventId);
-      const userInviteSnap = await userInviteRef.get();
-      info("User Info snap ", userInviteSnap);
-      if (userInviteSnap.exists) {
-        const userInviteData = userInviteSnap.data();
-        info("User invite data ", userInviteData);
-        userInviteData!.event.currentStage = newEventData.get("currentStage");
-        info("User invite data after", userInviteData);
-        await userInviteRef.set(userInviteData!);
-      }
+    try {
+      // Get all the users invited to the event
+      const allEventInvites = await db
+        .collection("hangEvents")
+        .doc(eventId)
+        .collection("invites")
+        .get();
+
+      const allUserIds = allEventInvites.docs.map(
+        (doc) => doc.data().user.userId,
+      );
+      info("ALL USER IDS TO UPDATE ", allUserIds);
+
+      // Update each user invite with the updated event data
+      const updatePromises = allUserIds.map(async (curUserId) => {
+        const userInviteRef = db
+          .collection("userInvites")
+          .doc(curUserId)
+          .collection("eventInvites")
+          .doc(eventId);
+
+        await db.runTransaction(async (transaction) => {
+          const userInviteSnap = await transaction.get(userInviteRef);
+
+          if (userInviteSnap.exists) {
+            const userInviteData = userInviteSnap.data();
+            const updatedInviteData = {
+              ...userInviteData,
+              event: newEventData,
+            };
+            info(`Updating invite for user ${curUserId}`, updatedInviteData);
+            transaction.set(userInviteRef, updatedInviteData);
+          }
+        });
+      });
+
+      await Promise.all(updatePromises);
+    } catch (err) {
+      error("Error updating user invites", err);
     }
   },
 );

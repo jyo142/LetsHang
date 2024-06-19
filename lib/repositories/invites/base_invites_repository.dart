@@ -9,7 +9,7 @@ import 'package:letshang/models/user_invite_model.dart';
 
 abstract class BaseUserInvitesRepository {
   Future<List<HangEventInvite>> getAllUserEventInvites(String userId);
-  Future<List<HangEventInvite>> getUpcomingDraftEventInvites(String userId);
+  Future<UpcomingDraftEventInvites> getUpcomingDraftEventInvites(String userId);
   Future<List<HangEventInvite>> getPastEventInvites(String userId);
 
   Future<List<HangEventInvite>> getUserEventInvitesByRange(
@@ -31,6 +31,8 @@ abstract class BaseUserInvitesRepository {
       HangEvent hangEvent, List<UserInvite> toRemoveUserInvites);
   Future<void> promoteUserEventInvite(
       HangEvent hangEvent, UserInvite toPromote);
+  Future<void> addGroupAcceptedInvitesToEvent(
+      String groupId, String hangEventId, String ownerUserId);
 
   // group invites
   // this method creates all the user invites for a group

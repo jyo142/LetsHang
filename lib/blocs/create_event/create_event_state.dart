@@ -40,6 +40,7 @@ class CreateEventState extends Equatable {
   final int? maxGuestCount;
   final HangEventType hangEventType;
   late final String? photoUrl;
+  final String? groupId;
   // metadata
   final String searchEventInvitee;
   final SearchUserBy searchEventInviteeBy;
@@ -73,6 +74,7 @@ class CreateEventState extends Equatable {
     this.searchEventInviteeBy = SearchUserBy.username,
     this.formStepValidationMap = const {},
     this.errorMessage,
+    this.groupId,
     Map<String, UserInvite>? eventUserInvitees,
   }) : createEventStateSteps = createEventStateSteps ??
             [
@@ -144,7 +146,8 @@ class CreateEventState extends Equatable {
       SearchUserBy? searchEventInviteeBy,
       Map<String, UserInvite>? eventUserInvitees,
       Map<String, Map<String, String>>? formStepValidationMap,
-      String? errorMessage}) {
+      String? errorMessage,
+      String? groupId}) {
     return CreateEventState(
         createEventStateStatus:
             createEventStateStatus ?? this.createEventStateStatus,
@@ -174,7 +177,8 @@ class CreateEventState extends Equatable {
         eventUserInvitees: eventUserInvitees ?? this.eventUserInvitees,
         formStepValidationMap:
             formStepValidationMap ?? this.formStepValidationMap,
-        errorMessage: errorMessage ?? this.errorMessage);
+        errorMessage: errorMessage ?? this.errorMessage,
+        groupId: groupId ?? this.groupId);
   }
 
   bool isValidEvent() {
@@ -299,6 +303,7 @@ class CreateEventState extends Equatable {
         searchEventInviteeBy,
         eventUserInvitees,
         formStepValidationMap,
-        errorMessage
+        errorMessage,
+        groupId
       ];
 }

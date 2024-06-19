@@ -5,6 +5,33 @@ import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:letshang/models/user_invite_model.dart';
 
+class UpcomingDraftEventInvites {
+  List<HangEventInvite> draftEventInvites;
+  List<HangEventInvite> upcomingEventInvites;
+
+  UpcomingDraftEventInvites(
+      {required this.draftEventInvites, required this.upcomingEventInvites});
+}
+
+class HangEventInviteUtils {
+  static List<HangEventInvite> sortEventInvitesByDraftUpcoming(
+      List<HangEventInvite> eventInvites) {
+    List<HangEventInvite> retVal = List.from(eventInvites);
+    retVal.sort((a, b) {
+      if (a.eventStartDateTime == null && b.eventStartDateTime == null) {
+        return 0;
+      } else if (a.eventStartDateTime == null) {
+        return 1;
+      } else if (b.eventStartDateTime == null) {
+        return -1;
+      } else {
+        return b.eventStartDateTime!.compareTo(a.eventStartDateTime!);
+      }
+    });
+    return retVal;
+  }
+}
+
 class HangEventInvite extends Invite {
   final HangEvent event;
   final DateTime? eventStartDateTime;
@@ -26,6 +53,14 @@ class HangEventInvite extends Invite {
   static HangEventInvite fromSnapshot(DocumentSnapshot snap) {
     return fromMap(snap.data() as Map<String, dynamic>);
   }
+
+  HangEventInvite.withEventData(HangEvent event, HangEventInvite invite)
+      : this(
+            event: event,
+            status: invite.status,
+            type: invite.type,
+            title: invite.title,
+            invitingUser: invite.invitingUser);
 
   HangEventInvite.withUserInvite(HangEvent event, UserInvite userInvite)
       : this(

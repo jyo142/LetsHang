@@ -228,6 +228,7 @@ abstract class AppRouter {
               path: "/createEvent",
               builder: (context, state) => CreateEventScreen(
                 hangEventId: state.uri.queryParameters["eventId"],
+                groupId: state.uri.queryParameters["groupId"],
               ),
             ),
           ]),

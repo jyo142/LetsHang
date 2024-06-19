@@ -6,6 +6,7 @@ import 'package:letshang/blocs/group_overview/group_overview_bloc.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/screens/discussions/discussion_screen.dart';
+import 'package:letshang/screens/groups/group_details_fab.dart';
 import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/avatars/attendees_avatar.dart';
 import 'package:letshang/widgets/cards/user_event_card.dart';
@@ -47,6 +48,9 @@ class _GroupDetailsView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      floatingActionButton: GroupDetailsFAB(
+        groupId: groupId,
+      ),
       bottomNavigationBar: BlocConsumer<DiscussionsBloc, DiscussionsState>(
         builder: (context, state) {
           if (state.discussionsStateStatus ==

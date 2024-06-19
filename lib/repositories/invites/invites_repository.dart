@@ -65,21 +65,22 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
   }
 
   @override
-  Future<List<HangEventInvite>> getUpcomingDraftEventInvites(
+  Future<UpcomingDraftEventInvites> getUpcomingDraftEventInvites(
       String userId) async {
     QuerySnapshot rangeEventInviteQuerySnapshot = await _firebaseFirestore
         .collection("userInvites")
         .doc(userId)
         .collection("eventInvites")
-        .where('eventStartDateTime', isGreaterThanOrEqualTo: DateTime.now())
+        .where("event.currentStage", isEqualTo: "complete")
+        .where('event.eventStartDateTime',
+            isGreaterThanOrEqualTo: DateTime.now())
         .get();
 
     QuerySnapshot draftInviteQuerySnapshot = await _firebaseFirestore
         .collection("userInvites")
         .doc(userId)
         .collection("eventInvites")
-        .where('eventStartDateTime', isNull: true)
-        .get();
+        .where("event.currentStage", whereNotIn: ["complete"]).get();
 
     final allRangeDocSnapshots =
         rangeEventInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
@@ -93,12 +94,17 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         .map((doc) => HangEventInvite.fromMap(doc as Map<String, dynamic>))
         .toList();
 
-    List<HangEventInvite> draftUpcomingHangEvents = [
-      ...eventInvites,
-      ...draftEventInvites
-    ];
+    return UpcomingDraftEventInvites(
+        draftEventInvites: draftEventInvites,
+        upcomingEventInvites: eventInvites);
+  }
 
-    return draftUpcomingHangEvents;
+  Future<HangEventInvite> populateEventData(HangEventInvite invite) async {
+    DocumentReference eventReference =
+        _firebaseFirestore.collection("hangEvents").doc(invite.event.id);
+    DocumentSnapshot eventSnapshot = await eventReference.get();
+    HangEvent eventData = HangEvent.fromSnapshot(eventSnapshot);
+    return HangEventInvite.withEventData(eventData, invite);
   }
 
   @override
@@ -395,6 +401,34 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
       await promoteUserInviteForEvent(hangEvent, toPromote, transaction);
       transaction.set(dbEventUserInvitesRef, newUserInvite.toDocument());
     });
+  }
+
+  @override
+  Future<void> addGroupAcceptedInvitesToEvent(
+      String groupId, String hangEventId, String ownerUserId) async {
+    List<UserInvite> acceptedGroupInvites =
+        await getGroupAcceptedUserInvites(groupId);
+    List<UserInvite> nonOwnerUserInvites = acceptedGroupInvites
+        .where((element) => element.user.userId != ownerUserId)
+        .toList();
+
+    WriteBatch batch = _firebaseFirestore.batch();
+    CollectionReference eventInviteCollectionRef = _firebaseFirestore
+        .collection("hangEvents")
+        .doc(hangEventId)
+        .collection("invites");
+
+    for (UserInvite toAddUserInvite in nonOwnerUserInvites) {
+      UserInvite newUserInvite = UserInvite(
+        user: toAddUserInvite.user,
+        status: InviteStatus.pending,
+        type: InviteType.event,
+        title: InviteTitle.user,
+      );
+      DocumentReference docRef = eventInviteCollectionRef.doc();
+      batch.set(docRef, newUserInvite.toDocument());
+    }
+    await batch.commit();
   }
 
   @override

@@ -9,6 +9,15 @@ abstract class CreateEventEvent extends Equatable {
 
 class LoadEventStep extends CreateEventEvent {}
 
+class InitializeGroup extends CreateEventEvent {
+  const InitializeGroup({required this.groupId});
+
+  final String groupId;
+
+  @override
+  List<Object> get props => [groupId];
+}
+
 // used if an event is already created and want to continue event creation.
 // need to load the previous details
 class LoadCurrentEventDetails extends CreateEventEvent {
