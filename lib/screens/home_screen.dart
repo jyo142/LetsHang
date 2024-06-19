@@ -5,13 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
-import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:letshang/blocs/invitations/invitations_bloc.dart';
 import 'package:letshang/models/event_invite.dart';
 import 'package:letshang/models/group_invite.dart';
 import 'package:letshang/models/invite.dart';
-import 'package:letshang/screens/edit_event_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/screens/invitations/all_pending_invitations.dart';
 import 'package:letshang/services/message_service.dart';
@@ -357,8 +355,8 @@ class _HomeScreenState extends State<HomeScreen> {
           }
           if (state.hangEventOverviewStateStatus ==
               HangEventOverviewStateStatus.hangEventsRetrieved) {
-            if (state.draftUpcomingHangEvents.isNotEmpty) {
-              return _eventListView(state.draftUpcomingHangEvents);
+            if (state.hangEvents.isNotEmpty) {
+              return _eventListView(state.hangEvents);
             } else {
               return Text(
                 'No upcoming events',

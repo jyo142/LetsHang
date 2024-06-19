@@ -26,17 +26,19 @@ class EventRecurringStep implements CreateEventStep {
     if (createEventState.isRecurringEvent == null) {
       stepMap.putIfAbsent("isRecurringEvent", () => "Please enter a value");
     } else {
-      if (createEventState.recurringType == null) {
-        stepMap.putIfAbsent(
-            "recurringType", () => "Please enter a recurring type");
-      }
-      if (createEventState.recurringFrequency == null) {
-        stepMap.putIfAbsent(
-            "recurringFrequency", () => "Please enter a recurring frequency");
-      } else {
-        if (createEventState.recurringFrequency == 0) {
-          stepMap.putIfAbsent("recurringFrequency",
-              () => "Please enter a valid recurring frequency");
+      if (createEventState.isRecurringEvent == CreateEventYesNo.yes) {
+        if (createEventState.recurringType == null) {
+          stepMap.putIfAbsent(
+              "recurringType", () => "Please enter a recurring type");
+        }
+        if (createEventState.recurringFrequency == null) {
+          stepMap.putIfAbsent(
+              "recurringFrequency", () => "Please enter a recurring frequency");
+        } else {
+          if (createEventState.recurringFrequency == 0) {
+            stepMap.putIfAbsent("recurringFrequency",
+                () => "Please enter a valid recurring frequency");
+          }
         }
       }
     }

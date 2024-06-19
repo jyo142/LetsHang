@@ -64,39 +64,73 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
     return retValInvites;
   }
 
-  @override
-  Future<UpcomingDraftEventInvites> getUpcomingDraftEventInvites(
-      String userId) async {
-    QuerySnapshot rangeEventInviteQuerySnapshot = await _firebaseFirestore
+  Future<List<HangEventInvite>> getRangeUpcomingEventInvites(
+      String userId, DateTime startDateTime, DateTime? endDateTime,
+      [bool includeNullDate = true]) async {
+    Query rangeEventInviteQuery = _firebaseFirestore
         .collection("userInvites")
         .doc(userId)
         .collection("eventInvites")
-        .where("event.currentStage", isEqualTo: "complete")
-        .where('event.eventStartDateTime',
-            isGreaterThanOrEqualTo: DateTime.now())
-        .get();
+        .where("event.currentStage", isEqualTo: "complete");
 
+    if (includeNullDate) {
+      rangeEventInviteQuery.where(Filter.or(
+        Filter("event.eventStartDateTime",
+            isGreaterThanOrEqualTo: startDateTime),
+        Filter("event.eventStartDateTime", isNull: true),
+      ));
+    } else {
+      rangeEventInviteQuery.where('event.eventStartDateTime',
+          isGreaterThanOrEqualTo: startDateTime);
+    }
+
+    if (endDateTime != null) {
+      rangeEventInviteQuery = rangeEventInviteQuery.where(
+          'event.eventStartDateTime',
+          isLessThanOrEqualTo: Timestamp.fromDate(endDateTime));
+    }
+
+    QuerySnapshot rangeEventInviteQuerySnapshot =
+        await rangeEventInviteQuery.get();
+
+    final allRangeDocSnapshots =
+        rangeEventInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
+
+    List<HangEventInvite> eventInvites = allRangeDocSnapshots
+        .map((doc) => HangEventInvite.fromMap(doc as Map<String, dynamic>))
+        .toList();
+
+    return eventInvites;
+  }
+
+  Future<UpcomingDraftEventInvites> getRangeUpcomingDraftEventInvites(
+      String userId, DateTime startDateTime, DateTime? endDateTime) async {
+    List<HangEventInvite> upcomingEventInvites =
+        await getRangeUpcomingEventInvites(userId, startDateTime, endDateTime);
     QuerySnapshot draftInviteQuerySnapshot = await _firebaseFirestore
         .collection("userInvites")
         .doc(userId)
         .collection("eventInvites")
         .where("event.currentStage", whereNotIn: ["complete"]).get();
 
-    final allRangeDocSnapshots =
-        rangeEventInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
     final allDraftDocSnapshots =
         draftInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
 
-    List<HangEventInvite> eventInvites = allRangeDocSnapshots
-        .map((doc) => HangEventInvite.fromMap(doc as Map<String, dynamic>))
-        .toList();
     List<HangEventInvite> draftEventInvites = allDraftDocSnapshots
         .map((doc) => HangEventInvite.fromMap(doc as Map<String, dynamic>))
         .toList();
 
     return UpcomingDraftEventInvites(
         draftEventInvites: draftEventInvites,
-        upcomingEventInvites: eventInvites);
+        upcomingEventInvites: upcomingEventInvites);
+  }
+
+  @override
+  Future<UpcomingDraftEventInvites> getUpcomingDraftEventInvites(
+      String userId) async {
+    UpcomingDraftEventInvites upcomingDraftEventInvites =
+        await getRangeUpcomingDraftEventInvites(userId, DateTime.now(), null);
+    return upcomingDraftEventInvites;
   }
 
   Future<HangEventInvite> populateEventData(HangEventInvite invite) async {
@@ -129,41 +163,11 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
   @override
   Future<List<HangEventInvite>> getUserEventInvitesByRange(
       String userId, DateTime startDateTime, DateTime endDateTime) async {
-    QuerySnapshot rangeEventInviteQuerySnapshot = await _firebaseFirestore
-        .collection("userInvites")
-        .doc(userId)
-        .collection("eventInvites")
-        .where('eventStartDateTime',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(startDateTime))
-        .where('eventStartDateTime',
-            isLessThanOrEqualTo: Timestamp.fromDate(endDateTime))
-        .get();
+    List<HangEventInvite> rangeUpcomingEventInvites =
+        await getRangeUpcomingEventInvites(
+            userId, startDateTime, endDateTime, false);
 
-    QuerySnapshot draftInviteQuerySnapshot = await _firebaseFirestore
-        .collection("userInvites")
-        .doc(userId)
-        .collection("eventInvites")
-        .where('eventStartDateTime', isNull: true)
-        .get();
-
-    final allRangeDocSnapshots =
-        rangeEventInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
-    final allDraftDocSnapshots =
-        draftInviteQuerySnapshot.docs.map((doc) => doc.data()).toList();
-
-    List<HangEventInvite> eventInvites = allRangeDocSnapshots
-        .map((doc) => HangEventInvite.fromMap(doc as Map<String, dynamic>))
-        .toList();
-    List<HangEventInvite> draftEventInvites = allDraftDocSnapshots
-        .map((doc) => HangEventInvite.fromMap(doc as Map<String, dynamic>))
-        .toList();
-
-    List<HangEventInvite> allEventInvites = [
-      ...eventInvites,
-      ...draftEventInvites
-    ];
-
-    return allEventInvites;
+    return rangeUpcomingEventInvites;
   }
 
   @override

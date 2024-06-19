@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
-import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/invitations/invitations_bloc.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:flutter_svg/flutter_svg.dart';

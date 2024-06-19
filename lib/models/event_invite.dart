@@ -18,14 +18,16 @@ class HangEventInviteUtils {
       List<HangEventInvite> eventInvites) {
     List<HangEventInvite> retVal = List.from(eventInvites);
     retVal.sort((a, b) {
-      if (a.eventStartDateTime == null && b.eventStartDateTime == null) {
+      if (a.event.eventStartDateTime == null &&
+          b.event.eventStartDateTime == null) {
         return 0;
-      } else if (a.eventStartDateTime == null) {
+      } else if (a.event.eventStartDateTime == null) {
         return 1;
-      } else if (b.eventStartDateTime == null) {
+      } else if (b.event.eventStartDateTime == null) {
         return -1;
       } else {
-        return b.eventStartDateTime!.compareTo(a.eventStartDateTime!);
+        return b.event.eventStartDateTime!
+            .compareTo(a.event.eventStartDateTime!);
       }
     });
     return retVal;

@@ -215,13 +215,29 @@ class CreateEventState extends Equatable {
     return copyWith(eventUserInvitees: newEventInvitees);
   }
 
+  DateTime? getDateAndTime(DateTime? dateTime, TimeOfDay? timeOfDay) {
+    if (dateTime == null && timeOfDay == null) {
+      return null;
+    }
+    if (timeOfDay == null) {
+      return dateTime;
+    }
+    return DateTime(
+      dateTime!.year,
+      dateTime.month,
+      dateTime.day,
+      timeOfDay.hour,
+      timeOfDay.minute,
+    );
+  }
+
   HangEvent createHangEvent(HangEventStage eventStage) {
     return HangEvent(
         id: hangEventId,
         eventOwner: eventOwner,
         eventName: eventName,
         eventDescription: eventDescription,
-        eventStartDateTime: eventStartDateTime,
+        eventStartDateTime: getDateAndTime(eventStartDateTime, eventStartTime),
         eventEndDateTime: eventEndDateTime,
         durationHours: durationHours,
         eventLocation: eventLocation,

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
-import 'package:letshang/blocs/app/app_state.dart';
 import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/widgets/events/event_list_card_view.dart';

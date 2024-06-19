@@ -99,10 +99,17 @@ class HangEventOverviewBloc
       eventsForUser =
           await _userInvitesRepository.getAllUserEventInvites(userId);
     } else {
-      eventsForUser = await _userInvitesRepository.getUserEventInvitesByRange(
-          userId, startDateTime!, endDateTime!);
+      List<HangEventInvite> rangeUpcomingEventInvites =
+          await _userInvitesRepository.getUserEventInvitesByRange(
+              userId, startDateTime!, endDateTime!);
+      eventsForUser = rangeUpcomingEventInvites;
     }
+    Map<String, List<HangEventInvite>> dateToEvents = {
+      for (HangEventInvite item in eventsForUser)
+        DateFormat('MM/dd/yyyy').format(item.event.eventStartDateTime!): [item]
+    };
     return state.copyWith(
+        dateToEvents: dateToEvents,
         hangEventOverviewStateStatus:
             HangEventOverviewStateStatus.hangEventsRetrieved,
         hangEvents: eventsForUser);
