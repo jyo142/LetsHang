@@ -147,7 +147,8 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         .collection("userInvites")
         .doc(userId)
         .collection("eventInvites")
-        .where('eventStartDateTime', isLessThan: DateTime.now())
+        .where("event.currentStage", isEqualTo: "complete")
+        .where('event.eventStartDateTime', isLessThan: DateTime.now())
         .get();
 
     final allRangeDocSnapshots =

@@ -4,13 +4,27 @@ import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/widgets/events/event_list_card_view.dart';
 
-class PastEventsView extends StatelessWidget {
+class PastEventsView extends StatefulWidget {
   const PastEventsView({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  State<PastEventsView> createState() => _PastEventsViewState();
+}
+
+class _PastEventsViewState extends State<PastEventsView> {
+  void onRefreshPastEvents() {
     context.read<HangEventOverviewBloc>().add(LoadPastEvents(
         userId: (context.read<AppBloc>().state).authenticatedUser!.id!));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    onRefreshPastEvents();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
       builder: (context, state) {
         if (state.hangEventOverviewStateStatus ==
@@ -20,7 +34,12 @@ class PastEventsView extends StatelessWidget {
         if (state.hangEventOverviewStateStatus ==
             HangEventOverviewStateStatus.hangEventsRetrieved) {
           if (state.pastHangEvents.isNotEmpty) {
-            return EventListCardView(events: state.pastHangEvents);
+            return RefreshIndicator(
+              child: EventListCardView(events: state.pastHangEvents),
+              onRefresh: () async {
+                onRefreshPastEvents();
+              },
+            );
           } else {
             return Text(
               'No past events',

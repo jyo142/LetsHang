@@ -90,6 +90,21 @@ class EventLocationStepWidget extends StatelessWidget {
                 ),
               ],
             ),
+            if (curStepValidationMap?.containsKey("locationKnown") ??
+                false) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    curStepValidationMap!["locationKnown"]!,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall!
+                        .merge(const TextStyle(color: Color(0xFFFF4D53))),
+                  )
+                ],
+              )
+            ],
             if (createEventState.eventLocationKnown ==
                 CreateEventYesNo.yes) ...[
               Row(

@@ -6,14 +6,27 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:letshang/widgets/events/event_list_card_view.dart';
 import 'package:letshang/widgets/lh_button.dart';
 
-class UpcomingEventsView extends StatelessWidget {
+class UpcomingEventsView extends StatefulWidget {
   const UpcomingEventsView({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  State<UpcomingEventsView> createState() => _UpcomingEventsViewState();
+}
+
+class _UpcomingEventsViewState extends State<UpcomingEventsView> {
+  void onRefreshUpcomingEvents() {
     context.read<HangEventOverviewBloc>().add(LoadUpcomingEvents(
         userId: (context.read<AppBloc>().state).authenticatedUser!.id!));
+  }
 
+  @override
+  void initState() {
+    super.initState();
+    onRefreshUpcomingEvents();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return BlocBuilder<HangEventOverviewBloc, HangEventOverviewState>(
       builder: (context, state) {
         if (state.hangEventOverviewStateStatus ==
@@ -23,7 +36,12 @@ class UpcomingEventsView extends StatelessWidget {
         if (state.hangEventOverviewStateStatus ==
             HangEventOverviewStateStatus.hangEventsRetrieved) {
           if (state.draftUpcomingHangEvents.isNotEmpty) {
-            return EventListCardView(events: state.draftUpcomingHangEvents);
+            return RefreshIndicator(
+              child: EventListCardView(events: state.draftUpcomingHangEvents),
+              onRefresh: () async {
+                onRefreshUpcomingEvents();
+              },
+            );
           } else {
             return Column(children: [
               Container(
