@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:letshang/assets/MainTheme.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
-import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
+import 'package:letshang/blocs/hang_events/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:letshang/blocs/invitations/invitations_bloc.dart';
 import 'package:letshang/models/event_invite.dart';
 import 'package:letshang/models/group_invite.dart';

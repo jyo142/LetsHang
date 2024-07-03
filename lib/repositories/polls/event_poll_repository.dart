@@ -110,6 +110,7 @@ class EventPollRepository extends BaseEventPollRepository {
         await _firebaseFirestore.collection('hangEvents').doc(eventId).get();
     HangEvent currentHangEvent =
         HangEvent.fromSnapshot(currentHangEventSnapshot);
+    currentHangEvent.validateEventWrite();
     savingPoll = savingPoll.copyWith(
         event: HangEventPreview.fromEvent(currentHangEvent));
 

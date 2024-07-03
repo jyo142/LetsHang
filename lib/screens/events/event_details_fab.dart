@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/event_responsibilities/hang_event_responsibilities_bloc.dart';
-import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/blocs/hang_events/hang_event_overview/hang_event_overview_bloc.dart';
 
 class EventDetailsFAB extends StatelessWidget {
   const EventDetailsFAB({Key? key}) : super(key: key);

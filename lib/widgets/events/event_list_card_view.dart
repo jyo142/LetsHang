@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:letshang/blocs/app/app_bloc.dart';
-import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:letshang/models/event_invite.dart';
 import 'package:letshang/widgets/event_card.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class EventListCardView extends StatelessWidget {
   final List<HangEventInvite> events;

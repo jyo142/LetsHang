@@ -8,4 +8,5 @@ abstract class BaseHangEventRepository {
   Future<List<UserInvite>> getUserInvitesForEvent(String hangEventId);
   Future<HangEvent> addHangEvent(HangEvent hangEvent);
   Future<void> editHangEvent(HangEvent hangEvent);
+  Future<void> cancelHangEvent(String hangEventId);
 }

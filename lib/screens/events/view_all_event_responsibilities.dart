@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/event_responsibilities/hang_event_responsibilities_bloc.dart';
-import 'package:letshang/blocs/hang_event_overview/user_hang_event_status_bloc.dart';
+import 'package:letshang/blocs/hang_events/hang_event_overview/user_hang_event_status_bloc.dart';
 import 'package:letshang/models/events/hang_event_responsibility.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/services/message_service.dart';
@@ -100,31 +100,34 @@ class _ViewAllEventResponsibilitiesView extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  OutlinedButton(
-                      onPressed: () {
-                        context.push("/addEventResponsibility",
-                            extra: hangEvent);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.white),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.person_add_outlined,
-                              color: Color(0xFF0286BF),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 15),
-                              child: Text('Add Responsibility',
-                                  style: Theme.of(context).textTheme.bodyText2),
-                            )
-                          ],
+                  if (!hangEvent.isReadonlyEvent()) ...[
+                    OutlinedButton(
+                        onPressed: () {
+                          context.push("/addEventResponsibility",
+                              extra: hangEvent);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white),
                         ),
-                      ))
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.person_add_outlined,
+                                color: Color(0xFF0286BF),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 15),
+                                child: Text('Add Responsibility',
+                                    style:
+                                        Theme.of(context).textTheme.bodyText2),
+                              )
+                            ],
+                          ),
+                        ))
+                  ]
                 ],
               )),
           Flexible(

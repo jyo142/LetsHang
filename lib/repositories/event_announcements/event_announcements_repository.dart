@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:letshang/models/events/hang_event_announcement.dart';
+import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/repositories/event_announcements/base_event_announcements_repository.dart';
 
 class EventAnnouncementsRepository extends BaseEventAnnouncementsRepository {
@@ -31,10 +32,16 @@ class EventAnnouncementsRepository extends BaseEventAnnouncementsRepository {
   @override
   Future<HangEventAnnouncement> addEventAnnouncement(
       String eventId, HangEventAnnouncement newAnnouncement) async {
-    CollectionReference hangEventAnnouncementsRef = _firebaseFirestore
-        .collection('hangEvents')
-        .doc(eventId)
-        .collection("announcements");
+    DocumentReference hangEventDocRef =
+        _firebaseFirestore.collection("hangEvents").doc(eventId);
+
+    DocumentSnapshot currentHangEventSnapshot = await hangEventDocRef.get();
+    HangEvent currentHangEvent =
+        HangEvent.fromSnapshot(currentHangEventSnapshot);
+    currentHangEvent.validateEventWrite();
+
+    CollectionReference hangEventAnnouncementsRef =
+        hangEventDocRef.collection("announcements");
     HangEventAnnouncement savingAnnouncement = HangEventAnnouncement.withId(
         hangEventAnnouncementsRef.doc().id, newAnnouncement);
 

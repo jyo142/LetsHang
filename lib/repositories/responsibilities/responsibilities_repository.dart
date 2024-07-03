@@ -81,6 +81,7 @@ class ResponsibilitiesRepository extends BaseResponsibilitiesRepository {
         await _firebaseFirestore.collection('hangEvents').doc(eventId).get();
     HangEvent currentHangEvent =
         HangEvent.fromSnapshot(currentHangEventSnapshot);
+    currentHangEvent.validateEventWrite();
     savingResponsibility = savingResponsibility.copyWith(
         event: HangEventPreview.fromEvent(currentHangEvent));
 

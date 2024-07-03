@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/event_responsibilities/add_event_responsibility_bloc.dart';
 import 'package:letshang/blocs/event_responsibilities/hang_event_responsibilities_bloc.dart';
-import 'package:letshang/blocs/hang_event_overview/user_hang_event_status_bloc.dart';
+import 'package:letshang/blocs/hang_events/hang_event_overview/user_hang_event_status_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';
 import 'package:letshang/models/invite.dart';

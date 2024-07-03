@@ -86,4 +86,20 @@ class HangEventRepository extends BaseHangEventRepository {
 
     return invites;
   }
+
+  @override
+  Future<void> cancelHangEvent(String hangEventId) async {
+    HangEvent? curEvent = await getEventById(hangEventId);
+
+    if (curEvent == null) {
+      throw Exception("Unable to find event.");
+    }
+    curEvent.validateEventWrite();
+
+    HangEvent cancelledEvent = curEvent.copyWith(isCancelled: true);
+    await _firebaseFirestore
+        .collection('hangEvents')
+        .doc(cancelledEvent.id)
+        .set(cancelledEvent.toDocument());
+  }
 }

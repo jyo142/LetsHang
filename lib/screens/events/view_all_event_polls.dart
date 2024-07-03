@@ -89,30 +89,33 @@ class _ViewAllEventPollsView extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  OutlinedButton(
-                      onPressed: () {
-                        context.push("/createPoll", extra: hangEvent);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.white),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.person_add_outlined,
-                              color: Color(0xFF0286BF),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 15),
-                              child: Text('Add New Poll',
-                                  style: Theme.of(context).textTheme.bodyText2),
-                            )
-                          ],
+                  if (!hangEvent.isReadonlyEvent()) ...[
+                    OutlinedButton(
+                        onPressed: () {
+                          context.push("/createPoll", extra: hangEvent);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white),
                         ),
-                      ))
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.person_add_outlined,
+                                color: Color(0xFF0286BF),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 15),
+                                child: Text('Add New Poll',
+                                    style:
+                                        Theme.of(context).textTheme.bodyText2),
+                              )
+                            ],
+                          ),
+                        ))
+                  ]
                 ],
               )),
           Flexible(

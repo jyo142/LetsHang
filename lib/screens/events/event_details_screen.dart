@@ -4,11 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/event_announcements/hang_event_announcements_bloc.dart';
-import 'package:letshang/blocs/hang_event_overview/hang_event_overview_bloc.dart';
-import 'package:letshang/blocs/hang_event_overview/user_hang_event_status_bloc.dart';
+import 'package:letshang/blocs/hang_events/hang_event_overview/hang_event_overview_bloc.dart';
+import 'package:letshang/blocs/hang_events/hang_event_overview/user_hang_event_status_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/screens/events/event_details_drawer.dart';
 import 'package:letshang/screens/events/event_details_fab.dart';
 import 'package:letshang/services/message_service.dart';
 import 'package:letshang/widgets/cards/event_announcement_card.dart';
@@ -74,7 +75,7 @@ class _EventDetailsView extends StatelessWidget {
     double width = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      drawer: _EventDetailsDrawer(
+      drawer: EventDetailsDrawer(
         curEvent: curEvent,
       ),
       bottomNavigationBar: Padding(
@@ -85,7 +86,8 @@ class _EventDetailsView extends StatelessWidget {
               context.push("/eventDiscussions/${curEvent.id}");
             }),
       ),
-      floatingActionButton: const EventDetailsFAB(),
+      floatingActionButton:
+          curEvent.isReadonlyEvent() ? null : const EventDetailsFAB(),
       backgroundColor: Colors.white,
       body: SafeArea(
           child: SizedBox(
@@ -401,130 +403,6 @@ class _EventAnnouncementsViewState extends State<_EventAnnouncementsView> {
           ],
         );
       },
-    );
-  }
-}
-
-class _EventDetailsDrawer extends StatefulWidget {
-  final HangEvent curEvent;
-
-  const _EventDetailsDrawer({Key? key, required this.curEvent})
-      : super(key: key);
-
-  @override
-  State createState() {
-    return _EventDetailsDrawerState();
-  }
-}
-
-class _EventDetailsDrawerState extends State<_EventDetailsDrawer> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(
-    BuildContext context,
-  ) {
-    Widget? getTrailingWidget(UserEventStatusState userEventStatusState,
-        bool isAlert, int Function(UserEventStatusState) countGetter) {
-      if (userEventStatusState.userEventStatusStateStatus ==
-          UserEventStatusStateStatus.loading) {
-        return const CircularProgressIndicator();
-      }
-      if (countGetter(userEventStatusState) > 0) {
-        if (isAlert) {
-          return badges.Badge(
-            badgeContent: Text(countGetter(userEventStatusState).toString(),
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyText2!
-                    .merge(const TextStyle(color: Colors.white))),
-          );
-        } else {
-          return badges.Badge(
-            badgeStyle: badges.BadgeStyle(
-              badgeColor: Color(0xFF0287BF),
-            ),
-            badgeContent: Text(countGetter(userEventStatusState).toString(),
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyText2!
-                    .merge(const TextStyle(color: Colors.white))),
-          );
-        }
-      }
-      return null;
-    }
-
-    return Drawer(
-      // Add a ListView to the drawer. This ensures the user can scroll
-      // through the options in the drawer if there isn't enough vertical
-      // space to fit everything.
-      child: ListView(
-        // Important: Remove any padding from the ListView.
-        padding: EdgeInsets.zero,
-        children: [
-          const DrawerHeader(
-            decoration: BoxDecoration(
-              color: Colors.blue,
-            ),
-            child: Text('Drawer Header'),
-          ),
-          BlocBuilder<UserHangEventStatusBloc, UserEventStatusState>(
-            builder: (context, state) {
-              return ListTile(
-                title: const Text('Participants'),
-                onTap: () {
-                  context.pop();
-                  context.push("/eventParticipants", extra: widget.curEvent);
-                },
-                trailing: getTrailingWidget(
-                    state,
-                    false,
-                    (hangEventOverviewState) =>
-                        hangEventOverviewState.eventParticipantsCount),
-              );
-            },
-          ),
-          BlocBuilder<UserHangEventStatusBloc, UserEventStatusState>(
-            builder: (context, state) {
-              return ListTile(
-                title: const Text('Responsibilities'),
-                onTap: () {
-                  context.pop();
-                  context.push("/eventResponsibilities",
-                      extra: widget.curEvent);
-                },
-                trailing: getTrailingWidget(
-                    state,
-                    true,
-                    (hangEventOverviewState) =>
-                        hangEventOverviewState.incompleteResponsibilitiesCount),
-              );
-            },
-          ),
-          BlocBuilder<UserHangEventStatusBloc, UserEventStatusState>(
-            builder: (context, state) {
-              return ListTile(
-                title: const Text('Polls'),
-                onTap: () {
-                  context.pop();
-                  context.push("/eventPolls", extra: widget.curEvent);
-                  // Update the state of the app.
-                  // ...
-                },
-                trailing: getTrailingWidget(
-                    state,
-                    true,
-                    (hangEventOverviewState) =>
-                        hangEventOverviewState.incompletePollCount),
-              );
-            },
-          ),
-        ],
-      ),
     );
   }
 }

@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/event_polls/hang_event_polls_bloc.dart';
 import 'package:letshang/blocs/event_polls/individual_event_poll_bloc.dart';
-import 'package:letshang/blocs/hang_event_overview/user_hang_event_status_bloc.dart';
+import 'package:letshang/blocs/hang_events/hang_event_overview/user_hang_event_status_bloc.dart';
 import 'package:letshang/models/events/hang_event_poll.dart';
 import 'package:letshang/models/events/hang_event_poll_result.dart';
 import 'package:letshang/models/hang_user_preview_model.dart';

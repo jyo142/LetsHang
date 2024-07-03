@@ -32,9 +32,13 @@ class HangEventOverviewBloc
       emit(await _mapLoadHangEventsToState(userId: event.userId));
     });
     on<LoadUpcomingEvents>((event, emit) async {
+      emit(state.copyWith(
+          hangEventOverviewStateStatus: HangEventOverviewStateStatus.loading));
       emit(await _mapLoadUpcomingDraftHangEventsToState(userId: event.userId));
     });
     on<LoadPastEvents>((event, emit) async {
+      emit(state.copyWith(
+          hangEventOverviewStateStatus: HangEventOverviewStateStatus.loading));
       emit(await _mapLoadPastHangEventsToState(userId: event.userId));
     });
     on<LoadHangEventsForDates>((event, emit) async {

@@ -5,6 +5,8 @@ enum HangEventOverviewStateStatus {
   loading,
   hangEventsRetrieved,
   individualEventRetrieved,
+  cancellingEvent,
+  eventCancelledSuccessfully,
   error
 }
 

@@ -29,7 +29,9 @@ class EventParticipantsScreen extends StatelessWidget {
               ),
               curEvent: curEvent)
             ..add(LoadHangEventParticipants()),
-          child: _EventParticipantsView()),
+          child: _EventParticipantsView(
+            curEvent: curEvent,
+          )),
       // bottomNavigationBar: Padding(
       //     padding: EdgeInsets.all(8.0),
       //     child: Column(
@@ -54,6 +56,9 @@ class EventParticipantsScreen extends StatelessWidget {
 }
 
 class _EventParticipantsView extends StatelessWidget {
+  final HangEvent curEvent;
+  const _EventParticipantsView({Key? key, required this.curEvent})
+      : super(key: key);
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -79,25 +84,27 @@ class _EventParticipantsView extends StatelessWidget {
                   SizedBox(
                     height: containerHeight * .95,
                     child: Column(children: [
-                      Flexible(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            AddPeopleBottomModal(
-                              submitPeopleButtonName: 'Send Invite',
-                              onInviteeAdded: (foundUser) {
-                                context.read<ParticipantsBloc>().add(
-                                    SendInviteInitiated(
-                                        invitedUser: foundUser));
-                              },
-                            ),
-                            Container(
-                              margin: const EdgeInsets.only(left: 20),
-                              child: const AddGroupBottomModal(),
-                            )
-                          ],
+                      if (!curEvent.isReadonlyEvent()) ...[
+                        Flexible(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              AddPeopleBottomModal(
+                                submitPeopleButtonName: 'Send Invite',
+                                onInviteeAdded: (foundUser) {
+                                  context.read<ParticipantsBloc>().add(
+                                      SendInviteInitiated(
+                                          invitedUser: foundUser));
+                                },
+                              ),
+                              Container(
+                                margin: const EdgeInsets.only(left: 20),
+                                child: const AddGroupBottomModal(),
+                              )
+                            ],
+                          ),
                         ),
-                      ),
+                      ],
                       Flexible(
                         child: Container(
                             margin: const EdgeInsets.only(top: 30),

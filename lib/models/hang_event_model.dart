@@ -31,20 +31,22 @@ class HangEvent extends HasUserInvites {
   final HangEventStage currentStage;
   final HangEventRecurringSettings? recurringSettings;
   final String? photoURL;
-  HangEvent(
-      {id,
-      required this.eventOwner,
-      this.eventName = '',
-      this.eventDescription = '',
-      this.eventStartDateTime,
-      this.eventEndDateTime,
-      this.durationHours,
-      this.eventLocation,
-      List<UserInvite>? userInvites,
-      this.currentStage = HangEventStage.started,
-      this.recurringSettings,
-      this.photoURL = ''})
-      : super(id, userInvites);
+  final bool? isCancelled;
+  HangEvent({
+    id,
+    required this.eventOwner,
+    this.eventName = '',
+    this.eventDescription = '',
+    this.eventStartDateTime,
+    this.eventEndDateTime,
+    this.durationHours,
+    this.eventLocation,
+    List<UserInvite>? userInvites,
+    this.currentStage = HangEventStage.started,
+    this.recurringSettings,
+    this.photoURL = '',
+    this.isCancelled,
+  }) : super(id, userInvites);
 
   HangEvent.withId(String id, HangEvent event)
       : this(
@@ -59,7 +61,8 @@ class HangEvent extends HasUserInvites {
             userInvites: event.userInvites,
             currentStage: event.currentStage,
             recurringSettings: event.recurringSettings,
-            photoURL: event.photoURL);
+            photoURL: event.photoURL,
+            isCancelled: event.isCancelled);
 
   static HangEvent fromSnapshot(DocumentSnapshot snap,
       [List<UserInvite>? eventInvites]) {
@@ -78,7 +81,8 @@ class HangEvent extends HasUserInvites {
       List<UserInvite>? userInvites,
       HangEventStage? currentStage,
       HangEventRecurringSettings? recurringSettings,
-      String? photoUrl}) {
+      String? photoUrl,
+      bool? isCancelled}) {
     return HangEvent(
         id: id ?? this.id,
         eventOwner: eventOwner ?? this.eventOwner,
@@ -91,7 +95,28 @@ class HangEvent extends HasUserInvites {
         userInvites: userInvites ?? this.userInvites,
         currentStage: currentStage ?? this.currentStage,
         recurringSettings: recurringSettings ?? this.recurringSettings,
-        photoURL: photoURL ?? this.photoURL);
+        photoURL: photoURL ?? this.photoURL,
+        isCancelled: isCancelled ?? this.isCancelled);
+  }
+
+  bool isReadonlyEvent() {
+    if (eventStartDateTime == null) {
+      return false;
+    }
+    return eventStartDateTime!.isBefore(DateTime.now());
+  }
+
+  bool isCancelledEvent() {
+    if (isCancelled == null) {
+      return false;
+    }
+    return isCancelled!;
+  }
+
+  void validateEventWrite() {
+    if (isReadonlyEvent() || isCancelledEvent()) {
+      throw Exception("Unable to make changes to event");
+    }
   }
 
   static HangEvent fromMap(Map<String, dynamic> map,
@@ -99,20 +124,22 @@ class HangEvent extends HasUserInvites {
     Timestamp? startDateTimestamp = map['eventStartDateTime'];
     Timestamp? endDateTimestamp = map['eventEndDateTime'];
     HangEvent event = HangEvent(
-        id: map["id"],
-        eventOwner: HangUserPreview.fromMap(map["eventOwner"]),
-        eventName: map['eventName'],
-        eventDescription: map['eventDescription'],
-        eventStartDateTime: startDateTimestamp?.toDate(),
-        eventEndDateTime: endDateTimestamp?.toDate(),
-        durationHours: map.getFromMap("durationHours", (key) => key),
-        eventLocation: map.getFromMap("eventLocation", (key) => key),
-        userInvites: userInvites ?? [],
-        currentStage: HangEventStage.values
-            .firstWhere((e) => describeEnum(e) == map["currentStage"]),
-        recurringSettings: map.getFromMap("recurringSettings",
-            (key) => HangEventRecurringSettings.fromMap(key)),
-        photoURL: map['photoUrl']);
+      id: map["id"],
+      eventOwner: HangUserPreview.fromMap(map["eventOwner"]),
+      eventName: map['eventName'],
+      eventDescription: map['eventDescription'],
+      eventStartDateTime: startDateTimestamp?.toDate(),
+      eventEndDateTime: endDateTimestamp?.toDate(),
+      durationHours: map.getFromMap("durationHours", (key) => key),
+      eventLocation: map.getFromMap("eventLocation", (key) => key),
+      userInvites: userInvites ?? [],
+      currentStage: HangEventStage.values
+          .firstWhere((e) => describeEnum(e) == map["currentStage"]),
+      recurringSettings: map.getFromMap("recurringSettings",
+          (key) => HangEventRecurringSettings.fromMap(key)),
+      photoURL: map['photoUrl'],
+      isCancelled: map.getFromMap("isCancelled", (key) => key),
+    );
     return event;
   }
 
@@ -133,7 +160,8 @@ class HangEvent extends HasUserInvites {
       'currentStage': describeEnum(currentStage),
       'recurringSettings':
           recurringSettings != null ? recurringSettings!.toDocument() : null,
-      'photoUrl': photoURL.toString()
+      'photoUrl': photoURL.toString(),
+      'isCancelled': isCancelled
     };
   }
 
@@ -150,6 +178,7 @@ class HangEvent extends HasUserInvites {
         userInvites,
         currentStage,
         recurringSettings,
-        photoURL
+        photoURL,
+        isCancelled
       ];
 }

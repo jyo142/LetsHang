@@ -71,22 +71,26 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
         .collection("userInvites")
         .doc(userId)
         .collection("eventInvites")
-        .where("event.currentStage", isEqualTo: "complete");
+        .where("event.currentStage", isEqualTo: "complete")
+        .where("event.isCancelled", isNull: true);
 
     if (includeNullDate) {
-      rangeEventInviteQuery.where(Filter.or(
-        Filter("event.eventStartDateTime",
-            isGreaterThanOrEqualTo: startDateTime),
-        Filter("event.eventStartDateTime", isNull: true),
-      ));
+      rangeEventInviteQuery = rangeEventInviteQuery.where(
+        Filter.or(
+          Filter("event.eventStartDateTime",
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startDateTime)),
+          Filter("event.eventStartDateTime", isNull: true),
+        ),
+      );
     } else {
-      rangeEventInviteQuery.where('event.eventStartDateTime',
-          isGreaterThanOrEqualTo: startDateTime);
+      rangeEventInviteQuery = rangeEventInviteQuery.where(
+          "event.eventStartDateTime",
+          isGreaterThanOrEqualTo: Timestamp.fromDate(startDateTime));
     }
 
     if (endDateTime != null) {
       rangeEventInviteQuery = rangeEventInviteQuery.where(
-          'event.eventStartDateTime',
+          "event.eventStartDateTime",
           isLessThanOrEqualTo: Timestamp.fromDate(endDateTime));
     }
 
@@ -174,6 +178,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
   @override
   Future<void> addUserEventInvites(
       HangEvent hangEvent, List<UserInvite> userInvites) async {
+    hangEvent.validateEventWrite();
     await _firebaseFirestore.runTransaction((transaction) async {
       DocumentReference dbEventsRef =
           _firebaseFirestore.collection('hangEvents').doc(hangEvent.id);
@@ -214,6 +219,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
   @override
   Future<void> addUserEventInvite(
       HangEvent hangEvent, UserInvite userInvite) async {
+    hangEvent.validateEventWrite();
     await _firebaseFirestore.runTransaction((transaction) async {
       DocumentReference dbEventsRef =
           _firebaseFirestore.collection('hangEvents').doc(hangEvent.id);
@@ -379,6 +385,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
   @override
   Future<void> promoteUserEventInvite(
       HangEvent hangEvent, UserInvite toPromote) async {
+    hangEvent.validateEventWrite();
     await _firebaseFirestore.runTransaction((transaction) async {
       DocumentReference dbEventsRef =
           _firebaseFirestore.collection('hangEvents').doc(hangEvent.id);
@@ -742,6 +749,7 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
   @override
   Future<void> removeUserEventInvite(
       HangEvent hangEvent, UserInvite toRemoveUserInvite) async {
+    hangEvent.validateEventWrite();
     await _firebaseFirestore.runTransaction((transaction) async {
       DocumentReference dbEventsRef =
           _firebaseFirestore.collection('hangEvents').doc(hangEvent.id);
