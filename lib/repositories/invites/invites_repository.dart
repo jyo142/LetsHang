@@ -176,6 +176,22 @@ class UserInvitesRepository extends BaseUserInvitesRepository {
   }
 
   @override
+  Future<HangEventInvite?> getUserInviteForEvent(
+      String userId, String eventId) async {
+    DocumentSnapshot eventInviteSnapshot = await _firebaseFirestore
+        .collection("userInvites")
+        .doc(userId)
+        .collection("eventInvites")
+        .doc(eventId)
+        .get();
+
+    if (eventInviteSnapshot.exists) {
+      return HangEventInvite.fromSnapshot(eventInviteSnapshot);
+    }
+    return null;
+  }
+
+  @override
   Future<void> addUserEventInvites(
       HangEvent hangEvent, List<UserInvite> userInvites) async {
     hangEvent.validateEventWrite();

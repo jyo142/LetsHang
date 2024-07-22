@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:letshang/assets/MainTheme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/hang_events/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:letshang/widgets/events/past_events_view.dart';
 import 'package:letshang/widgets/events/upcoming_events_view.dart';
@@ -35,6 +36,40 @@ class _EventsViewState extends State<EventsView> with TickerProviderStateMixin {
       length: 2,
       vsync: this,
     );
+    // Trigger the initial action based on the initial tab index
+    _performTabAction(_tabController.index);
+
+    // Add listener to the TabController
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        _performTabAction(_tabController.index);
+      }
+    });
+  }
+
+  void _performTabAction(int index) {
+    switch (index) {
+      case 0:
+        // Perform action for Upcoming Events Tab
+        context.read<HangEventOverviewBloc>().add(LoadUpcomingEvents(
+            userId: (context.read<AppBloc>().state).authenticatedUser!.id!));
+        context.read<HangEventOverviewBloc>().add(const UpdateHangEventsTab(
+            screenTab: HangEventsScreenTab.upcomingEvents));
+        break;
+      case 1:
+        // Perform action for Past Events Tab
+        context.read<HangEventOverviewBloc>().add(LoadPastEvents(
+            userId: (context.read<AppBloc>().state).authenticatedUser!.id!));
+        context.read<HangEventOverviewBloc>().add(const UpdateHangEventsTab(
+            screenTab: HangEventsScreenTab.pastEvents));
+        break;
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override

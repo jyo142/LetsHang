@@ -1,5 +1,7 @@
 part of 'hang_event_overview_bloc.dart';
 
+enum HangEventsScreenTab { pastEvents, upcomingEvents }
+
 @immutable
 abstract class HangEventOverviewEvent extends Equatable {
   const HangEventOverviewEvent();
@@ -17,6 +19,14 @@ class LoadUpcomingEvents extends HangEventOverviewEvent {
 
   @override
   List<Object> get props => [userId];
+}
+
+class UpdateHangEventsTab extends HangEventOverviewEvent {
+  final HangEventsScreenTab screenTab;
+  const UpdateHangEventsTab({required this.screenTab});
+
+  @override
+  List<Object> get props => [screenTab];
 }
 
 class LoadPastEvents extends HangEventOverviewEvent {

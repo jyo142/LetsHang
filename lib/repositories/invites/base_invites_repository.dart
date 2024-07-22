@@ -11,7 +11,6 @@ abstract class BaseUserInvitesRepository {
   Future<List<HangEventInvite>> getAllUserEventInvites(String userId);
   Future<UpcomingDraftEventInvites> getUpcomingDraftEventInvites(String userId);
   Future<List<HangEventInvite>> getPastEventInvites(String userId);
-
   Future<List<HangEventInvite>> getUserEventInvitesByRange(
       String userId, DateTime startDateTime, DateTime endDateTime);
   Future<UserEventMetadata> getUserEventMetadata(String userId);
@@ -20,11 +19,11 @@ abstract class BaseUserInvitesRepository {
   Future<List<GroupInvite>> getUserGroupInvites(String userId);
 
   // event invites
+  Future<HangEventInvite?> getUserInviteForEvent(String userId, String eventId);
   // this method creates all the user invites for an event
   Future<void> addUserEventInvite(HangEvent hangEvent, UserInvite userInvite);
   Future<void> removeUserEventInvite(
       HangEvent hangEvent, UserInvite toRemoveUserInvite);
-
   Future<void> addUserEventInvites(
       HangEvent hangEvent, List<UserInvite> userInvites);
   Future<void> removeUserEventInvites(

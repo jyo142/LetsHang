@@ -6,6 +6,7 @@ import 'package:letshang/blocs/app/app_bloc.dart';
 import 'package:letshang/blocs/event_announcements/hang_event_announcements_bloc.dart';
 import 'package:letshang/blocs/hang_events/hang_event_overview/hang_event_overview_bloc.dart';
 import 'package:letshang/blocs/hang_events/hang_event_overview/user_hang_event_status_bloc.dart';
+import 'package:letshang/blocs/hang_events/user_hang_event_title/user_hang_event_title_bloc.dart';
 import 'package:letshang/models/hang_event_model.dart';
 import 'package:letshang/models/invite.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -44,6 +45,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     context
         .read<HangEventAnnouncementsBloc>()
         .add(LoadEventAnnouncements(eventId: widget.eventId));
+    context
+        .read<UserHangEventTitleBloc>()
+        .add(GetUserEventTitle(eventId: widget.eventId, userId: curUser.id!));
   }
 
   @override

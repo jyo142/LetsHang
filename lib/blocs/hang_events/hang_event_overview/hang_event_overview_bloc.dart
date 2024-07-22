@@ -41,6 +41,9 @@ class HangEventOverviewBloc
           hangEventOverviewStateStatus: HangEventOverviewStateStatus.loading));
       emit(await _mapLoadPastHangEventsToState(userId: event.userId));
     });
+    on<UpdateHangEventsTab>((event, emit) async {
+      emit(state.copyWith(hangEventsScreenTab: event.screenTab));
+    });
     on<LoadHangEventsForDates>((event, emit) async {
       emit(await _mapLoadHangEventsToState(
           userId: event.userId,

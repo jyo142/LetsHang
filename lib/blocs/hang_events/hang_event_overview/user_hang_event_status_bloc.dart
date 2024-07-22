@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:letshang/models/event_invite.dart';
+import 'package:letshang/models/invite.dart';
 import 'package:letshang/repositories/invites/base_invites_repository.dart';
 import 'package:letshang/repositories/invites/invites_repository.dart';
 import 'package:letshang/repositories/polls/base_event_poll_repository.dart';

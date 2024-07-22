@@ -20,16 +20,17 @@ class HangEventOverviewState extends Equatable {
   final List<HangEventInvite> upcomingHangEvents;
   final List<HangEventInvite> draftUpcomingHangEvents;
   final Map<String, List<HangEventInvite>> dateToEvents;
-  const HangEventOverviewState({
-    required this.hangEventOverviewStateStatus,
-    this.errorMessage,
-    this.individualHangEvent,
-    this.hangEvents = const [],
-    this.pastHangEvents = const [],
-    this.upcomingHangEvents = const [],
-    this.draftUpcomingHangEvents = const [],
-    this.dateToEvents = const {},
-  });
+  final HangEventsScreenTab? hangEventsScreenTab;
+  const HangEventOverviewState(
+      {required this.hangEventOverviewStateStatus,
+      this.errorMessage,
+      this.individualHangEvent,
+      this.hangEvents = const [],
+      this.pastHangEvents = const [],
+      this.upcomingHangEvents = const [],
+      this.draftUpcomingHangEvents = const [],
+      this.dateToEvents = const {},
+      this.hangEventsScreenTab});
 
   HangEventOverviewState copyWith({
     HangEventOverviewStateStatus? hangEventOverviewStateStatus,
@@ -40,6 +41,7 @@ class HangEventOverviewState extends Equatable {
     List<HangEventInvite>? upcomingHangEvents,
     List<HangEventInvite>? draftUpcomingHangEvents,
     Map<String, List<HangEventInvite>>? dateToEvents,
+    HangEventsScreenTab? hangEventsScreenTab,
   }) {
     return HangEventOverviewState(
         hangEventOverviewStateStatus:
@@ -51,7 +53,8 @@ class HangEventOverviewState extends Equatable {
         draftUpcomingHangEvents:
             draftUpcomingHangEvents ?? this.draftUpcomingHangEvents,
         dateToEvents: dateToEvents ?? this.dateToEvents,
-        errorMessage: errorMessage ?? this.errorMessage);
+        errorMessage: errorMessage ?? this.errorMessage,
+        hangEventsScreenTab: hangEventsScreenTab ?? this.hangEventsScreenTab);
   }
 
   HangEventOverviewState eventsRetrieved() {
@@ -101,5 +104,6 @@ class HangEventOverviewState extends Equatable {
         upcomingHangEvents,
         draftUpcomingHangEvents,
         dateToEvents,
+        hangEventsScreenTab
       ];
 }
